@@ -9,12 +9,15 @@ All notable changes to this project are documented here. The project follows Sem
 - Grapheme-safe segmentation, length, slicing, and truncation helpers built on `Intl.Segmenter`.
 - Locale-aware word and sentence segmentation, including host-provided `isWordLike` metadata and a word-only convenience API.
 - Pseudo-localization utilities for localization/layout QA while preserving common interpolation and markup tokens.
-- Runtime locale capability introspection for direction, effective script/region, calendars, numbering systems, and hour cycles when exposed by ECMA-402.
+- Runtime locale capability introspection for direction, effective script/region, calendars, numbering systems, hour cycles, collations, time zones, and week information when exposed by ECMA-402.
+- Runtime-supported-value discovery through `Intl.supportedValuesOf` without vendoring locale registries.
 - `Intl.PluralRules` helpers for cardinal/ordinal category selection, resolved-options inspection, and runtime-gated plural range selection.
 - `Intl.DisplayNames` helpers for standardized locale-sensitive names of supported language/script/region/currency/calendar/date-time-field codes.
 - Structured `formatToParts` wrappers for numbers, dates, lists, and relative time for component-level and bidi-aware rendering.
 - Unicode display-risk diagnostics covering bidi controls/overrides, unbalanced isolates, zero-width characters, and mixed-script identifiers without claiming full UTS #39 confusable detection.
 - RTL-aware roving-focus and roving-tabindex state helpers with disabled-item handling for composite widgets.
+- Locale-aware typeahead matching and deterministic multi-character buffer state for composite widgets, with Arabic and Latin-script tests.
+- Built-package contract gate that imports the real `dist/index.js`, validates export/subpath integrity, checks SSR-safe import behavior, and executes representative runtime invariants.
 - `docs/GLOBAL-PLATFORM.md` defining the integrated global engineering layer, standards posture, and non-claims.
 - `docs/INTEROPERABILITY.md` defining framework-neutral integration boundaries, localization workflow, Unicode policy signals, and browser evidence.
 - Cross-module unit coverage for the global platform capabilities, including Arabic plural categories and locale-sensitive segmentation/formatting.
@@ -31,10 +34,11 @@ All notable changes to this project are documented here. The project follows Sem
 - Added repository ownership metadata and clarified first-publication readiness requirements.
 - Defined the canonical project identity: the platform name is Rawafid (روافد), the official production website is `https://healthrenewal.org/`, and this GitHub repository is the separate open-source source-code home for the toolkit.
 - Pointed npm package homepage metadata to the official Rawafid website while preserving GitHub as the canonical repository and issue tracker.
-- Expanded the public API surface with reusable Unicode, localization QA, locale metadata, segmentation, pluralization, structured formatting, display-name, grapheme, and composite-widget interaction primitives while retaining zero runtime dependencies.
+- Expanded the public API surface with reusable Unicode, localization QA, locale metadata, segmentation, pluralization, structured formatting, display-name, grapheme, typeahead, and composite-widget interaction primitives while retaining zero runtime dependencies.
 - Reworked the README into a capability map and integration guide for the broader global platform surface.
 - Advanced the roadmap to reflect completed grapheme, pseudo-localization, Unicode diagnostics, locale-capability, roving-focus, and mixed-direction fixture work instead of listing it as future scope.
-- Strengthened `docs/API-CONTRACT.md` with explicit host-ICU/CLDR variability contracts for segmentation, plural rules, display names, and formatter parts.
+- Strengthened `docs/API-CONTRACT.md` with explicit host-ICU/CLDR variability contracts, typeahead boundaries, and built-package verification semantics.
+- Extended the main `npm run check` gate so package-contract validation is mandatory after source, lint, type, unit, publint, and declaration-resolution checks.
 
 ### Fixed
 
@@ -45,6 +49,7 @@ All notable changes to this project are documented here. The project follows Sem
 - Corrected identity/link guidance so the `healthrenewal.org` domain is never treated as the product name and Rawafid is never conflated with the toolkit repository.
 - Roving-tabindex recovery now preserves locality by choosing the next enabled item when the active item becomes disabled.
 - Pseudo-localization fractional expansion ratios now produce deterministic text expansion instead of being rounded away.
+- Structured list-format part typing now derives from the host API return type instead of relying on a TypeScript library alias absent from the Node 22 baseline.
 
 ### Remaining external setup
 
