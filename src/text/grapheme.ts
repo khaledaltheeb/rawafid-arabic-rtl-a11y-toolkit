@@ -19,9 +19,7 @@ export function segmentGraphemes(value: string, locale = 'und'): GraphemeSegment
 }
 
 export function graphemeLength(value: string, locale = 'und'): number {
-  let length = 0;
-  for (const _entry of createGraphemeSegmenter(locale).segment(value)) length += 1;
-  return length;
+  return [...createGraphemeSegmenter(locale).segment(value)].length;
 }
 
 /** Array.slice-style slicing at grapheme boundaries. */
