@@ -16,7 +16,8 @@ export type UnicodeDisplayDiagnostic = {
   scripts: string[];
 };
 
-const ZERO_WIDTH = /[\u200B\u200C\u200D\u2060\uFEFF]/u;
+const ZERO_WIDTH_CODE_POINTS = new Set([0x200b, 0x200c, 0x200d, 0x2060, 0xfeff]);
+const LETTER = /\p{Letter}/u;
 
 const SCRIPT_TESTS: ReadonlyArray<readonly [string, RegExp]> = [
   ['Arabic', /\p{Script=Arabic}/u],
@@ -29,6 +30,14 @@ const SCRIPT_TESTS: ReadonlyArray<readonly [string, RegExp]> = [
   ['Hiragana', /\p{Script=Hiragana}/u],
   ['Katakana', /\p{Script=Katakana}/u],
 ] as const;
+
+function hasZeroWidthCharacters(value: string): boolean {
+  for (const char of value) {
+    const codePoint = char.codePointAt(0);
+    if (codePoint !== undefined && ZERO_WIDTH_CODE_POINTS.has(codePoint)) return true;
+  }
+  return false;
+}
 
 function isolateBalance(value: string): boolean {
   let depth = 0;
@@ -49,7 +58,7 @@ function isolateBalance(value: string): boolean {
 export function detectLetterScripts(value: string): string[] {
   const scripts = new Set<string>();
   for (const char of value) {
-    if (!/\p{Letter}/u.test(char)) continue;
+    if (!LETTER.test(char)) continue;
     for (const [name, pattern] of SCRIPT_TESTS) {
       if (pattern.test(char)) {
         scripts.add(name);
@@ -70,7 +79,7 @@ export function diagnoseUnicodeDisplay(value: string): UnicodeDisplayDiagnostic 
   const bidi = containsBidiControls(value);
   const unsafeBidi = hasUnsafeBidiOverrides(value);
   const balanced = isolateBalance(value);
-  const zeroWidth = ZERO_WIDTH.test(value);
+  const zeroWidth = hasZeroWidthCharacters(value);
   const risks: UnicodeDisplayRisk[] = [];
 
   if (bidi) risks.push('bidi-control');
