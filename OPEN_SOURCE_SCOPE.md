@@ -1,6 +1,10 @@
 # Open-source scope boundary
 
-This repository is intentionally an independent public engineering toolkit. Its purpose is to expose reusable Arabic/RTL, localization, accessibility, Unicode, and generic UI infrastructure **without exposing Rawafid's scientific/content corpus or private operating systems**.
+This repository is intentionally an independent public engineering toolkit associated with **Rawafid (روافد)**. Rawafid's official production website is **https://healthrenewal.org/**. The website/domain and this source repository have distinct publication roles.
+
+Its purpose is to expose reusable Arabic/RTL, localization, accessibility, Unicode, and generic UI infrastructure **without exposing Rawafid's scientific/content corpus or private operating systems**.
+
+For canonical identity and link usage, see `docs/PROJECT-IDENTITY.md`.
 
 ## Allowed public material
 
@@ -28,6 +32,10 @@ Never copy or generate into this repository:
 - Rawafid-specific content ranking, editorial, publishing, SEO, or generation pipelines when they reveal proprietary operating logic.
 - Proprietary brand assets unless independently cleared for Apache-2.0-compatible distribution.
 - Third-party code/content whose license or provenance is unclear or incompatible with redistribution.
+
+## Website/source separation
+
+`healthrenewal.org` is the official Rawafid production website. This repository must not become a source dump or mirror of that website. A public URL on the Rawafid website does not by itself make the underlying content eligible for inclusion here; material must independently satisfy this repository's reusable-software scope and licensing rules.
 
 ## Clean-room extraction rule
 

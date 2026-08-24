@@ -2,6 +2,16 @@
 
 This repository is structured to make legitimate open-source infrastructure applications easier. Program acceptance is always at the provider's discretion and current provider terms control.
 
+## Canonical identity for applications
+
+- Platform/organization name: **Rawafid (روافد)**.
+- Official production website: **https://healthrenewal.org/**.
+- Open-source project: **Rawafid Arabic/RTL Accessibility & Localization Toolkit**.
+- Source repository: **https://github.com/khaledaltheeb/rawafid-arabic-rtl-a11y-toolkit**.
+- npm package: `@rawafid/arabic-rtl-a11y-toolkit` after publication.
+
+If an application asks for the official website, use `healthrenewal.org`. If it asks for source code or repository evidence, use the GitHub repository. Do not rename the platform to "Health Renewal" merely because of the domain.
+
 ## Evidence the repository should maintain
 
 - Public source code and complete build/test instructions.
@@ -12,6 +22,7 @@ This repository is structured to make legitimate open-source infrastructure appl
 - Real localization files/workflows that demonstrate why translation infrastructure is useful.
 - Clear separation from private/scientific Rawafid content.
 - No paid tier, service sales, or commercialization path for this toolkit when applying to programs that prohibit them.
+- Consistent identity metadata linking Rawafid, `healthrenewal.org`, and the canonical source repository without conflating their roles.
 
 ## Provider fit
 

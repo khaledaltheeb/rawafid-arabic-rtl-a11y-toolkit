@@ -6,6 +6,14 @@
 
 A framework-agnostic TypeScript toolkit for Arabic and right-to-left web engineering: script-aware directionality, Unicode bidi safety, localization primitives, conservative Arabic text utilities, accessibility helpers, logical CSS, direction-aware UI behavior, and real-browser RTL tests.
 
+## Rawafid identity
+
+**Rawafid (روافد)** is the platform name. Its official production website is **https://healthrenewal.org/**. The domain name is not the product name.
+
+This GitHub repository is the source repository for the reusable **Rawafid Arabic/RTL Accessibility & Localization Toolkit**. It is an independent open-source engineering component associated with Rawafid; it is not the production website and does not contain the Rawafid scientific/content corpus.
+
+See [docs/PROJECT-IDENTITY.md](./docs/PROJECT-IDENTITY.md) for the canonical identity and link policy.
+
 > **Public-scope guarantee:** this repository contains general-purpose software only. It intentionally excludes Rawafid encyclopedia entries, scientific/editorial content, assessments, datasets, user data, production secrets, and proprietary publishing logic. See [OPEN_SOURCE_SCOPE.md](./OPEN_SOURCE_SCOPE.md).
 
 ## Engineering position
@@ -181,7 +189,7 @@ Pre-1.0 releases may refine APIs, but breaking changes still require explicit ch
 
 ## Open-source program readiness
 
-The repository is structured to provide legitimate engineering evidence for OSS programs: public reusable code, an OSI license, cross-browser test need, localization workflows, accessibility testing, public governance, security controls, and clear separation from Rawafid's scientific corpus. Acceptance by BrowserStack, Transifex, Sentry, Weblate, JetBrains, Docker, GitLab, TestMu, or any other provider remains entirely subject to that provider's current rules.
+The repository is structured to provide legitimate engineering evidence for OSS programs: public reusable code, an OSI license, cross-browser test need, localization workflows, accessibility testing, public governance, security controls, and clear separation from Rawafid's scientific corpus. Where an application asks for the official project/platform website, use **https://healthrenewal.org/**; where it asks for source code, use this repository. Acceptance by BrowserStack, Transifex, Sentry, Weblate, JetBrains, Docker, GitLab, TestMu, or any other provider remains entirely subject to that provider's current rules.
 
 See [docs/OSS-PROGRAM-READINESS.md](./docs/OSS-PROGRAM-READINESS.md).
 
