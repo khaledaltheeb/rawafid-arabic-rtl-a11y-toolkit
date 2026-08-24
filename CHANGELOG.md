@@ -12,6 +12,8 @@ All notable changes to this project are documented here. The project follows Sem
 - Preserved Node 22 as the TypeScript API baseline while retaining runtime CI coverage on Node 22/24/26.
 - Updated CodeQL Actions to 4.37.8 after a fully green PR validation cycle.
 - Added repository ownership metadata and clarified first-publication readiness requirements.
+- Defined the canonical project identity: the platform name is Rawafid (روافد), the official production website is `https://healthrenewal.org/`, and this GitHub repository is the separate open-source source-code home for the toolkit.
+- Pointed npm package homepage metadata to the official Rawafid website while preserving GitHub as the canonical repository and issue tracker.
 
 ### Fixed
 
@@ -19,11 +21,12 @@ All notable changes to this project are documented here. The project follows Sem
 - Playwright configuration under `exactOptionalPropertyTypes`.
 - Package type-resolution validation so CSS export subpaths do not create false JavaScript resolution failures.
 - Dependency Review behavior when GitHub Dependency Graph has not yet been enabled at repository level.
+- Corrected identity/link guidance so the `healthrenewal.org` domain is never treated as the product name and Rawafid is never conflated with the toolkit repository.
 
 ### Remaining external setup
 
 - Enable GitHub Dependency Graph and the desired repository security features in repository settings.
-- Configure npm Trusted Publishing for `.github/workflows/release.yml` and the GitHub `npm` environment before the first npm publication.
+- Confirm ownership of the intended npm scope, perform the one-time 2FA-protected bootstrap publication, then configure npm Trusted Publishing for `release.yml` and the GitHub `npm` environment for subsequent releases.
 - Add repository topics and branch/ruleset protections in GitHub settings.
 - Add provider-backed infrastructure only after legitimate acceptance into an applicable OSS program.
 
