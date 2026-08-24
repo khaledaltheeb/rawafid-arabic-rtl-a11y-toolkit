@@ -38,6 +38,13 @@ const requiredExports = [
   'nextRovingFocusIndex',
   'findTypeaheadMatch',
   'updateTypeaheadBuffer',
+  'normalizeSelection',
+  'selectSingle',
+  'toggleMultiple',
+  'selectRange',
+  'gridPosition',
+  'gridIndex',
+  'nextGridIndex',
   'announce',
   'getPaginationModel',
 ];
@@ -50,6 +57,21 @@ if (typeof built.findTypeaheadMatch !== 'function') throw new Error('findTypeahe
 if (built.getLocaleDirection('ar-Latn') !== 'ltr') throw new Error('Built package direction contract failed.');
 if (built.findTypeaheadMatch([{ label: 'العربية' }], 'الع', { locale: 'ar' }) !== 0) {
   throw new Error('Built package typeahead contract failed.');
+}
+
+const selection = built.normalizeSelection(4, 0, [2], 'single');
+if (selection.activeIndex !== 0 || selection.selected.length !== 1 || selection.selected[0] !== 2) {
+  throw new Error('Built package selection-state independence contract failed.');
+}
+
+if (built.nextGridIndex(4, 3, 3, 'ArrowLeft', { direction: 'rtl' }) !== 5) {
+  throw new Error('Built package RTL grid horizontal-navigation contract failed.');
+}
+if (built.nextGridIndex(4, 3, 3, 'ArrowRight', { direction: 'rtl' }) !== 3) {
+  throw new Error('Built package RTL grid reverse-horizontal-navigation contract failed.');
+}
+if (built.nextGridIndex(5, 3, 3, 'Home') !== 3) {
+  throw new Error('Built package grid row Home contract failed.');
 }
 
 console.log(`Built package contract passed with ${Object.keys(built).length} public exports.`);

@@ -98,6 +98,43 @@ test('typeahead does not consume modified shortcuts or composition keystrokes', 
   await expect(buffer).toHaveText('');
 });
 
+test('built grid helper drives physical RTL movement, rows, and Home/End', async ({ page }) => {
+  const first = page.locator('#grid-0');
+  const middle = page.locator('#grid-1');
+  const third = page.locator('#grid-2');
+  const secondRowFirst = page.locator('#grid-3');
+
+  await first.focus();
+  await page.keyboard.press('ArrowLeft');
+  await expect(middle).toBeFocused();
+
+  await page.keyboard.press('ArrowRight');
+  await expect(first).toBeFocused();
+
+  await page.keyboard.press('ArrowDown');
+  await expect(secondRowFirst).toBeFocused();
+
+  await page.keyboard.press('End');
+  await expect(page.locator('#grid-5')).toBeFocused();
+
+  await page.keyboard.press('Home');
+  await expect(secondRowFirst).toBeFocused();
+
+  await page.keyboard.press('ArrowUp');
+  await expect(first).toBeFocused();
+
+  await page.keyboard.press('End');
+  await expect(third).toBeFocused();
+});
+
+test('RTL grid keeps one cell in the page tab sequence', async ({ page }) => {
+  const cells = page.locator('#rtl-grid [role="gridcell"]');
+  await expect(cells.nth(0)).toHaveAttribute('tabindex', '0');
+  for (let index = 1; index < 6; index += 1) {
+    await expect(cells.nth(index)).toHaveAttribute('tabindex', '-1');
+  }
+});
+
 test('QA helpers execute from the built browser package', async ({ page }) => {
   await expect(page.locator('#grapheme-output')).toHaveText('A…');
   await expect(page.locator('#pseudo-output')).toContainText('{name}');
