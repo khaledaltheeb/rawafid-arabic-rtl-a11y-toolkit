@@ -28,6 +28,14 @@ export function lastEnabledIndex(itemCount: number, disabled: readonly boolean[]
   return -1;
 }
 
+function nextEnabledFrom(startIndex: number, itemCount: number, disabled: readonly boolean[]): number {
+  for (let offset = 1; offset <= itemCount; offset += 1) {
+    const candidate = (startIndex + offset) % itemCount;
+    if (isEnabled(candidate, itemCount, disabled)) return candidate;
+  }
+  return -1;
+}
+
 /**
  * Resolve keyboard movement for composite widgets while skipping disabled
  * items. The caller remains responsible for DOM focus and ARIA semantics.
@@ -45,7 +53,7 @@ export function nextRovingFocusIndex(
 
   const disabled = options.disabled ?? [];
   if (disabled[currentIndex] === true) {
-    const replacement = firstEnabledIndex(itemCount, disabled);
+    const replacement = nextEnabledFrom(currentIndex, itemCount, disabled);
     return replacement;
   }
   if (key === 'Home') return firstEnabledIndex(itemCount, disabled);
@@ -83,6 +91,8 @@ export function rovingTabIndexes(
   if (!Number.isInteger(activeIndex) || activeIndex < 0 || activeIndex >= itemCount) {
     throw new RangeError(`activeIndex must be an integer between 0 and ${itemCount - 1}.`);
   }
-  const fallback = disabled[activeIndex] === true ? firstEnabledIndex(itemCount, disabled) : activeIndex;
+  const fallback = disabled[activeIndex] === true
+    ? nextEnabledFrom(activeIndex, itemCount, disabled)
+    : activeIndex;
   return Array.from({ length: itemCount }, (_, index) => (index === fallback ? 0 : -1));
 }
