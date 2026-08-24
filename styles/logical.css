@@ -1,0 +1,20 @@
+/* Direction-safe utilities based on CSS logical properties. */
+.rawafid-flow { display: flow-root; }
+.rawafid-text-start { text-align: start; }
+.rawafid-text-end { text-align: end; }
+.rawafid-ms-auto { margin-inline-start: auto; }
+.rawafid-me-auto { margin-inline-end: auto; }
+.rawafid-pi-1 { padding-inline: 0.25rem; }
+.rawafid-pi-2 { padding-inline: 0.5rem; }
+.rawafid-pi-3 { padding-inline: 0.75rem; }
+.rawafid-pi-4 { padding-inline: 1rem; }
+.rawafid-ps-2 { padding-inline-start: 0.5rem; }
+.rawafid-pe-2 { padding-inline-end: 0.5rem; }
+.rawafid-mi-2 { margin-inline: 0.5rem; }
+.rawafid-ms-2 { margin-inline-start: 0.5rem; }
+.rawafid-me-2 { margin-inline-end: 0.5rem; }
+.rawafid-border-start { border-inline-start: 1px solid currentColor; }
+.rawafid-border-end { border-inline-end: 1px solid currentColor; }
+.rawafid-inset-inline { inset-inline: 0; }
+.rawafid-dir-isolate { unicode-bidi: isolate; }
+[dir="rtl"] .rawafid-mirror-rtl { transform: scaleX(-1); }

@@ -1,0 +1,23 @@
+name: Feature request
+description: Propose a reusable standards-based addition.
+title: "[feature] "
+labels: [enhancement]
+body:
+  - type: textarea
+    id: use-case
+    attributes:
+      label: Use case
+      description: Describe the general reusable problem, not a Rawafid-specific content requirement.
+    validations:
+      required: true
+  - type: textarea
+    id: proposal
+    attributes:
+      label: Proposed API or behavior
+    validations:
+      required: true
+  - type: textarea
+    id: standards
+    attributes:
+      label: Relevant standards or browser behavior
+      description: Unicode, WHATWG, WCAG, WAI-ARIA, ECMA-402/Intl, CSS Logical Properties, etc.

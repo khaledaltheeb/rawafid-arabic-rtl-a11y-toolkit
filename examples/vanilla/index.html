@@ -1,0 +1,29 @@
+<!doctype html>
+<html lang="ar-JO" dir="rtl">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Rawafid Arabic/RTL Toolkit - Vanilla example</title>
+  <link rel="stylesheet" href="../../styles/a11y.css">
+  <link rel="stylesheet" href="../../styles/logical.css">
+  <style>
+    body { font-family: system-ui, sans-serif; max-inline-size: 60rem; margin-inline: auto; padding: 2rem; line-height: 1.8; }
+    .card { border: 1px solid #777; border-radius: 0.75rem; padding: 1rem; }
+    .toolbar { display: flex; gap: 0.75rem; flex-wrap: wrap; }
+  </style>
+</head>
+<body>
+  <a class="rawafid-skip-link rawafid-focus-ring" href="#content">تجاوز إلى المحتوى</a>
+  <main id="content">
+    <h1>مثال RTL عام</h1>
+    <section class="card" aria-labelledby="mixed-heading">
+      <h2 id="mixed-heading">محتوى ثنائي الاتجاه</h2>
+      <p>يمكن عرض بريد إلكتروني بأمان هكذا: <bdi>support@example.org</bdi>.</p>
+      <div class="toolbar" role="group" aria-label="إجراءات المثال">
+        <button class="rawafid-focus-ring" type="button">الإجراء الأول</button>
+        <button class="rawafid-focus-ring" type="button">الإجراء الثاني</button>
+      </div>
+    </section>
+  </main>
+</body>
+</html>

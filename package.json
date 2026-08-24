@@ -1,0 +1,90 @@
+{
+  "name": "@rawafid/arabic-rtl-a11y-toolkit",
+  "version": "0.2.0",
+  "description": "Framework-agnostic Arabic/RTL, localization, accessibility, bidi-safety, and direction-aware UI primitives for the web.",
+  "type": "module",
+  "license": "Apache-2.0",
+  "author": "Rawafid contributors",
+  "homepage": "https://github.com/khaledaltheeb/rawafid-arabic-rtl-a11y-toolkit#readme",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/khaledaltheeb/rawafid-arabic-rtl-a11y-toolkit.git"
+  },
+  "bugs": {
+    "url": "https://github.com/khaledaltheeb/rawafid-arabic-rtl-a11y-toolkit/issues"
+  },
+  "keywords": [
+    "arabic",
+    "rtl",
+    "bidi",
+    "unicode",
+    "i18n",
+    "localization",
+    "accessibility",
+    "a11y",
+    "internationalization",
+    "logical-properties",
+    "typescript",
+    "web"
+  ],
+  "files": [
+    "dist",
+    "styles",
+    "README.md",
+    "LICENSE",
+    "NOTICE"
+  ],
+  "sideEffects": [
+    "**/*.css"
+  ],
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js",
+      "default": "./dist/index.js"
+    },
+    "./styles/logical.css": "./styles/logical.css",
+    "./styles/a11y.css": "./styles/a11y.css",
+    "./package.json": "./package.json"
+  },
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "engines": {
+    "node": ">=22"
+  },
+  "publishConfig": {
+    "access": "public",
+    "provenance": true
+  },
+  "scripts": {
+    "build": "tsdown",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:e2e": "playwright test",
+    "test:a11y": "playwright test tests/e2e/accessibility.spec.ts",
+    "lint": "eslint . --max-warnings=0",
+    "catalogs:check": "node scripts/validate-catalogs.mjs",
+    "check:core": "npm run scope:check && npm run supply-chain:check && npm run catalogs:check && npm run lint && npm run typecheck && npm run test",
+    "package:lint": "npm run build && publint",
+    "package:types": "npm run build && attw --pack . --profile esm-only",
+    "check": "npm run check:core && npm run package:lint && npm run package:types",
+    "prepack": "npm run build",
+    "scope:check": "node scripts/scope-guard.mjs",
+    "supply-chain:check": "node scripts/check-action-pins.mjs"
+  },
+  "devDependencies": {
+    "@arethetypeswrong/cli": "0.18.5",
+    "@axe-core/playwright": "4.13.0",
+    "@eslint/js": "10.0.1",
+    "@playwright/test": "1.62.1",
+    "@types/node": "22.18.0",
+    "eslint": "10.9.0",
+    "globals": "17.11.0",
+    "publint": "0.3.24",
+    "tsdown": "0.22.14",
+    "typescript": "6.0.3",
+    "typescript-eslint": "8.67.0",
+    "vitest": "4.1.11"
+  }
+}
