@@ -34,8 +34,9 @@ test('actual logical CSS maps inline-start to the physical right edge in RTL', a
 
 test('actual live-region helper announces plain text', async ({ page }) => {
   await page.getByRole('button', { name: 'أعلن حالة الحفظ' }).click();
-  await expect(page.getByRole('status')).toHaveText('تم حفظ الإعدادات');
-  await expect(page.getByRole('status')).toHaveAttribute('aria-live', 'polite');
+  const liveRegion = page.locator('[role="status"][aria-live="polite"]');
+  await expect(liveRegion).toHaveText('تم حفظ الإعدادات');
+  await expect(liveRegion).toHaveAttribute('aria-live', 'polite');
 });
 
 test('mixed-direction values are isolated and layout does not overflow horizontally', async ({ page }) => {
