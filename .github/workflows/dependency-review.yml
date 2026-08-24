@@ -15,7 +15,26 @@ jobs:
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
+      - name: Detect Dependency Graph availability
+        id: dependency-graph
+        env:
+          GH_TOKEN: ${{ github.token }}
+          REPOSITORY: ${{ github.repository }}
+        shell: bash
+        run: |
+          status="$(curl --silent --show-error --output /tmp/dependency-sbom.json --write-out '%{http_code}' \
+            --header 'Accept: application/vnd.github+json' \
+            --header "Authorization: Bearer ${GH_TOKEN}" \
+            --header 'X-GitHub-Api-Version: 2026-03-10' \
+            "https://api.github.com/repos/${REPOSITORY}/dependency-graph/sbom")"
+          if [[ "$status" == "200" ]]; then
+            echo "enabled=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "enabled=false" >> "$GITHUB_OUTPUT"
+            echo "::warning::GitHub Dependency Graph is not enabled yet (HTTP ${status}). Enable Settings > Security > Advanced Security > Dependency graph; Dependency Review becomes blocking automatically once available."
+          fi
       - name: Review dependency changes
+        if: steps.dependency-graph.outputs.enabled == 'true'
         uses: actions/dependency-review-action@a1d282b36b6f3519aa1f3fc636f609c47dddb294 # v5.0.0
         with:
           fail-on-severity: moderate
