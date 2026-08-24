@@ -1,6 +1,16 @@
+# Default ownership for the public toolkit.
 * @khaledaltheeb
-/src/ @khaledaltheeb
-/styles/ @khaledaltheeb
+
+# Security-sensitive automation and release surfaces.
 /.github/workflows/ @khaledaltheeb
+/.github/dependabot.yml @khaledaltheeb
+/package.json @khaledaltheeb
+/package-lock.json @khaledaltheeb
 /SECURITY.md @khaledaltheeb
 /OPEN_SOURCE_SCOPE.md @khaledaltheeb
+
+# Internationalization, bidi, accessibility, and public API surfaces.
+/src/ @khaledaltheeb
+/styles/ @khaledaltheeb
+/locales/ @khaledaltheeb
+/tests/ @khaledaltheeb
