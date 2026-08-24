@@ -13,7 +13,7 @@ export function formatNumberParts(
   value: NumberFormatInput,
   locale: string,
   options?: Intl.NumberFormatOptions,
-): Intl.NumberFormatPart[] {
+): ReturnType<Intl.NumberFormat['formatToParts']> {
   return new Intl.NumberFormat(locale, options).formatToParts(value);
 }
 
@@ -35,7 +35,7 @@ export function formatDateParts(
   value: DateFormatInput,
   locale: string,
   options?: Intl.DateTimeFormatOptions,
-): Intl.DateTimeFormatPart[] {
+): ReturnType<Intl.DateTimeFormat['formatToParts']> {
   return new Intl.DateTimeFormat(locale, options).formatToParts(parseDate(value));
 }
 
@@ -51,7 +51,7 @@ export function formatListParts(
   values: readonly string[],
   locale: string,
   options?: Intl.ListFormatOptions,
-): Intl.ListFormatPart[] {
+): ReturnType<Intl.ListFormat['formatToParts']> {
   return new Intl.ListFormat(locale, options).formatToParts(values);
 }
 
@@ -69,6 +69,6 @@ export function formatRelativeTimeParts(
   unit: Intl.RelativeTimeFormatUnit,
   locale: string,
   options: Intl.RelativeTimeFormatOptions = { numeric: 'auto' },
-): Intl.RelativeTimeFormatPart[] {
+): ReturnType<Intl.RelativeTimeFormat['formatToParts']> {
   return new Intl.RelativeTimeFormat(locale, options).formatToParts(value, unit);
 }
