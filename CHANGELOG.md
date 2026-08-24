@@ -7,13 +7,17 @@ All notable changes to this project are documented here. The project follows Sem
 ### Added
 
 - Grapheme-safe segmentation, length, slicing, and truncation helpers built on `Intl.Segmenter`.
+- Locale-aware word and sentence segmentation, including host-provided `isWordLike` metadata and a word-only convenience API.
 - Pseudo-localization utilities for localization/layout QA while preserving common interpolation and markup tokens.
 - Runtime locale capability introspection for direction, effective script/region, calendars, numbering systems, and hour cycles when exposed by ECMA-402.
+- `Intl.PluralRules` helpers for cardinal/ordinal category selection, resolved-options inspection, and runtime-gated plural range selection.
+- `Intl.DisplayNames` helpers for standardized locale-sensitive names of supported language/script/region/currency/calendar/date-time-field codes.
+- Structured `formatToParts` wrappers for numbers, dates, lists, and relative time for component-level and bidi-aware rendering.
 - Unicode display-risk diagnostics covering bidi controls/overrides, unbalanced isolates, zero-width characters, and mixed-script identifiers without claiming full UTS #39 confusable detection.
 - RTL-aware roving-focus and roving-tabindex state helpers with disabled-item handling for composite widgets.
 - `docs/GLOBAL-PLATFORM.md` defining the integrated global engineering layer, standards posture, and non-claims.
 - `docs/INTEROPERABILITY.md` defining framework-neutral integration boundaries, localization workflow, Unicode policy signals, and browser evidence.
-- Cross-module unit coverage for the new global platform capabilities.
+- Cross-module unit coverage for the global platform capabilities, including Arabic plural categories and locale-sensitive segmentation/formatting.
 - Expanded built-package browser fixture covering mixed-direction forms, breadcrumb navigation, tabular identifiers/numbers, RTL composite tabs, pseudo-localization, grapheme-safe truncation, and Unicode display-risk output.
 - Browser assertions that RTL roving focus skips disabled items and that the expanded fixture remains free of horizontal document overflow.
 
@@ -27,9 +31,10 @@ All notable changes to this project are documented here. The project follows Sem
 - Added repository ownership metadata and clarified first-publication readiness requirements.
 - Defined the canonical project identity: the platform name is Rawafid (روافد), the official production website is `https://healthrenewal.org/`, and this GitHub repository is the separate open-source source-code home for the toolkit.
 - Pointed npm package homepage metadata to the official Rawafid website while preserving GitHub as the canonical repository and issue tracker.
-- Expanded the public API surface with reusable Unicode, localization QA, locale metadata, grapheme, and composite-widget interaction primitives while retaining zero runtime dependencies.
+- Expanded the public API surface with reusable Unicode, localization QA, locale metadata, segmentation, pluralization, structured formatting, display-name, grapheme, and composite-widget interaction primitives while retaining zero runtime dependencies.
 - Reworked the README into a capability map and integration guide for the broader global platform surface.
 - Advanced the roadmap to reflect completed grapheme, pseudo-localization, Unicode diagnostics, locale-capability, roving-focus, and mixed-direction fixture work instead of listing it as future scope.
+- Strengthened `docs/API-CONTRACT.md` with explicit host-ICU/CLDR variability contracts for segmentation, plural rules, display names, and formatter parts.
 
 ### Fixed
 
