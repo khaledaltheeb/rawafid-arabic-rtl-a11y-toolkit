@@ -15,6 +15,7 @@ export * from './text/segment';
 export * from './text/unicode-security';
 export * from './a11y/keyboard';
 export * from './a11y/roving-focus';
+export * from './a11y/selection';
 export * from './a11y/focus';
 export * from './a11y/live-region';
 export * from './ui/pagination';
