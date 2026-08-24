@@ -68,7 +68,8 @@
     "check:core": "npm run scope:check && npm run supply-chain:check && npm run catalogs:check && npm run lint && npm run typecheck && npm run test",
     "package:lint": "npm run build && publint",
     "package:types": "npm run build && attw --pack . --profile esm-only --entrypoints .",
-    "check": "npm run check:core && npm run package:lint && npm run package:types",
+    "package:contract": "npm run build && node scripts/check-package-contract.mjs",
+    "check": "npm run check:core && npm run package:lint && npm run package:types && npm run package:contract",
     "prepack": "npm run build",
     "scope:check": "node scripts/scope-guard.mjs",
     "supply-chain:check": "node scripts/check-action-pins.mjs"
