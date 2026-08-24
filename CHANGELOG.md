@@ -4,6 +4,16 @@ All notable changes to this project are documented here. The project follows Sem
 
 ## [Unreleased]
 
+### Added
+
+- Grapheme-safe segmentation, length, slicing, and truncation helpers built on `Intl.Segmenter`.
+- Pseudo-localization utilities for localization/layout QA while preserving common interpolation and markup tokens.
+- Runtime locale capability introspection for direction, effective script/region, calendars, numbering systems, and hour cycles when exposed by ECMA-402.
+- Unicode display-risk diagnostics covering bidi controls/overrides, unbalanced isolates, zero-width characters, and mixed-script identifiers without claiming full UTS #39 confusable detection.
+- RTL-aware roving-focus and roving-tabindex state helpers with disabled-item handling for composite widgets.
+- `docs/GLOBAL-PLATFORM.md` defining the integrated global engineering layer, standards posture, and non-claims.
+- Cross-module unit coverage for the new global platform capabilities.
+
 ### Changed
 
 - Hardened the repository's release and dependency-management posture after live GitHub Actions validation.
@@ -14,6 +24,7 @@ All notable changes to this project are documented here. The project follows Sem
 - Added repository ownership metadata and clarified first-publication readiness requirements.
 - Defined the canonical project identity: the platform name is Rawafid (روافد), the official production website is `https://healthrenewal.org/`, and this GitHub repository is the separate open-source source-code home for the toolkit.
 - Pointed npm package homepage metadata to the official Rawafid website while preserving GitHub as the canonical repository and issue tracker.
+- Expanded the public API surface with reusable Unicode, localization QA, locale metadata, grapheme, and composite-widget interaction primitives while retaining zero runtime dependencies.
 
 ### Fixed
 
