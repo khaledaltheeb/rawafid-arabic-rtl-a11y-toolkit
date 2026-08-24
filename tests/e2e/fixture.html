@@ -8,34 +8,162 @@
   <link rel="stylesheet" href="/styles/logical.css">
   <style>
     * { box-sizing: border-box; }
-    body { font-family: system-ui, sans-serif; margin: 2rem; }
-    .row { display: flex; gap: 1rem; align-items: center; }
+    body { font-family: system-ui, sans-serif; margin: 2rem; line-height: 1.6; }
+    main { max-inline-size: 64rem; margin-inline: auto; }
+    section { margin-block: 2rem; }
+    .row { display: flex; flex-wrap: wrap; gap: 1rem; align-items: center; }
+    .stack { display: grid; gap: .75rem; }
     .logical-box { position: relative; inline-size: min(20rem, 100%); block-size: 3rem; }
     .logical-probe { position: absolute; inset-inline-start: 16px; inline-size: 1rem; block-size: 1rem; }
+    .field { display: grid; gap: .25rem; max-inline-size: 28rem; }
+    input { inline-size: 100%; padding: .5rem; }
+    table { border-collapse: collapse; inline-size: 100%; }
+    th, td { border: 1px solid currentColor; padding: .5rem; text-align: start; }
+    .composite { display: flex; flex-wrap: wrap; gap: .5rem; }
+    .composite button[aria-selected="true"] { font-weight: 700; }
+    code, output { overflow-wrap: anywhere; }
   </style>
 </head>
 <body>
   <a class="rawafid-skip-link rawafid-focus-ring" href="#main">تجاوز إلى المحتوى</a>
-  <header><h1>اختبار واجهة عربية</h1></header>
+  <header><h1>اختبار واجهة عربية عالمية</h1></header>
   <main id="main" tabindex="-1">
-    <p>نص عربي مع <bdi>support@example.org</bdi> ومحتوى إنجليزي.</p>
-    <p id="script-direction"></p>
-    <nav aria-label="التنقل بين الصفحات" class="row">
-      <a class="rawafid-focus-ring" href="?page=1" aria-current="page">١</a>
-      <a class="rawafid-focus-ring" href="?page=2" rel="next">٢</a>
-    </nav>
-    <button id="announce" class="rawafid-focus-ring" type="button">أعلن حالة الحفظ</button>
-    <div class="logical-box" aria-hidden="true"><span class="logical-probe"></span></div>
+    <section aria-labelledby="direction-heading">
+      <h2 id="direction-heading">الاتجاه والنص المختلط</h2>
+      <p>نص عربي مع <bdi>support@example.org</bdi> ومحتوى English و<strong>2026</strong>.</p>
+      <p id="script-direction"></p>
+      <div class="logical-box" aria-hidden="true"><span class="logical-probe"></span></div>
+    </section>
+
+    <section aria-labelledby="breadcrumb-heading">
+      <h2 id="breadcrumb-heading">مسار تنقل مختلط</h2>
+      <nav aria-label="مسار الصفحة">
+        <ol class="row">
+          <li><a href="#home">الرئيسية</a></li>
+          <li><a href="#docs">التوثيق</a></li>
+          <li aria-current="page"><bdi>API v2</bdi></li>
+        </ol>
+      </nav>
+    </section>
+
+    <section aria-labelledby="form-heading">
+      <h2 id="form-heading">نموذج ثنائي الاتجاه</h2>
+      <form class="stack">
+        <label class="field" for="display-name">
+          <span>الاسم المعروض</span>
+          <input id="display-name" name="displayName" value="روافد Rawafid" autocomplete="name">
+        </label>
+        <label class="field" for="email">
+          <span>البريد الإلكتروني</span>
+          <input id="email" name="email" type="email" dir="ltr" value="support@example.org" autocomplete="email">
+        </label>
+      </form>
+    </section>
+
+    <section aria-labelledby="table-heading">
+      <h2 id="table-heading">جدول بيانات مختلط</h2>
+      <div tabindex="0" role="region" aria-label="نتائج قابلة للتمرير">
+        <table>
+          <thead><tr><th scope="col">اللغة</th><th scope="col">المعرف</th><th scope="col">القيمة</th></tr></thead>
+          <tbody>
+            <tr><td>العربية</td><td><bdi>ar-JO</bdi></td><td>١٢٬٥٠٠</td></tr>
+            <tr><td>English</td><td><bdi>en-GB</bdi></td><td><bdi>12,500</bdi></td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <section aria-labelledby="composite-heading">
+      <h2 id="composite-heading">تنقل مركب RTL</h2>
+      <div id="locale-tabs" class="composite" role="tablist" aria-label="اختيار اللغة">
+        <button id="tab-ar" role="tab" aria-selected="true" aria-controls="panel-locale" tabindex="0" type="button">العربية</button>
+        <button id="tab-en" role="tab" aria-selected="false" aria-controls="panel-locale" tabindex="-1" type="button">English</button>
+        <button id="tab-disabled" role="tab" aria-selected="false" aria-controls="panel-locale" tabindex="-1" type="button" disabled>غير متاح</button>
+        <button id="tab-fa" role="tab" aria-selected="false" aria-controls="panel-locale" tabindex="-1" type="button">فارسی</button>
+      </div>
+      <div id="panel-locale" role="tabpanel" tabindex="0" aria-labelledby="tab-ar">العربية</div>
+    </section>
+
+    <section aria-labelledby="qa-heading">
+      <h2 id="qa-heading">أدوات ضمان الجودة</h2>
+      <dl>
+        <dt>Grapheme-safe</dt><dd><output id="grapheme-output"></output></dd>
+        <dt>Pseudo-localization</dt><dd><output id="pseudo-output"></output></dd>
+        <dt>Unicode risk</dt><dd><output id="unicode-risk"></output></dd>
+      </dl>
+    </section>
+
+    <section aria-labelledby="pagination-heading">
+      <h2 id="pagination-heading">التنقل والإعلانات</h2>
+      <nav aria-label="التنقل بين الصفحات" class="row">
+        <a class="rawafid-focus-ring" href="?page=1" aria-current="page">١</a>
+        <a class="rawafid-focus-ring" href="?page=2" rel="next">٢</a>
+      </nav>
+      <button id="announce" class="rawafid-focus-ring" type="button">أعلن حالة الحفظ</button>
+    </section>
   </main>
   <script type="module">
-    import { announce, getLocaleDirection } from '/dist/index.js';
+    import {
+      announce,
+      diagnoseUnicodeDisplay,
+      getLocaleDirection,
+      nextRovingFocusIndex,
+      pseudoLocalize,
+      rovingTabIndexes,
+      truncateGraphemes,
+    } from '/dist/index.js';
 
     const output = document.querySelector('#script-direction');
     output.textContent = `ar-Latn: ${getLocaleDirection('ar-Latn')}`;
     output.dataset.direction = getLocaleDirection('ar-Latn');
 
+    document.querySelector('#grapheme-output').textContent = truncateGraphemes('A👨‍👩‍👧‍👦ب', 2);
+    document.querySelector('#pseudo-output').textContent = pseudoLocalize('Hello {name}', { expansionRatio: 0.35 });
+    document.querySelector('#unicode-risk').textContent = diagnoseUnicodeDisplay('abcمرحبا').risks.join(',');
+
     document.querySelector('#announce').addEventListener('click', () => {
       announce('تم حفظ الإعدادات', { clearAfterMs: 2000 });
+    });
+
+    const tablist = document.querySelector('#locale-tabs');
+    const tabs = [...tablist.querySelectorAll('[role="tab"]')];
+    const disabled = tabs.map((tab) => tab.disabled);
+    let activeIndex = 0;
+
+    function applyActive(nextIndex) {
+      if (nextIndex < 0 || nextIndex === activeIndex) return;
+      activeIndex = nextIndex;
+      const tabIndexes = rovingTabIndexes(activeIndex, tabs.length, disabled);
+      tabs.forEach((tab, index) => {
+        const selected = index === activeIndex;
+        tab.tabIndex = tabIndexes[index];
+        tab.setAttribute('aria-selected', String(selected));
+      });
+      const active = tabs[activeIndex];
+      document.querySelector('#panel-locale').textContent = active.textContent;
+      document.querySelector('#panel-locale').setAttribute('aria-labelledby', active.id);
+      active.focus();
+    }
+
+    tablist.addEventListener('keydown', (event) => {
+      const index = tabs.indexOf(document.activeElement);
+      if (index < 0) return;
+      const next = nextRovingFocusIndex(index, tabs.length, event.key, {
+        direction: 'rtl',
+        orientation: 'horizontal',
+        loop: true,
+        disabled,
+      });
+      if (next !== index) {
+        event.preventDefault();
+        applyActive(next);
+      }
+    });
+
+    tabs.forEach((tab, index) => {
+      tab.addEventListener('click', () => {
+        if (!tab.disabled) applyActive(index);
+      });
     });
   </script>
 </body>
