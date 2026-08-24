@@ -67,6 +67,37 @@ test('roving tab interaction follows RTL arrows and skips disabled tabs', async 
   await expect(english).toBeFocused();
 });
 
+test('typeahead executes from the built package and moves focus by locale-aware label prefix', async ({ page }) => {
+  const arabic = page.getByRole('tab', { name: 'العربية' });
+  const english = page.getByRole('tab', { name: 'English' });
+  const buffer = page.locator('#typeahead-buffer');
+  await arabic.focus();
+  await page.keyboard.press('E');
+  await expect(english).toBeFocused();
+  await expect(english).toHaveAttribute('aria-selected', 'true');
+  await expect(buffer).toHaveText('E');
+});
+
+test('typeahead does not consume modified shortcuts or composition keystrokes', async ({ page }) => {
+  const arabic = page.getByRole('tab', { name: 'العربية' });
+  const buffer = page.locator('#typeahead-buffer');
+  await arabic.focus();
+
+  await page.keyboard.press('Control+E');
+  await expect(arabic).toBeFocused();
+  await expect(buffer).toHaveText('');
+
+  await arabic.dispatchEvent('keydown', {
+    key: 'ف',
+    code: 'KeyF',
+    isComposing: true,
+    bubbles: true,
+    cancelable: true,
+  });
+  await expect(arabic).toBeFocused();
+  await expect(buffer).toHaveText('');
+});
+
 test('QA helpers execute from the built browser package', async ({ page }) => {
   await expect(page.locator('#grapheme-output')).toHaveText('A…');
   await expect(page.locator('#pseudo-output')).toContainText('{name}');
