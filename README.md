@@ -4,7 +4,7 @@
 [![CI](https://github.com/khaledaltheeb/rawafid-arabic-rtl-a11y-toolkit/actions/workflows/ci.yml/badge.svg)](https://github.com/khaledaltheeb/rawafid-arabic-rtl-a11y-toolkit/actions/workflows/ci.yml)
 [![OpenSSF Scorecard](https://api.scorecard.dev/projects/github.com/khaledaltheeb/rawafid-arabic-rtl-a11y-toolkit/badge)](https://scorecard.dev/viewer/?uri=github.com/khaledaltheeb/rawafid-arabic-rtl-a11y-toolkit)
 
-A framework-agnostic, zero-runtime-dependency TypeScript engineering toolkit for Arabic and bidirectional web applications: script-aware direction, Unicode bidi safety, localization primitives, grapheme-safe text, pseudo-localization, locale capability inspection, accessibility interaction state, logical CSS, Unicode display-risk diagnostics, and real-browser RTL verification.
+A framework-agnostic, zero-runtime-dependency TypeScript engineering toolkit for Arabic and bidirectional web applications: script-aware direction, Unicode bidi safety, locale negotiation, pluralization, structured formatting, locale-sensitive segmentation, display names, grapheme-safe text, pseudo-localization, locale capability inspection, accessibility interaction state, logical CSS, Unicode display-risk diagnostics, and real-browser RTL verification.
 
 ## Rawafid identity
 
@@ -18,7 +18,7 @@ See [docs/PROJECT-IDENTITY.md](./docs/PROJECT-IDENTITY.md) for the canonical ide
 
 ## Engineering position
 
-Arabic support is not a mirror transform. Correct multilingual RTL software requires explicit language/direction metadata, isolation of mixed-direction values, script-aware locale handling, logical layout properties, direction-aware interaction models, Unicode-safe string boundaries, locale-sensitive formatting, accessibility semantics, and browser-level verification.
+Arabic support is not a mirror transform. Correct multilingual RTL software requires explicit language/direction metadata, isolation of mixed-direction values, script-aware locale handling, logical layout properties, direction-aware interaction models, Unicode-safe string boundaries, locale-sensitive formatting and plural rules, accessibility semantics, and browser-level verification.
 
 The toolkit keeps those concerns separate enough to reuse and integrated enough to test as one engineering layer.
 
@@ -32,7 +32,7 @@ The project tracks web-platform standards rather than inventing Rawafid-specific
 - Unicode Bidirectional Algorithm concepts and Unicode 17-era script handling.
 - Unicode security concepts for defensive diagnostics, without claiming full UTS #39 confusable conformance.
 - BCP 47 locale tags through `Intl.Locale`.
-- ECMA-402 / platform `Intl` APIs for locale data, segmentation, formatting, and collation.
+- ECMA-402 / platform `Intl` APIs for locale data, segmentation, pluralization, display names, formatting, and collation.
 - CSS logical properties for direction-independent layout.
 
 Alignment with standards does **not** constitute automatic WCAG conformance, security certification, or linguistic correctness for every locale. See [docs/STANDARDS.md](./docs/STANDARDS.md) and [docs/GLOBAL-PLATFORM.md](./docs/GLOBAL-PLATFORM.md).
@@ -53,7 +53,11 @@ Alignment with standards does **not** constitute automatic WCAG conformance, sec
 - Locale canonicalization through platform `Intl`.
 - Script-safe locale negotiation: `az-Arab` does not silently fall back to `az-Latn`.
 - Deterministic locale fallback chains.
-- `Intl` wrappers for numbers, dates, lists, relative time, sorting, and search collation.
+- Number, date, list, relative-time, sorting, and search-collation wrappers.
+- Structured `formatToParts` APIs for numbers, dates, lists, and relative time so localized output can be rendered semantically without English-centric parsing.
+- `Intl.PluralRules` category selection for cardinal and ordinal behavior, including Arabic's richer category system.
+- Runtime-gated plural-range category selection through the native platform capability.
+- `Intl.DisplayNames` wrappers for standardized locale-sensitive names of supported languages, scripts, regions, currencies, calendars, and fields.
 - Translation catalog QA for key parity, placeholder parity, empty messages, and legacy bidi controls.
 - Runtime locale capability inspection for effective script/region/direction and platform-exposed calendars, numbering systems, and hour cycles.
 - Pseudo-localization for clipping, expansion, token-preservation, and layout QA.
@@ -63,6 +67,8 @@ Alignment with standards does **not** constitute automatic WCAG conformance, sec
 - Arabic-script detection and Unicode-property-based combining-mark handling.
 - Conservative Arabic search/display normalization without aggressive letter conflation.
 - Grapheme-safe segmentation, length, slicing, and truncation via `Intl.Segmenter`.
+- Locale-sensitive word segmentation with `isWordLike` metadata and word-only extraction.
+- Locale-sensitive sentence segmentation without claiming semantic or grammatical parsing.
 - Locale-aware highlight segmentation that returns structured text rather than HTML.
 - Unicode display-risk diagnostics for bidi controls/overrides, isolate imbalance, selected zero-width characters, and mixed recognized scripts.
 
@@ -77,7 +83,7 @@ Alignment with standards does **not** constitute automatic WCAG conformance, sec
 
 ### Verification and supply chain
 
-- Vitest unit suite.
+- Vitest unit suite, including Arabic plural and multilingual segmentation coverage.
 - Playwright matrix: Chromium, Firefox, WebKit, and mobile Chromium.
 - Controlled mixed-direction browser fixture with forms, breadcrumb, table, composite tabs, live regions, and QA helpers.
 - axe-core automated accessibility regression checks.
@@ -104,15 +110,17 @@ Before publication, clone the repository and build it locally.
 ```ts
 import {
   bidiIsolate,
-  createArabicSearchKey,
   diagnoseUnicodeDisplay,
   dirAttributes,
-  formatNumber,
+  formatDisplayName,
+  formatNumberParts,
   getLocaleCapabilities,
   nextRovingFocusIndex,
   pseudoLocalize,
   selectBestLocale,
+  selectPluralCategory,
   truncateGraphemes,
+  words,
 } from '@rawafid/arabic-rtl-a11y-toolkit';
 
 const root = dirAttributes('ar-JO');
@@ -122,15 +130,20 @@ const transliteratedArabic = dirAttributes('ar-Latn');
 // { lang: 'ar-Latn', dir: 'ltr' }
 
 const isolatedAccount = bidiIsolate('support@example.org');
-const total = formatNumber(12500, 'ar-JO');
-const searchKey = createArabicSearchKey('إِلَى المدرسة');
-
 const locale = selectBestLocale(['az-Arab'], ['az-Latn', 'en'], 'en');
 // 'en' — same-language fallback never crosses script boundaries silently.
 
 const capabilities = getLocaleCapabilities('ar-JO');
 const clipped = truncateGraphemes('A👨‍👩‍👧‍👦ب', 2);
 // 'A…' — the family emoji is never split.
+
+const arabicWords = words('مرحبا بالعالم، أهلاً بك.', 'ar');
+const plural = selectPluralCategory(3, 'ar');
+// 'few' with the runtime's Arabic plural data.
+
+const languageName = formatDisplayName('ar', 'en', { type: 'language' });
+const numberParts = formatNumberParts(12500.5, 'ar-JO');
+// Structured localized parts can be rendered without reparsing formatted text.
 
 const pseudo = pseudoLocalize('Hello {name}');
 // Keeps {name} intact while transforming/expanding surrounding test copy.
@@ -159,10 +172,12 @@ CSS utilities are separate entry points:
 4. Give intrinsically LTR editable values an explicit `dir="ltr"` where appropriate.
 5. Prefer CSS logical properties to `left`/`right` assumptions.
 6. Keep DOM order, reading order, visual order, and focus order coherent.
-7. Mirror only icons whose meaning is genuinely directional.
-8. Treat Unicode diagnostics as policy signals, not proof of safety or maliciousness.
-9. Treat roving-focus functions as state helpers; consuming components still own semantic HTML, ARIA, focus calls, labels, and pattern-specific behavior.
-10. Treat pseudo-localization as QA output, never as human translation.
+7. Preserve `formatToParts()` order; never reconstruct localized output from English separator/order assumptions.
+8. Branch on plural categories returned by `Intl.PluralRules`, not hand-written per-language arithmetic in application code.
+9. Mirror only icons whose meaning is genuinely directional.
+10. Treat Unicode diagnostics as policy signals, not proof of safety or maliciousness.
+11. Treat roving-focus functions as state helpers; consuming components still own semantic HTML, ARIA, focus calls, labels, and pattern-specific behavior.
+12. Treat pseudo-localization as QA output, never as human translation.
 
 See [docs/INTEROPERABILITY.md](./docs/INTEROPERABILITY.md) for framework and application-boundary guidance.
 
