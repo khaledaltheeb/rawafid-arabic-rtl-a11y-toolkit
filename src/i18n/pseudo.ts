@@ -8,7 +8,7 @@ const ACCENT_MAP: Readonly<Record<string, string>> = Object.freeze({
 });
 
 const TOKEN = /(\{[^{}]+\}|%\d*\$?[a-zA-Z]|<[^<>]+>|&[A-Za-z0-9#]+;)/gu;
-const VOWEL = /[aeiouAEIOU]/u;
+const LETTER_OR_NUMBER = /[\p{Letter}\p{Number}]/u;
 
 export type PseudoLocalizeOptions = {
   expansionRatio?: number;
@@ -19,11 +19,17 @@ export type PseudoLocalizeOptions = {
 
 function transformChunk(chunk: string, expansionRatio: number): string {
   let result = '';
+  let expansionCredit = 0;
+
   for (const char of chunk) {
     const mapped = ACCENT_MAP[char] ?? char;
     result += mapped;
-    if (VOWEL.test(char) && expansionRatio > 0) {
-      result += mapped.repeat(Math.floor(expansionRatio));
+    if (!LETTER_OR_NUMBER.test(char) || expansionRatio === 0) continue;
+
+    expansionCredit += expansionRatio;
+    while (expansionCredit >= 1) {
+      result += mapped;
+      expansionCredit -= 1;
     }
   }
   return result;
