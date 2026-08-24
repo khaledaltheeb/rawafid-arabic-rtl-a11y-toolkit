@@ -34,31 +34,8 @@ jobs:
           package-manager-cache: false
       - name: Pin npm toolchain
         run: npm install --global npm@11.17.0 --no-audit --no-fund
-      - name: Detect committed lockfile
-        id: lockfile
-        shell: bash
-        run: |
-          if [[ -f package-lock.json ]]; then
-            echo "present=true" >> "$GITHUB_OUTPUT"
-          else
-            echo "present=false" >> "$GITHUB_OUTPUT"
-          fi
-      - name: Install dependencies
-        shell: bash
-        run: |
-          if [[ -f package-lock.json ]]; then
-            npm ci --no-audit --no-fund
-          else
-            npm install --no-audit --no-fund
-          fi
-      - name: Upload bootstrap lockfile
-        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
-        if: matrix.node == 24 && steps.lockfile.outputs.present == 'false'
-        with:
-          name: package-lock-bootstrap
-          path: package-lock.json
-          retention-days: 7
-          if-no-files-found: error
+      - name: Install dependencies deterministically
+        run: npm ci --no-audit --no-fund
       - name: Verify
         run: npm run check
 
@@ -78,14 +55,8 @@ jobs:
           package-manager-cache: false
       - name: Pin npm toolchain
         run: npm install --global npm@11.17.0 --no-audit --no-fund
-      - name: Install dependencies
-        shell: bash
-        run: |
-          if [[ -f package-lock.json ]]; then
-            npm ci --no-audit --no-fund
-          else
-            npm install --no-audit --no-fund
-          fi
+      - name: Install dependencies deterministically
+        run: npm ci --no-audit --no-fund
       - name: Install Playwright browsers
         run: npx playwright install --with-deps chromium firefox webkit
       - name: Browser tests
@@ -98,43 +69,3 @@ jobs:
           path: playwright-report/
           retention-days: 14
           if-no-files-found: ignore
-
-  bootstrap-lockfile:
-    name: One-time lockfile bootstrap
-    if: >-
-      github.event_name == 'pull_request' &&
-      github.repository == 'khaledaltheeb/rawafid-arabic-rtl-a11y-toolkit' &&
-      github.event.pull_request.head.repo.full_name == github.repository &&
-      github.event.pull_request.head.ref == 'chore/verify-ci-and-community-health'
-    runs-on: ubuntu-latest
-    timeout-minutes: 10
-    permissions:
-      contents: write
-    steps:
-      - name: Checkout trusted head branch
-        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-        with:
-          ref: chore/verify-ci-and-community-health
-          persist-credentials: true
-      - name: Setup Node
-        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
-        with:
-          node-version: 24
-          package-manager-cache: false
-      - name: Pin npm toolchain
-        run: npm install --global npm@11.17.0 --no-audit --no-fund
-      - name: Commit generated lockfile if absent
-        shell: bash
-        run: |
-          if [[ -f package-lock.json ]]; then
-            echo "Lockfile already committed; nothing to bootstrap."
-            exit 0
-          fi
-          npm install --package-lock-only --ignore-scripts --no-audit --no-fund
-          npm ci --ignore-scripts --no-audit --no-fund
-          git config user.name "github-actions[bot]"
-          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add package-lock.json
-          git diff --cached --exit-code && { echo "No lockfile change produced."; exit 1; }
-          git commit -m "build: lock development dependencies"
-          git push origin HEAD:chore/verify-ci-and-community-health
