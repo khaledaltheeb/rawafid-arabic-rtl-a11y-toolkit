@@ -39,13 +39,37 @@ Internal modules not exported from `src/index.ts` are not public API.
 
 `supportsLocale(locale, constructors)` reports whether the requested locale is supported by the selected built-in `Intl` constructors. It does not guarantee that every locale-sensitive API or every desired calendar/numbering-system extension is available.
 
+## Segmentation contract
+
+`segmentGraphemes`, `graphemeLength`, `sliceGraphemes`, and `truncateGraphemes` operate through `Intl.Segmenter` grapheme boundaries. This prevents common UTF-16 slicing errors involving combining marks and emoji sequences. Exact segmentation follows the running platform's Unicode/ICU implementation.
+
+`segmentWords(value, locale)` returns every locale-sensitive word-boundary segment and carries the runtime-provided `isWordLike` signal. `words()` is the convenience form that returns only word-like segments. Punctuation and whitespace are not considered word-like when the host marks them otherwise.
+
+`segmentSentences(value, locale)` returns locale-sensitive sentence-boundary segments. Sentence segmentation is a Unicode/platform boundary service, not semantic or linguistic parsing. Applications must not infer meaning, reading level, authorship, or grammatical correctness from these boundaries.
+
+## Plural rules contract
+
+`selectPluralCategory(value, locale, options)` delegates cardinal/ordinal plural category selection to `Intl.PluralRules`. It rejects non-finite numeric values. Arabic can therefore expose categories such as `zero`, `one`, `two`, `few`, `many`, and `other` according to the host's locale data.
+
+`selectPluralRangeCategory(start, end, locale, options)` uses `Intl.PluralRules.prototype.selectRange` when the runtime provides it and fails explicitly when that capability is unavailable. It does not synthesize a range category from endpoint categories.
+
+`resolvePluralRules()` exposes the runtime-resolved options for auditing. Consumers should branch on plural categories, not hard-code language-specific arithmetic rules in application code.
+
+## Display-name contract
+
+`formatDisplayName` and `formatDisplayNames` delegate standardized code naming to `Intl.DisplayNames`. They support the code types exposed by the host/type baseline, such as languages, regions, scripts, currencies, calendars, and date-time fields. When `fallback: 'none'` is requested, a missing name may produce `undefined`.
+
+Translated display names are locale data, not package-owned copy. Their exact spelling, punctuation, capitalization, or terminology may change with ICU/CLDR updates without a SemVer change in this toolkit.
+
+## Structured formatting contract
+
+`formatNumberParts`, `formatDateParts`, `formatListParts`, and `formatRelativeTimeParts` expose the corresponding `Intl.*.formatToParts()` structures. These APIs are preferred when an application needs semantic styling, direction isolation, annotation, or component rendering around localized pieces.
+
+Consumers must preserve the emitted part order and must not rebuild localized output using English-centric assumptions about separators, signs, currencies, list conjunctions, or date ordering.
+
 ## Pseudo-localization contract
 
 `pseudoLocalize` is a localization QA utility, not translation. By default it decorates/accent-transforms human-readable copy while preserving common `{placeholder}`, printf-style, HTML-like tag, and entity tokens. Consumers should use invented/test content and should not treat pseudo-localized strings as natural-language output.
-
-## Grapheme contract
-
-`segmentGraphemes`, `graphemeLength`, `sliceGraphemes`, and `truncateGraphemes` operate through `Intl.Segmenter` grapheme boundaries. This prevents common UTF-16 slicing errors involving combining marks and emoji sequences. Exact segmentation follows the running platform's Unicode/ICU implementation.
 
 ## Unicode display-risk contract
 
@@ -85,8 +109,8 @@ DOM utilities are safe to import in SSR/non-DOM environments. Functions requirin
 
 ## Error contract
 
-Programmer-state errors such as invalid pagination ranges, invalid keyboard indices, invalid grapheme truncation lengths, or invalid roving-focus indices throw `RangeError`. Invalid locale direction input uses the documented fallback behavior. Date formatting rejects invalid date values.
+Programmer-state errors such as invalid pagination ranges, invalid keyboard indices, invalid grapheme truncation lengths, invalid roving-focus indices, invalid dates, and non-finite plural values throw `RangeError` where documented. Invalid locale direction input uses the documented fallback behavior. Unsupported optional runtime capabilities fail explicitly rather than silently emulating standards behavior.
 
-## Formatting variability
+## Formatting and locale-data variability
 
-`Intl` output is platform data. Changes in browser/runtime ICU and CLDR versions may legitimately alter punctuation, digits, spacing, names, segmentation, or formatting conventions without a toolkit code change. Consumers should avoid asserting byte-for-byte localized output when the exact wording is not part of their own product contract.
+`Intl` output and segmentation are platform data. Changes in browser/runtime ICU, Unicode, and CLDR versions may legitimately alter punctuation, digits, spacing, names, segment boundaries, plural behavior for corrected locale data, or formatting conventions without a toolkit code change. Consumers should avoid asserting byte-for-byte localized output when the exact wording is not part of their own product contract.
