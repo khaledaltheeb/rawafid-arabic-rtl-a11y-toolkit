@@ -4,11 +4,28 @@ All notable changes to this project are documented here. The project follows Sem
 
 ## [Unreleased]
 
-### Planned
+### Changed
 
-- Generate and commit the npm lockfile from a networked maintainer environment.
-- Enable npm Trusted Publisher after the public GitHub repository exists.
-- Add provider-backed cross-browser infrastructure only after acceptance into an OSS program.
+- Hardened the repository's release and dependency-management posture after live GitHub Actions validation.
+- Added a committed npm lockfile and switched CI/Docker/GitLab verification paths to deterministic installs.
+- Standardized the CI npm toolchain across Node 22, 24, and 26.
+- Preserved Node 22 as the TypeScript API baseline while retaining runtime CI coverage on Node 22/24/26.
+- Updated CodeQL Actions to 4.37.8 after a fully green PR validation cycle.
+- Added repository ownership metadata and clarified first-publication readiness requirements.
+
+### Fixed
+
+- ESLint Node globals for `.mjs` tooling files.
+- Playwright configuration under `exactOptionalPropertyTypes`.
+- Package type-resolution validation so CSS export subpaths do not create false JavaScript resolution failures.
+- Dependency Review behavior when GitHub Dependency Graph has not yet been enabled at repository level.
+
+### Remaining external setup
+
+- Enable GitHub Dependency Graph and the desired repository security features in repository settings.
+- Configure npm Trusted Publishing for `.github/workflows/release.yml` and the GitHub `npm` environment before the first npm publication.
+- Add repository topics and branch/ruleset protections in GitHub settings.
+- Add provider-backed infrastructure only after legitimate acceptance into an applicable OSS program.
 
 ## [0.2.0] - 2026-08-24
 
