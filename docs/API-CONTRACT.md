@@ -35,7 +35,9 @@ Internal modules not exported from `src/index.ts` are not public API.
 
 `selectBestLocale` never silently crosses effective script boundaries during same-language fallback. Default locale selection remains explicit.
 
-`getLocaleCapabilities(locale)` returns canonical language/script/region/direction and uses runtime ECMA-402 locale-info methods or equivalent accessors when available. Calendars, numbering systems, and hour cycles may therefore be empty on engines that do not expose those APIs. The function does not fabricate CLDR metadata.
+`getLocaleCapabilities(locale)` returns canonical language/script/region/direction and uses runtime ECMA-402 locale-info methods or equivalent accessors when available. Calendars, numbering systems, hour cycles, collations, time zones, and week information may therefore be empty or absent on engines that do not expose those APIs. The function does not fabricate CLDR metadata.
+
+`supportedIntlValues(kind)` exposes standardized runtime-supported values through `Intl.supportedValuesOf` when available. It fails explicitly when the runtime lacks that API rather than maintaining a private registry.
 
 `supportsLocale(locale, constructors)` reports whether the requested locale is supported by the selected built-in `Intl` constructors. It does not guarantee that every locale-sensitive API or every desired calendar/numbering-system extension is available.
 
@@ -103,14 +105,24 @@ It does not map `ة` to `ه`, and it does not collapse other distinct Arabic let
 
 `nextRovingFocusIndex` skips disabled items and respects horizontal RTL/LTR direction, vertical orientation, Home/End, and optional looping. `rovingTabIndexes` emits a single-tab-stop model for enabled items. The consuming application remains responsible for focus calls, semantic HTML, labels, states, roles, and pattern-specific interaction behavior.
 
+`findTypeaheadMatch(items, query, options)` performs locale-sensitive prefix matching over enabled item labels using `Intl.Collator` search semantics and grapheme-safe prefix boundaries. It returns an index only; it does not move DOM focus, change selection, assign roles, or decide whether a particular widget pattern should implement typeahead.
+
+`updateTypeaheadBuffer(previous, input, timestamp, timeoutMs)` is deterministic buffer-state logic. The caller owns event filtering, the actual timer, composition/IME handling, focus management, and pattern-specific behavior. Keeping those concerns outside the helper prevents hidden timers and browser-global side effects.
+
 ## Accessibility DOM contract
 
 DOM utilities are safe to import in SSR/non-DOM environments. Functions requiring a document either accept one or degrade to a no-op where appropriate. Importing the package must not read `document` eagerly.
 
+## Built package contract
+
+`npm run package:contract` builds the distributable package, imports the real `dist/index.js` in a non-DOM Node environment, validates the root JavaScript/declaration export mapping, verifies required CSS/package subpaths, checks representative public exports, and executes selected runtime invariants.
+
+This gate exists in addition to source tests, `publint`, and Are The Types Wrong because a valid source tree can still produce a broken package through export-map drift, missing generated declarations, eager DOM access, or bundling mistakes.
+
 ## Error contract
 
-Programmer-state errors such as invalid pagination ranges, invalid keyboard indices, invalid grapheme truncation lengths, invalid roving-focus indices, invalid dates, and non-finite plural values throw `RangeError` where documented. Invalid locale direction input uses the documented fallback behavior. Unsupported optional runtime capabilities fail explicitly rather than silently emulating standards behavior.
+Programmer-state errors such as invalid pagination ranges, invalid keyboard indices, invalid grapheme truncation lengths, invalid roving-focus/typeahead indices, invalid dates, non-finite timestamps, and non-finite plural values throw `RangeError` where documented. Invalid locale direction input uses the documented fallback behavior. Unsupported optional runtime capabilities fail explicitly rather than silently emulating standards behavior.
 
 ## Formatting and locale-data variability
 
-`Intl` output and segmentation are platform data. Changes in browser/runtime ICU, Unicode, and CLDR versions may legitimately alter punctuation, digits, spacing, names, segment boundaries, plural behavior for corrected locale data, or formatting conventions without a toolkit code change. Consumers should avoid asserting byte-for-byte localized output when the exact wording is not part of their own product contract.
+`Intl` output and segmentation are platform data. Changes in browser/runtime ICU, Unicode, and CLDR versions may legitimately alter punctuation, digits, spacing, names, segment boundaries, plural behavior for corrected locale data, search collation behavior, week metadata, supported-value lists, or formatting conventions without a toolkit code change. Consumers should avoid asserting byte-for-byte localized output when the exact wording is not part of their own product contract.
