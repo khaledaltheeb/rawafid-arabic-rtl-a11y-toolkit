@@ -10,12 +10,12 @@ verify:
   stage: verify
   image: node:24-bookworm-slim
   script:
-    - if [ -f package-lock.json ]; then npm ci; else npm install; fi
+    - npm ci
     - npm run check
 
 rtl-a11y:
   stage: browser
   image: mcr.microsoft.com/playwright:v1.62.1-noble
   script:
-    - if [ -f package-lock.json ]; then npm ci; else npm install; fi
+    - npm ci
     - npm run test:e2e
