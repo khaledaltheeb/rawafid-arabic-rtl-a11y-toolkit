@@ -4,7 +4,7 @@
 [![CI](https://github.com/khaledaltheeb/rawafid-arabic-rtl-a11y-toolkit/actions/workflows/ci.yml/badge.svg)](https://github.com/khaledaltheeb/rawafid-arabic-rtl-a11y-toolkit/actions/workflows/ci.yml)
 [![OpenSSF Scorecard](https://api.scorecard.dev/projects/github.com/khaledaltheeb/rawafid-arabic-rtl-a11y-toolkit/badge)](https://scorecard.dev/viewer/?uri=github.com/khaledaltheeb/rawafid-arabic-rtl-a11y-toolkit)
 
-A framework-agnostic, zero-runtime-dependency TypeScript engineering toolkit for Arabic and bidirectional web applications: script-aware direction, Unicode bidi safety, locale negotiation, pluralization, structured formatting, locale-sensitive segmentation, display names, grapheme-safe text, pseudo-localization, locale capability inspection, accessibility interaction state, logical CSS, Unicode display-risk diagnostics, and real-browser RTL verification.
+A framework-agnostic, zero-runtime-dependency TypeScript engineering toolkit for Arabic and bidirectional web applications: script-aware direction, Unicode bidi safety, locale negotiation, pluralization, structured formatting, locale-sensitive segmentation, display names, grapheme-safe text, pseudo-localization, locale capability inspection, locale-aware typeahead, composite selection state, direction-aware grid navigation, logical CSS, Unicode display-risk diagnostics, and real-browser RTL verification.
 
 ## Rawafid identity
 
@@ -59,7 +59,8 @@ Alignment with standards does **not** constitute automatic WCAG conformance, sec
 - Runtime-gated plural-range category selection through the native platform capability.
 - `Intl.DisplayNames` wrappers for standardized locale-sensitive names of supported languages, scripts, regions, currencies, calendars, and fields.
 - Translation catalog QA for key parity, placeholder parity, empty messages, and legacy bidi controls.
-- Runtime locale capability inspection for effective script/region/direction and platform-exposed calendars, numbering systems, and hour cycles.
+- Runtime locale capability inspection for effective script/region/direction and platform-exposed calendars, numbering systems, hour cycles, collations, time zones, and week information.
+- Runtime-supported-value discovery through `Intl.supportedValuesOf` without vendoring private locale registries.
 - Pseudo-localization for clipping, expansion, token-preservation, and layout QA.
 
 ### Unicode and Arabic text
@@ -76,6 +77,10 @@ Alignment with standards does **not** constitute automatic WCAG conformance, sec
 
 - RTL-aware horizontal and vertical keyboard navigation.
 - Roving-focus/roving-tabindex state with disabled-item handling.
+- Locale-aware composite typeahead using `Intl.Collator` search semantics and grapheme-safe prefix boundaries.
+- Deterministic typeahead-buffer state with host-owned timing, shortcut, and IME/composition policy.
+- Explicit single/multiple/range selection state with active focus kept independent from selected state.
+- Direction-aware rectangular grid navigation with RTL physical arrows, Home/End, Control+Home/End, paging, and explicit layout-grid wrapping.
 - Focus discovery/restoration with hidden/inert subtree handling.
 - SSR-safe ARIA live-region announcements.
 - Direction-neutral pagination state models.
@@ -83,10 +88,11 @@ Alignment with standards does **not** constitute automatic WCAG conformance, sec
 
 ### Verification and supply chain
 
-- Vitest unit suite, including Arabic plural and multilingual segmentation coverage.
+- Vitest unit suite, including Arabic plural, multilingual segmentation, typeahead, selection, and RTL/LTR grid coverage.
 - Playwright matrix: Chromium, Firefox, WebKit, and mobile Chromium.
-- Controlled mixed-direction browser fixture with forms, breadcrumb, table, composite tabs, live regions, and QA helpers.
-- axe-core automated accessibility regression checks.
+- Controlled mixed-direction browser fixture with forms, breadcrumb, table, composite tabs, locale-aware typeahead, semantic RTL grid, live regions, and QA helpers.
+- axe-core automated accessibility regression checks over the complete controlled fixture.
+- Built-package contract that imports real `dist/index.js` in non-DOM Node and executes direction, typeahead, selection, and RTL grid invariants.
 - GitHub Actions tests on Node 22, 24, and 26.
 - CodeQL, Dependency Review, and OpenSSF Scorecard workflows.
 - GitHub Actions pinned to full commit SHAs.
@@ -112,10 +118,13 @@ import {
   bidiIsolate,
   diagnoseUnicodeDisplay,
   dirAttributes,
+  findTypeaheadMatch,
   formatDisplayName,
   formatNumberParts,
   getLocaleCapabilities,
+  nextGridIndex,
   nextRovingFocusIndex,
+  normalizeSelection,
   pseudoLocalize,
   selectBestLocale,
   selectPluralCategory,
@@ -146,15 +155,25 @@ const numberParts = formatNumberParts(12500.5, 'ar-JO');
 // Structured localized parts can be rendered without reparsing formatted text.
 
 const pseudo = pseudoLocalize('Hello {name}');
-// Keeps {name} intact while transforming/expanding surrounding test copy.
-
 const diagnostic = diagnoseUnicodeDisplay('abcمرحبا');
-// Includes 'mixed-script' as a review signal, not a malware verdict.
 
 const nextTab = nextRovingFocusIndex(2, 5, 'ArrowRight', {
   direction: 'rtl',
   disabled: [false, true, false, false, false],
 });
+
+const match = findTypeaheadMatch(
+  [{ label: 'العربية' }, { label: 'English' }],
+  'E',
+  { locale: 'en' },
+);
+// 1
+
+const selection = normalizeSelection(4, 0, [2], 'single');
+// activeIndex stays 0 while selected remains [2].
+
+const nextCell = nextGridIndex(4, 3, 3, 'ArrowLeft', { direction: 'rtl' });
+// 5 — physical left moves to the next logical column in RTL.
 ```
 
 CSS utilities are separate entry points:
@@ -176,10 +195,12 @@ CSS utilities are separate entry points:
 8. Branch on plural categories returned by `Intl.PluralRules`, not hand-written per-language arithmetic in application code.
 9. Mirror only icons whose meaning is genuinely directional.
 10. Treat Unicode diagnostics as policy signals, not proof of safety or maliciousness.
-11. Treat roving-focus functions as state helpers; consuming components still own semantic HTML, ARIA, focus calls, labels, and pattern-specific behavior.
-12. Treat pseudo-localization as QA output, never as human translation.
+11. Treat movement, typeahead, and selection primitives as state calculations; the consuming component still owns semantic HTML/ARIA, focus calls, event filtering, editing, labels, and pattern-specific behavior.
+12. Keep active/focus state separate from selected state unless the product deliberately chooses selection-follows-focus.
+13. Keep data-grid row wrapping off by default; enable wrapping only for a layout-grid interaction model where it is intentional.
+14. Treat pseudo-localization as QA output, never as human translation.
 
-See [docs/INTEROPERABILITY.md](./docs/INTEROPERABILITY.md) for framework and application-boundary guidance.
+See [docs/INTEROPERABILITY.md](./docs/INTEROPERABILITY.md) and [docs/COMPOSITE-INTERACTIONS.md](./docs/COMPOSITE-INTERACTIONS.md) for framework and interaction-boundary guidance.
 
 ## Development
 
@@ -204,6 +225,7 @@ The package has zero runtime dependencies. Development dependencies are exact-ve
 | Static quality | ESLint + strict TypeScript |
 | Logic | Vitest |
 | Package shape | tsdown + publint + Are The Types Wrong |
+| Built package behavior | `npm run package:contract` |
 | Browsers | Playwright: Chromium / Firefox / WebKit / mobile |
 | Automated accessibility | axe-core |
 | Security analysis | CodeQL + Dependency Review |
@@ -224,6 +246,9 @@ Bidi controls, Unicode format characters, localization files, dependency changes
 
 - [docs/GLOBAL-PLATFORM.md](./docs/GLOBAL-PLATFORM.md)
 - [docs/API-CONTRACT.md](./docs/API-CONTRACT.md)
+- [docs/COMPOSITE-INTERACTIONS.md](./docs/COMPOSITE-INTERACTIONS.md)
+- [docs/SELECTION-MODELS.md](./docs/SELECTION-MODELS.md)
+- [docs/GRID-NAVIGATION.md](./docs/GRID-NAVIGATION.md)
 - [docs/INTEROPERABILITY.md](./docs/INTEROPERABILITY.md)
 - [docs/COMPATIBILITY.md](./docs/COMPATIBILITY.md)
 - [docs/ARCHITECTURE.md](./docs/ARCHITECTURE.md)
