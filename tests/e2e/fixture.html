@@ -21,6 +21,8 @@
     th, td { border: 1px solid currentColor; padding: .5rem; text-align: start; }
     .composite { display: flex; flex-wrap: wrap; gap: .5rem; }
     .composite button[aria-selected="true"] { font-weight: 700; }
+    .grid-fixture { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: .5rem; max-inline-size: 36rem; }
+    .grid-fixture [role="gridcell"] { border: 1px solid currentColor; padding: .75rem; min-inline-size: 0; }
     code, output { overflow-wrap: anywhere; }
   </style>
 </head>
@@ -86,6 +88,23 @@
       <output id="typeahead-buffer" aria-label="مخزن البحث السريع"></output>
     </section>
 
+    <section aria-labelledby="grid-heading">
+      <h2 id="grid-heading">شبكة RTL تفاعلية</h2>
+      <p id="grid-help">استخدم مفاتيح الأسهم وHome وEnd للتنقل بين الخلايا.</p>
+      <div id="rtl-grid" class="grid-fixture" role="grid" aria-label="شبكة لغات" aria-describedby="grid-help" aria-rowcount="2" aria-colcount="3">
+        <div role="row">
+          <div id="grid-0" role="gridcell" tabindex="0">العربية</div>
+          <div id="grid-1" role="gridcell" tabindex="-1">English</div>
+          <div id="grid-2" role="gridcell" tabindex="-1">فارسی</div>
+        </div>
+        <div role="row">
+          <div id="grid-3" role="gridcell" tabindex="-1">اردو</div>
+          <div id="grid-4" role="gridcell" tabindex="-1">עברית</div>
+          <div id="grid-5" role="gridcell" tabindex="-1">Français</div>
+        </div>
+      </div>
+    </section>
+
     <section aria-labelledby="qa-heading">
       <h2 id="qa-heading">أدوات ضمان الجودة</h2>
       <dl>
@@ -110,6 +129,7 @@
       diagnoseUnicodeDisplay,
       findTypeaheadMatch,
       getLocaleDirection,
+      nextGridIndex,
       nextRovingFocusIndex,
       pseudoLocalize,
       rovingTabIndexes,
@@ -189,6 +209,33 @@
       tab.addEventListener('click', () => {
         if (!tab.disabled) applyActive(index);
       });
+    });
+
+    const grid = document.querySelector('#rtl-grid');
+    const gridCells = [...grid.querySelectorAll('[role="gridcell"]')];
+    let gridIndexValue = 0;
+
+    function applyGridFocus(nextIndex) {
+      if (nextIndex === gridIndexValue) return;
+      gridIndexValue = nextIndex;
+      gridCells.forEach((cell, index) => {
+        cell.tabIndex = index === gridIndexValue ? 0 : -1;
+      });
+      gridCells[gridIndexValue].focus();
+    }
+
+    grid.addEventListener('keydown', (event) => {
+      const index = gridCells.indexOf(document.activeElement);
+      if (index < 0) return;
+      const next = nextGridIndex(index, 2, 3, event.key, {
+        direction: 'rtl',
+        ctrlKey: event.ctrlKey,
+        pageRows: 1,
+      });
+      if (next !== index) {
+        event.preventDefault();
+        applyGridFocus(next);
+      }
     });
   </script>
 </body>
