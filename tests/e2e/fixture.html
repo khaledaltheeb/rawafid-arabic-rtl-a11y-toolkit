@@ -21,7 +21,8 @@
     th, td { border: 1px solid currentColor; padding: .5rem; text-align: start; }
     .composite { display: flex; flex-wrap: wrap; gap: .5rem; }
     .composite button[aria-selected="true"] { font-weight: 700; }
-    .grid-fixture { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: .5rem; max-inline-size: 36rem; }
+    .grid-fixture { display: grid; gap: .5rem; max-inline-size: 36rem; }
+    .grid-fixture [role="row"] { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: .5rem; }
     .grid-fixture [role="gridcell"] { border: 1px solid currentColor; padding: .75rem; min-inline-size: 0; }
     code, output { overflow-wrap: anywhere; }
   </style>
