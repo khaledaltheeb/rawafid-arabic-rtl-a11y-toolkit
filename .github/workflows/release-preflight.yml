@@ -64,6 +64,8 @@ jobs:
           TARBALL: ${{ steps.pack.outputs.tarball }}
           TARBALL_INTEGRITY: ${{ steps.pack.outputs.integrity }}
         run: |
+          resolved_commit="$(git rev-parse HEAD)"
+          export RESOLVED_COMMIT="$resolved_commit"
           node <<'NODE'
           const fs = require('fs');
           const pkg = require('./package.json');
@@ -72,7 +74,7 @@ jobs:
             kind: 'rawafid-release-preflight',
             package: { name: pkg.name, version: pkg.version },
             requestedRef: process.env.PREFLIGHT_REF,
-            resolvedCommit: process.env.GITHUB_SHA,
+            resolvedCommit: process.env.RESOLVED_COMMIT,
             tarball: process.env.TARBALL,
             tarballIntegrity: process.env.TARBALL_INTEGRITY,
             sbom: 'sbom.spdx.json',
