@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
   "suite": "rawafid-partner-interoperability-v1",
-  "purpose": "Vendor-neutral browser, accessibility, Arabic/RTL, bidi, localized-input, reflow, visual-reference, and Unicode-risk evidence for external testing and research integrations.",
+  "purpose": "Vendor-neutral browser, accessibility-environment, Arabic/RTL, bidi, localized-input, reflow, visual-reference, and Unicode-risk evidence for external testing and research integrations.",
   "runner": "Playwright Test",
   "projects": [
     "chromium-desktop",
@@ -17,6 +17,10 @@
     {
       "path": "tests/e2e/conformance-lab.spec.ts",
       "domains": ["standards", "dir-auto", "dirname", "wcag-2.2", "reflow", "target-size"]
+    },
+    {
+      "path": "tests/e2e/accessibility-environments.spec.ts",
+      "domains": ["accessibility-environment", "forced-colors", "focus-visible", "reduced-motion"]
     },
     {
       "path": "tests/e2e/visual-reference.spec.ts",
@@ -47,7 +51,7 @@
   "nonClaims": [
     "Passing the controlled suite is not a WCAG certification.",
     "Passing the suite does not prove linguistic correctness for every locale.",
-    "Passing the suite does not establish universal correctness on browsers or assistive technologies outside the tested matrix.",
+    "Passing the suite does not establish universal correctness on browsers, operating-system accessibility themes, or assistive technologies outside the tested matrix.",
     "The Unicode risk corpus does not claim UAX #9 or UTS #39 conformance and is not a maliciousness-verdict dataset.",
     "Provider-specific execution is not claimed until a provider integration is configured and observed."
   ]

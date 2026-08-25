@@ -56,6 +56,24 @@
       "fixture": "tests/e2e/conformance-lab.html",
       "scope": "browser",
       "nonClaim": "This is a controlled regression case and does not establish WCAG 1.4.12 conformance for every typography system, language, script, component, or consuming application."
+    },
+    {
+      "id": "wcag-focus-visible-forced-colors-controlled",
+      "title": "Controlled focus indicator remains explicit in a forced-colors environment",
+      "source": "https://www.w3.org/WAI/WCAG22/Techniques/general/G195",
+      "test": "tests/e2e/accessibility-environments.spec.ts",
+      "fixture": "tests/e2e/conformance-lab.html",
+      "scope": "browser-environment",
+      "nonClaim": "This verifies one controlled focus-ring implementation under emulated forced colors; it is not a complete contrast audit of downstream interfaces or operating-system themes."
+    },
+    {
+      "id": "reduced-motion-controlled",
+      "title": "Toolkit motion-respect utility collapses authored animation and transition durations when reduced motion is requested",
+      "source": "https://www.w3.org/WAI/WCAG22/Understanding/animation-from-interactions.html",
+      "test": "tests/e2e/accessibility-environments.spec.ts",
+      "fixture": "tests/e2e/conformance-lab.html",
+      "scope": "browser-environment",
+      "nonClaim": "This verifies the toolkit utility and controlled fixture; it does not establish that every consuming product removes all non-essential motion."
     }
   ]
 }
