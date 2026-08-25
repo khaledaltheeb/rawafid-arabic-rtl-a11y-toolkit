@@ -63,8 +63,17 @@ jobs:
         run: npx playwright install --with-deps chromium firefox webkit
       - name: Browser tests
         run: npm run test:e2e
+      - name: Build static public review artifact
+        run: npm run site:build
       - name: Validate partner evidence summary
         run: node scripts/validate-partner-evidence-summary.mjs partner-results/evidence-summary.json
+      - name: Upload public review lab artifact
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
+        with:
+          name: public-review-lab-static
+          path: review-site/
+          retention-days: 30
+          if-no-files-found: error
       - name: Upload partner interoperability evidence
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
         if: always()
