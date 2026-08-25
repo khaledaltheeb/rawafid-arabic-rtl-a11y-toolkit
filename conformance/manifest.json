@@ -1,0 +1,43 @@
+{
+  "schemaVersion": 1,
+  "project": "Rawafid Arabic/RTL Accessibility & Localization Toolkit",
+  "reviewedAt": "2026-08-25",
+  "claims": [
+    {
+      "id": "w3c-i18n-dir-auto",
+      "title": "Unknown-direction content resolves through HTML dir=auto semantics",
+      "source": "https://www.w3.org/International/questions/qa-html-dir",
+      "test": "tests/e2e/conformance-lab.spec.ts",
+      "fixture": "tests/e2e/conformance-lab.html",
+      "scope": "browser",
+      "nonClaim": "This verifies the controlled fixture and browser behavior; it does not prove every consuming application applies direction metadata correctly."
+    },
+    {
+      "id": "html-dirname-submission",
+      "title": "Form submission preserves textarea direction through dirname",
+      "source": "https://html.spec.whatwg.org/multipage/form-control-infrastructure.html#attr-fe-dirname",
+      "test": "tests/e2e/conformance-lab.spec.ts",
+      "fixture": "tests/e2e/conformance-lab.html",
+      "scope": "browser",
+      "nonClaim": "The toolkit does not infer server trust or sanitize arbitrary form values."
+    },
+    {
+      "id": "wcag22-target-size-minimum-controlled",
+      "title": "Controlled conformance controls meet the 24 by 24 CSS pixel target-size floor",
+      "source": "https://www.w3.org/WAI/WCAG22/Understanding/target-size-minimum.html",
+      "test": "tests/e2e/conformance-lab.spec.ts",
+      "fixture": "tests/e2e/conformance-lab.html",
+      "scope": "browser",
+      "nonClaim": "This is regression evidence for the fixture, not a WCAG conformance certification for downstream products."
+    },
+    {
+      "id": "wcag22-reflow-320-controlled",
+      "title": "Controlled conformance fixture reflows at a 320 CSS pixel viewport without horizontal page overflow",
+      "source": "https://www.w3.org/WAI/WCAG22/Understanding/reflow.html",
+      "test": "tests/e2e/conformance-lab.spec.ts",
+      "fixture": "tests/e2e/conformance-lab.html",
+      "scope": "browser",
+      "nonClaim": "This is a targeted reflow invariant and does not establish complete WCAG 1.4.10 conformance for arbitrary content or applications."
+    }
+  ]
+}
