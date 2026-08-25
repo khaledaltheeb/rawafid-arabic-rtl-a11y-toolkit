@@ -32,17 +32,26 @@ Completed or in active verification:
 
 Remaining in this phase:
 
-- Additional dialog/disclosure/menu/grid reference fixtures where the generic behavior can be modeled without pretending to own application semantics.
+- Additional dialog/disclosure/menu reference fixtures where the generic behavior can be modeled without pretending to own application semantics.
 - Stable RTL/LTR comparison fixtures suitable for visual-regression providers.
 - Translation-service workflow examples only after a legitimate provider integration is available.
 - Optional BrowserStack/TestMu CI adapters only after program approval and without embedding provider credentials.
 
-## 0.4 - Internationalization depth
+## 0.4 - Internationalization depth (in progress)
 
-- Word/sentence segmentation helpers where platform support is sufficient and behavior can be specified clearly.
-- Plural-category and display-name helpers with explicit ECMA-402 variability contracts.
-- Expanded locale-negotiation property tests and locale-extension cases.
-- Additional script-direction conformance fixtures, including mixed-script identifiers and newly standardized scripts.
+Completed:
+
+- Locale-aware word and sentence segmentation helpers on `Intl.Segmenter` with explicit host-runtime boundaries.
+- Plural-category and display-name helpers with ECMA-402 variability contracts.
+- Structured number/date/list/relative-time `formatToParts` wrappers.
+- Runtime-derived localized decimal-input parsing, including locale digits, separators, signs, grouping validation, and bidi literals.
+- Decimal digit-system interoperability for Latin, Arabic-Indic, and Extended Arabic-Indic digits without destructive punctuation normalization.
+- Cross-module tests spanning Arabic plural behavior, segmentation, locale capabilities, digit systems, localized-number roundtrips, and script-safe locale behavior.
+
+Remaining:
+
+- Deeper locale-extension and fallback property tests where behavior can be specified independently of ICU/CLDR version details.
+- Additional script-direction conformance fixtures, including mixed-script identifiers and newly standardized scripts as platform support evolves.
 - Optional Unicode security data integration only if licensing, update automation, package size, and conformance claims can be handled correctly.
 
 ## 0.5 - Optional adapters and reference packages
@@ -58,6 +67,7 @@ Remaining in this phase:
 - Reproducible release artifacts and SBOM history.
 - Issue/PR templates exercised by real external contributions.
 - Provider-backed OSS infrastructure only where eligibility is verified.
+- Maintain an evidence-backed OSS application dossier whose provider criteria are re-checked before submissions.
 - Public compatibility evidence spanning supported Node and browser generations.
 - Documented deprecation/migration process exercised before 1.0.
 
