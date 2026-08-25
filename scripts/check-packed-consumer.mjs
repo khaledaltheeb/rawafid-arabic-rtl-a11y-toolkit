@@ -6,6 +6,7 @@ import { join, resolve } from 'node:path';
 const root = process.cwd();
 const npm = process.platform === 'win32' ? 'npm.cmd' : 'npm';
 const tsc = resolve(root, 'node_modules', '.bin', process.platform === 'win32' ? 'tsc.cmd' : 'tsc');
+const sourcePackage = JSON.parse(await readFile(join(root, 'package.json'), 'utf8'));
 const tempRoot = await mkdtemp(join(tmpdir(), 'rawafid-consumer-'));
 const packDir = join(tempRoot, 'pack');
 const consumerDir = join(tempRoot, 'consumer');
@@ -29,20 +30,17 @@ try {
 
   execFileSync(
     npm,
-    ['install', '--ignore-scripts', '--no-audit', '--no-fund', tarball],
+    ['install', '--ignore-scripts', '--no-audit', '--no-fund', '--package-lock=false', tarball],
     { cwd: consumerDir, encoding: 'utf8', stdio: ['ignore', 'pipe', 'pipe'] },
   );
 
-  const installedPackagePath = join(
-    consumerDir,
-    'node_modules',
-    '@rawafid',
-    'arabic-rtl-a11y-toolkit',
-    'package.json',
-  );
+  const installedPackageRoot = join(consumerDir, 'node_modules', '@rawafid', 'arabic-rtl-a11y-toolkit');
+  const installedPackagePath = join(installedPackageRoot, 'package.json');
   const installed = JSON.parse(await readFile(installedPackagePath, 'utf8'));
-  if (installed.name !== '@rawafid/arabic-rtl-a11y-toolkit') throw new Error('Installed package name mismatch.');
-  if (installed.version !== '0.2.0') throw new Error(`Installed package version mismatch: ${installed.version}`);
+  if (installed.name !== sourcePackage.name) throw new Error('Installed package name mismatch.');
+  if (installed.version !== sourcePackage.version) {
+    throw new Error(`Installed package version mismatch: ${installed.version} !== ${sourcePackage.version}`);
+  }
 
   await writeFile(join(consumerDir, 'smoke.mjs'), `
 import {
@@ -54,6 +52,11 @@ import {
 if (getLocaleDirection('ar-JO') !== 'rtl') throw new Error('consumer direction contract failed');
 if (normalizeDigitsForSearch('نسخة ٢٥ / ۲۶') !== 'نسخة 25 / 26') throw new Error('consumer digit contract failed');
 if (nextGridIndex(4, 3, 3, 'ArrowLeft', { direction: 'rtl' }) !== 5) throw new Error('consumer grid contract failed');
+
+const logicalCss = import.meta.resolve('@rawafid/arabic-rtl-a11y-toolkit/styles/logical.css');
+const a11yCss = import.meta.resolve('@rawafid/arabic-rtl-a11y-toolkit/styles/a11y.css');
+if (!logicalCss.endsWith('/styles/logical.css')) throw new Error('logical CSS export subpath failed');
+if (!a11yCss.endsWith('/styles/a11y.css')) throw new Error('a11y CSS export subpath failed');
 `);
 
   execFileSync(process.execPath, ['smoke.mjs'], {
@@ -69,11 +72,12 @@ import {
   getLocaleCapabilities,
   normalizeSelection,
   type DecimalDigitSystem,
+  type DigitSystemReport,
   type SelectionState,
 } from '@rawafid/arabic-rtl-a11y-toolkit';
 
 const system: DecimalDigitSystem = 'arabext';
-const report = detectDigitSystems('۱۲۳');
+const report: DigitSystemReport = detectDigitSystems('۱۲۳');
 const capabilities = getLocaleCapabilities('ar-JO');
 const match: number = findTypeaheadMatch([{ label: 'الإصدار ٢٥' }], 'الإصدار 25', { locale: 'ar' });
 const selection: SelectionState = normalizeSelection(3, 0, [2], 'single');
@@ -87,6 +91,7 @@ void [system, report, capabilities, match, selection];
       '--strict',
       '--exactOptionalPropertyTypes',
       '--noUncheckedIndexedAccess',
+      '--skipLibCheck', 'false',
       '--module', 'NodeNext',
       '--moduleResolution', 'NodeNext',
       '--target', 'ES2022',
@@ -95,7 +100,7 @@ void [system, report, capabilities, match, selection];
     { cwd: consumerDir, encoding: 'utf8', stdio: ['ignore', 'pipe', 'pipe'] },
   );
 
-  console.log('Packed consumer verification passed for runtime import and strict TypeScript consumption.');
+  console.log('Packed consumer verification passed: tarball install, package-name runtime import, CSS export resolution, and strict TypeScript consumption.');
 } finally {
   await rm(tempRoot, { recursive: true, force: true });
 }
