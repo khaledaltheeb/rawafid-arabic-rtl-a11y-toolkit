@@ -1,0 +1,48 @@
+{
+  "schemaVersion": 1,
+  "title": "Rawafid numbering-system interoperability corpus",
+  "scope": "Independently authored Unicode locale-extension vectors for decimal formatting/parsing interoperability. Expected numbering systems are explicit in each locale tag so the corpus does not depend on mutable CLDR default-numbering preferences.",
+  "basis": [
+    "Unicode LDML Part 3: Numbers",
+    "ECMAScript Internationalization API / Intl.Locale and Intl.NumberFormat"
+  ],
+  "value": 1234567.5,
+  "cases": [
+    {
+      "id": "arabic-arabic-indic",
+      "locale": "ar-EG-u-nu-arab",
+      "expectedNumberingSystem": "arab",
+      "digitAcceptance": "locale-and-latn"
+    },
+    {
+      "id": "arabic-western-digits",
+      "locale": "ar-EG-u-nu-latn",
+      "expectedNumberingSystem": "latn",
+      "digitAcceptance": "locale-and-latn"
+    },
+    {
+      "id": "persian-eastern-arabic-indic",
+      "locale": "fa-IR-u-nu-arabext",
+      "expectedNumberingSystem": "arabext",
+      "digitAcceptance": "arabic-flex"
+    },
+    {
+      "id": "persian-western-digits",
+      "locale": "fa-IR-u-nu-latn",
+      "expectedNumberingSystem": "latn",
+      "digitAcceptance": "arabic-flex"
+    },
+    {
+      "id": "urdu-western-digits",
+      "locale": "ur-PK-u-nu-latn",
+      "expectedNumberingSystem": "latn",
+      "digitAcceptance": "locale-and-latn"
+    },
+    {
+      "id": "english-arabic-indic",
+      "locale": "en-US-u-nu-arab",
+      "expectedNumberingSystem": "arab",
+      "digitAcceptance": "arabic-flex"
+    }
+  ]
+}
