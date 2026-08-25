@@ -1,4 +1,4 @@
-# Self-triggered once to validate the current main before the first public release.
+# Trusted-main validation trigger for the public release and registry publication chain.
 name: Release preflight
 
 on:
