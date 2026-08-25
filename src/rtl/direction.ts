@@ -59,7 +59,7 @@ function explicitScriptFromCanonicalLocale(canonical: string): string | undefine
   const subtags = canonical.split('-');
   for (let index = 1; index < subtags.length; index += 1) {
     const subtag = subtags[index];
-    if (CANONICAL_SCRIPT_SUBTAG.test(subtag)) return subtag;
+    if (subtag && CANONICAL_SCRIPT_SUBTAG.test(subtag)) return subtag;
   }
   return undefined;
 }
