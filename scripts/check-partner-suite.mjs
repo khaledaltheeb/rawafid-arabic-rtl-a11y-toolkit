@@ -18,15 +18,27 @@ if (!Array.isArray(manifest.specs) || manifest.specs.length === 0) {
 }
 
 const paths = new Set();
+async function verifyPath(relative, label) {
+  if (paths.has(relative)) throw new Error(`Duplicate partner path: ${relative}`);
+  paths.add(relative);
+  const target = resolve(root, relative);
+  if (!target.startsWith(root)) throw new Error(`${label} path escapes repository: ${relative}`);
+  await access(target, constants.F_OK);
+}
+
 for (const spec of manifest.specs) {
   if (!spec.path || !Array.isArray(spec.domains) || spec.domains.length === 0) {
     throw new Error(`Incomplete partner spec entry: ${JSON.stringify(spec)}`);
   }
-  if (paths.has(spec.path)) throw new Error(`Duplicate partner spec path: ${spec.path}`);
-  paths.add(spec.path);
-  const target = resolve(root, spec.path);
-  if (!target.startsWith(root)) throw new Error(`Partner spec path escapes repository: ${spec.path}`);
-  await access(target, constants.F_OK);
+  await verifyPath(spec.path, 'Partner spec');
+}
+
+if (!Array.isArray(manifest.assets)) throw new Error('Partner suite must declare an assets array');
+for (const asset of manifest.assets) {
+  if (!asset.path || !asset.type || !Array.isArray(asset.domains) || asset.domains.length === 0) {
+    throw new Error(`Incomplete partner asset entry: ${JSON.stringify(asset)}`);
+  }
+  await verifyPath(asset.path, 'Partner asset');
 }
 
 for (const format of ['json', 'junit', 'html']) {
@@ -37,4 +49,4 @@ if (!Array.isArray(manifest.nonClaims) || manifest.nonClaims.length === 0) {
   throw new Error('Partner suite must state non-claim boundaries');
 }
 
-console.log(`Partner interoperability contract passed for ${manifest.specs.length} specs across ${manifest.projects.length} browser projects.`);
+console.log(`Partner interoperability contract passed for ${manifest.specs.length} specs and ${manifest.assets.length} research assets across ${manifest.projects.length} browser projects.`);

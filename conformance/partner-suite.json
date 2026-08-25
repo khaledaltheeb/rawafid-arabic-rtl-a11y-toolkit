@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
   "suite": "rawafid-partner-interoperability-v1",
-  "purpose": "Vendor-neutral browser, accessibility, Arabic/RTL, bidi, localized-input, reflow, and visual-reference evidence for external testing and research integrations.",
+  "purpose": "Vendor-neutral browser, accessibility, Arabic/RTL, bidi, localized-input, reflow, visual-reference, and Unicode-risk evidence for external testing and research integrations.",
   "runner": "Playwright Test",
   "projects": [
     "chromium-desktop",
@@ -31,6 +31,13 @@
       "domains": ["digit-systems", "arabic-indic", "extended-arabic-indic", "search-interoperability"]
     }
   ],
+  "assets": [
+    {
+      "path": "tests/fixtures/unicode-display-risk-corpus.json",
+      "type": "research-corpus",
+      "domains": ["unicode-security", "arabic", "bidi-controls", "mixed-script", "zero-width"]
+    }
+  ],
   "outputs": {
     "json": "partner-results/playwright-results.json",
     "junit": "partner-results/junit.xml",
@@ -40,6 +47,7 @@
     "Passing the controlled suite is not a WCAG certification.",
     "Passing the suite does not prove linguistic correctness for every locale.",
     "Passing the suite does not establish universal correctness on browsers or assistive technologies outside the tested matrix.",
+    "The Unicode risk corpus does not claim UAX #9 or UTS #39 conformance and is not a maliciousness-verdict dataset.",
     "Provider-specific execution is not claimed until a provider integration is configured and observed."
   ]
 }
