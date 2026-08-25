@@ -55,7 +55,7 @@
     "check": "npm run check:core && npm run package:lint && npm run package:types && npm run package:contract && npm run package:artifact && npm run consumer:smoke && npm run build:reproducible && npm run public-api:check && npm run public-types:check",
     "prepack": "npm run build",
     "scope:check": "node scripts/scope-guard.mjs",
-    "supply-chain:check": "node scripts/check-action-pins.mjs"
+    "supply-chain:check": "node scripts/check-action-pins.mjs && node scripts/check-release-policy.mjs"
   },
   "devDependencies": {
     "@arethetypeswrong/cli": "0.18.5",
