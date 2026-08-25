@@ -10,6 +10,7 @@ const builder = path.join(ROOT, 'scripts', 'build-review-site.mjs');
 const tempRoot = await mkdtemp(path.join(ROOT, '.review-site-check-'));
 const first = path.join(tempRoot, 'first');
 const second = path.join(tempRoot, 'second');
+const JSON_SCHEMA_DIALECT = 'https://json-schema.org/draft/2020-12/schema';
 
 function runBuild(output) {
   const result = spawnSync(process.execPath, [builder, output], {
@@ -37,6 +38,33 @@ async function listFiles(directory, prefix = '') {
 
 async function sha256(file) {
   return createHash('sha256').update(await readFile(file)).digest('hex');
+}
+
+function requireSchemaBinding(manifest, schema) {
+  if (schema.$schema !== JSON_SCHEMA_DIALECT) {
+    throw new Error('Packaged review-site contract must use JSON Schema Draft 2020-12.');
+  }
+  if (!Array.isArray(schema.required) || schema.required.length === 0) {
+    throw new Error('Packaged review-site schema must declare required root fields.');
+  }
+  for (const field of schema.required) {
+    if (!(field in manifest)) throw new Error(`Review-site manifest is missing schema-required field: ${field}`);
+  }
+
+  const expectedConstants = [
+    ['schemaVersion', manifest.schemaVersion],
+    ['schema', manifest.schema],
+    ['artifact', manifest.artifact],
+    ['entrypoint', manifest.entrypoint],
+    ['deploymentModel', manifest.deploymentModel],
+  ];
+  for (const [field, actual] of expectedConstants) {
+    const declared = schema.properties?.[field]?.const;
+    if (declared !== actual) throw new Error(`Review-site schema constant mismatch for ${field}.`);
+  }
+  if (schema.properties?.package?.properties?.name?.const !== manifest.package?.name) {
+    throw new Error('Review-site schema package name does not match the manifest package.');
+  }
 }
 
 try {
@@ -68,9 +96,17 @@ try {
   if (
     manifest.entrypoint !== 'review-lab/index.html'
     || manifest.deploymentModel !== 'static-files-subpath-safe'
+    || manifest.schema !== 'schemas/review-site-artifact.schema.json'
   ) {
-    throw new Error('Review-site deployment contract changed unexpectedly.');
+    throw new Error('Review-site deployment or schema contract changed unexpectedly.');
   }
+
+  if (manifest.schema.startsWith('/') || manifest.schema.includes('..')) {
+    throw new Error(`Unsafe review-site schema path: ${manifest.schema}`);
+  }
+  const schemaPath = path.join(first, manifest.schema);
+  const schema = JSON.parse(await readFile(schemaPath, 'utf8'));
+  requireSchemaBinding(manifest, schema);
 
   for (const entry of manifest.files) {
     if (entry.path.startsWith('/') || entry.path.includes('..')) {
@@ -113,7 +149,7 @@ try {
   }
 
   const manifestHash = await sha256(manifestPath);
-  console.log(`Review-site reproducibility gate passed for ${expectedPayload.length} payload files. Manifest SHA-256: ${manifestHash}`);
+  console.log(`Review-site reproducibility and schema gate passed for ${expectedPayload.length} payload files. Manifest SHA-256: ${manifestHash}`);
 } finally {
   await rm(tempRoot, { recursive: true, force: true });
 }
