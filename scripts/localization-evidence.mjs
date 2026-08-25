@@ -21,7 +21,14 @@ const placeholders = (value) => [...String(value).matchAll(/\{([A-Za-z0-9_.-]+)\
 const markupTokens = (value) => [...String(value).matchAll(/<\/?([A-Za-z][A-Za-z0-9:-]*)(?:\s[^<>]*?)?\s*\/?>/gu)]
   .map((match) => match[0].replace(/\s+/gu, ' ').trim()).sort();
 const legacyBidi = /[\u202A-\u202E]/u;
-const zeroWidth = /[\u200B\u200C\u200D\u2060\uFEFF]/u;
+const zeroWidthCodePoints = new Set([0x200b, 0x200c, 0x200d, 0x2060, 0xfeff]);
+function containsZeroWidth(value) {
+  for (const char of String(value)) {
+    const codePoint = char.codePointAt(0);
+    if (codePoint !== undefined && zeroWidthCodePoints.has(codePoint)) return true;
+  }
+  return false;
+}
 function isolatesBalanced(value) {
   let depth = 0;
   for (const char of String(value)) {
@@ -60,7 +67,7 @@ for (const [locale, catalog] of catalogs) {
     }
     if (legacyBidi.test(value)) push('error', 'legacy-bidi-control', locale, key, 'Legacy bidi embedding/override control detected.');
     if (!isolatesBalanced(value)) push('error', 'isolate-balance', locale, key, 'Unicode bidi isolate initiators/terminators are unbalanced.');
-    if (zeroWidth.test(value)) push('info', 'zero-width-context', locale, key, 'Zero-width character present; review context rather than treating it as automatically invalid.');
+    if (containsZeroWidth(value)) push('info', 'zero-width-context', locale, key, 'Zero-width character present; review context rather than treating it as automatically invalid.');
   }
 }
 
