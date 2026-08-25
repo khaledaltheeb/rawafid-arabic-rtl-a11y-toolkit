@@ -13,49 +13,19 @@
   "bugs": {
     "url": "https://github.com/khaledaltheeb/rawafid-arabic-rtl-a11y-toolkit/issues"
   },
-  "keywords": [
-    "arabic",
-    "rtl",
-    "bidi",
-    "unicode",
-    "i18n",
-    "localization",
-    "accessibility",
-    "a11y",
-    "internationalization",
-    "logical-properties",
-    "typescript",
-    "web"
-  ],
-  "files": [
-    "dist",
-    "styles",
-    "README.md",
-    "LICENSE",
-    "NOTICE"
-  ],
-  "sideEffects": [
-    "**/*.css"
-  ],
+  "keywords": ["arabic", "rtl", "bidi", "unicode", "i18n", "localization", "accessibility", "a11y", "internationalization", "logical-properties", "typescript", "web"],
+  "files": ["dist", "styles", "README.md", "LICENSE", "NOTICE"],
+  "sideEffects": ["**/*.css"],
   "exports": {
-    ".": {
-      "types": "./dist/index.d.ts",
-      "import": "./dist/index.js",
-      "default": "./dist/index.js"
-    },
+    ".": {"types": "./dist/index.d.ts", "import": "./dist/index.js", "default": "./dist/index.js"},
     "./styles/logical.css": "./styles/logical.css",
     "./styles/a11y.css": "./styles/a11y.css",
     "./package.json": "./package.json"
   },
   "module": "./dist/index.js",
   "types": "./dist/index.d.ts",
-  "engines": {
-    "node": ">=22"
-  },
-  "publishConfig": {
-    "access": "public",
-    "provenance": true
-  },
+  "engines": {"node": ">=22"},
+  "publishConfig": {"access": "public", "provenance": true},
   "scripts": {
     "build": "tsdown",
     "typecheck": "tsc --noEmit",
@@ -66,10 +36,11 @@
     "test:partner": "playwright test tests/e2e/accessibility.spec.ts tests/e2e/conformance-lab.spec.ts tests/e2e/visual-reference.spec.ts tests/e2e/number-input.spec.ts tests/e2e/digits.spec.ts",
     "lint": "eslint . --max-warnings=0",
     "catalogs:check": "node scripts/validate-catalogs.mjs",
+    "localization:evidence": "node scripts/localization-evidence.mjs",
     "docs:check": "node scripts/check-documentation-contract.mjs",
     "conformance:check": "node scripts/check-conformance-manifest.mjs",
     "partner:check": "node scripts/check-partner-suite.mjs",
-    "check:core": "npm run scope:check && npm run supply-chain:check && npm run catalogs:check && npm run docs:check && npm run conformance:check && npm run partner:check && npm run lint && npm run typecheck && npm run test",
+    "check:core": "npm run scope:check && npm run supply-chain:check && npm run catalogs:check && npm run localization:evidence && npm run docs:check && npm run conformance:check && npm run partner:check && npm run lint && npm run typecheck && npm run test",
     "package:lint": "npm run build && publint",
     "package:types": "npm run build && attw --pack . --profile esm-only --entrypoints .",
     "package:contract": "npm run build && node scripts/check-package-contract.mjs",
