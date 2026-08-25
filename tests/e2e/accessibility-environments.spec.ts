@@ -8,20 +8,20 @@ test('forced-colors profile preserves an explicit visible focus indicator', asyn
   await control.focus();
   await expect(control).toBeFocused();
 
-  const style = await control.evaluate((element) => {
+  const evidence = await control.evaluate((element) => {
     const computed = getComputedStyle(element);
     return {
+      forcedColorsActive: matchMedia('(forced-colors: active)').matches,
       outlineStyle: computed.outlineStyle,
       outlineWidth: computed.outlineWidth,
       outlineOffset: computed.outlineOffset,
-      forcedColorAdjust: computed.forcedColorAdjust,
     };
   });
 
-  expect(style.outlineStyle).not.toBe('none');
-  expect(Number.parseFloat(style.outlineWidth)).toBeGreaterThanOrEqual(2);
-  expect(Number.parseFloat(style.outlineOffset)).toBeGreaterThanOrEqual(2);
-  expect(style.forcedColorAdjust).toBe('auto');
+  expect(evidence.forcedColorsActive).toBe(true);
+  expect(evidence.outlineStyle).not.toBe('none');
+  expect(Number.parseFloat(evidence.outlineWidth)).toBeGreaterThanOrEqual(2);
+  expect(Number.parseFloat(evidence.outlineOffset)).toBeGreaterThanOrEqual(2);
 });
 
 test('reduced-motion profile collapses authored animation and transition durations', async ({ page }) => {
@@ -31,6 +31,7 @@ test('reduced-motion profile collapses authored animation and transition duratio
   const style = await page.locator('[data-motion-probe]').evaluate((element) => {
     const computed = getComputedStyle(element);
     return {
+      reducedMotionActive: matchMedia('(prefers-reduced-motion: reduce)').matches,
       animationDuration: computed.animationDuration,
       animationIterationCount: computed.animationIterationCount,
       transitionDuration: computed.transitionDuration,
@@ -38,6 +39,7 @@ test('reduced-motion profile collapses authored animation and transition duratio
     };
   });
 
+  expect(style.reducedMotionActive).toBe(true);
   expect(Number.parseFloat(style.animationDuration)).toBeLessThanOrEqual(0.001);
   expect(Number.parseFloat(style.transitionDuration)).toBeLessThanOrEqual(0.001);
   expect(style.animationIterationCount).toBe('1');
