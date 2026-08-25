@@ -1,0 +1,96 @@
+name: Release preflight
+
+on:
+  workflow_dispatch:
+    inputs:
+      ref:
+        description: Git ref to validate without publishing
+        required: true
+        default: main
+        type: string
+
+permissions:
+  contents: read
+
+jobs:
+  preflight:
+    name: Build release candidate evidence
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - name: Checkout requested ref
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ inputs.ref }}
+          persist-credentials: false
+      - name: Setup Node
+        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version: 24
+          registry-url: https://registry.npmjs.org
+          package-manager-cache: false
+      - name: Pin npm toolchain
+        run: npm install --global npm@11.17.0 --no-audit --no-fund
+      - name: Require committed lockfile
+        shell: bash
+        run: |
+          test -f package-lock.json || { echo 'Preflight failed: package-lock.json is required.' >&2; exit 1; }
+      - name: Install deterministically
+        run: npm ci --no-audit --no-fund
+      - name: Verify release candidate
+        run: npm run check
+      - name: Inspect package contents
+        run: npm pack --dry-run
+      - name: Build exact release-candidate tarball
+        id: pack
+        shell: bash
+        run: |
+          npm run build
+          npm pack --json --ignore-scripts > npm-pack.json
+          tarball="$(node -e "const fs=require('fs'); const rows=JSON.parse(fs.readFileSync('npm-pack.json','utf8')); if (!Array.isArray(rows) || rows.length !== 1 || typeof rows[0].filename !== 'string') throw new Error('Expected exactly one npm pack artifact'); process.stdout.write(rows[0].filename);")"
+          test -f "$tarball" || { echo "Preflight tarball not found: $tarball" >&2; exit 1; }
+          integrity="sha512-$(openssl dgst -sha512 -binary "$tarball" | openssl base64 -A)"
+          echo "tarball=$tarball" >> "$GITHUB_OUTPUT"
+          echo "integrity=$integrity" >> "$GITHUB_OUTPUT"
+          echo "Built preflight candidate $tarball with $integrity"
+      - name: Generate SPDX SBOM
+        run: npm sbom --sbom-format=spdx --sbom-type=library > sbom.spdx.json
+      - name: Build reproducible public review surface
+        run: npm run site:build
+      - name: Write preflight manifest
+        shell: bash
+        env:
+          PREFLIGHT_REF: ${{ inputs.ref }}
+          TARBALL: ${{ steps.pack.outputs.tarball }}
+          TARBALL_INTEGRITY: ${{ steps.pack.outputs.integrity }}
+        run: |
+          node <<'NODE'
+          const fs = require('fs');
+          const pkg = require('./package.json');
+          const evidence = {
+            schemaVersion: 1,
+            kind: 'rawafid-release-preflight',
+            package: { name: pkg.name, version: pkg.version },
+            requestedRef: process.env.PREFLIGHT_REF,
+            resolvedCommit: process.env.GITHUB_SHA,
+            tarball: process.env.TARBALL,
+            tarballIntegrity: process.env.TARBALL_INTEGRITY,
+            sbom: 'sbom.spdx.json',
+            reviewSiteManifest: 'review-site/artifact-manifest.json',
+            publicationAttempted: false,
+            attestationAttempted: false
+          };
+          fs.writeFileSync('release-preflight.json', `${JSON.stringify(evidence, null, 2)}\n`);
+          NODE
+      - name: Upload preflight evidence
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
+        with:
+          name: release-preflight-evidence
+          path: |
+            ${{ steps.pack.outputs.tarball }}
+            npm-pack.json
+            sbom.spdx.json
+            release-preflight.json
+            review-site/
+          if-no-files-found: error
+          retention-days: 30
