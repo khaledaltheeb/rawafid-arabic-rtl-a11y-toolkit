@@ -1,0 +1,24 @@
+cff-version: 1.2.0
+message: >-
+  If this toolkit supports your research, testing, localization, accessibility,
+  or software engineering work, please cite the project using this metadata.
+title: Rawafid Arabic/RTL Accessibility & Localization Toolkit
+type: software
+authors:
+  - name: Rawafid contributors
+repository-code: https://github.com/khaledaltheeb/rawafid-arabic-rtl-a11y-toolkit
+url: https://healthrenewal.org/
+license: Apache-2.0
+abstract: >-
+  A framework-agnostic TypeScript toolkit for Arabic and bidirectional web
+  interfaces, localization, accessibility interactions, Unicode-safe text,
+  direction-aware UI behavior, and real-browser verification.
+keywords:
+  - Arabic
+  - RTL
+  - bidirectional text
+  - accessibility
+  - internationalization
+  - localization
+  - Unicode
+  - TypeScript
