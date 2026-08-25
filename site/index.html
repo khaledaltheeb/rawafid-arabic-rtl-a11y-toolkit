@@ -1,0 +1,119 @@
+<!doctype html>
+<html lang="en" dir="ltr" data-review-surface="v1">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Interactive public review surface for the Rawafid Arabic/RTL Accessibility & Localization Toolkit.">
+  <title>Rawafid Arabic/RTL Toolkit — Public Review Lab</title>
+  <link rel="stylesheet" href="/styles/a11y.css">
+  <link rel="stylesheet" href="/styles/logical.css">
+  <link rel="stylesheet" href="/review-lab/site.css">
+</head>
+<body>
+  <a class="rawafid-skip-link" href="#main">Skip to the review lab</a>
+  <header class="masthead">
+    <div class="shell masthead__inner">
+      <div>
+        <p class="eyebrow">Rawafid open-source engineering</p>
+        <a class="brand" href="https://healthrenewal.org/">Rawafid <span lang="ar" dir="rtl">روافد</span></a>
+      </div>
+      <nav aria-label="Review resources">
+        <a href="https://github.com/khaledaltheeb/rawafid-arabic-rtl-a11y-toolkit">Repository</a>
+        <a href="https://github.com/khaledaltheeb/rawafid-arabic-rtl-a11y-toolkit/blob/main/docs/OSS-APPLICATION-DOSSIER.md">Evidence dossier</a>
+        <a href="https://github.com/khaledaltheeb/rawafid-arabic-rtl-a11y-toolkit/blob/main/SECURITY.md">Security</a>
+      </nav>
+    </div>
+  </header>
+
+  <main id="main" class="shell stack" tabindex="-1">
+    <section class="hero" aria-labelledby="hero-title">
+      <p class="status"><span aria-hidden="true">●</span> Executable review surface</p>
+      <h1 id="hero-title">Arabic and RTL engineering that can be inspected, exercised, and verified.</h1>
+      <p class="lede">This page runs the built toolkit itself. It is designed for maintainers, accessibility reviewers, localization teams, browser vendors, researchers, and open-source program reviewers who need evidence beyond a README claim.</p>
+      <div class="hero__actions">
+        <a class="button" href="#live-lab">Open the live lab</a>
+        <a class="button button--quiet" href="https://github.com/khaledaltheeb/rawafid-arabic-rtl-a11y-toolkit/blob/main/conformance/partner-suite.json">Inspect machine-readable suite</a>
+      </div>
+      <pre class="install" aria-label="npm installation command"><code>npm install @rawafid/arabic-rtl-a11y-toolkit</code></pre>
+      <p class="fine-print">The npm command becomes installable after the first public package release. This surface does not claim publication before registry evidence exists.</p>
+    </section>
+
+    <section id="live-lab" class="panel" aria-labelledby="lab-title">
+      <div class="section-heading">
+        <div>
+          <p class="eyebrow">Interactive evidence</p>
+          <h2 id="lab-title">Locale, direction, formatting, grapheme, and Unicode diagnostics</h2>
+        </div>
+        <span class="badge" id="runtime-badge">Loading toolkit…</span>
+      </div>
+
+      <div class="controls">
+        <label for="locale">Locale under test</label>
+        <select id="locale" name="locale">
+          <option value="ar-JO">Arabic — Jordan (ar-JO)</option>
+          <option value="en-US">English — United States (en-US)</option>
+          <option value="fa-IR">Persian — Iran (fa-IR)</option>
+          <option value="he-IL">Hebrew — Israel (he-IL)</option>
+          <option value="ur-PK">Urdu — Pakistan (ur-PK)</option>
+          <option value="az-Arab">Azerbaijani — Arabic script (az-Arab)</option>
+          <option value="az-Latn">Azerbaijani — Latin script (az-Latn)</option>
+        </select>
+
+        <label for="sample">Mixed-direction sample</label>
+        <textarea id="sample" rows="4" dir="auto">مرحبا Rawafid — support@example.org — إصدار 3.2 — 2026</textarea>
+      </div>
+
+      <div class="results" aria-live="polite">
+        <article class="metric"><h3>Locale direction</h3><output id="locale-direction">—</output><p>Resolved from the effective script, not language name alone.</p></article>
+        <article class="metric"><h3>Text direction</h3><output id="text-direction">—</output><p>First-strong inference for short mixed-direction UI values.</p></article>
+        <article class="metric"><h3>Localized number</h3><output id="number-output">—</output><p>Rendered through the platform Intl implementation.</p></article>
+        <article class="metric"><h3>Localized date</h3><output id="date-output">—</output><p>Stable demonstration date; no current-time dependency.</p></article>
+        <article class="metric"><h3>Plural category for 3</h3><output id="plural-output">—</output><p>Returned by Intl.PluralRules for the selected locale.</p></article>
+        <article class="metric"><h3>Grapheme length</h3><output id="grapheme-output">—</output><p>User-perceived clusters rather than UTF-16 code units.</p></article>
+      </div>
+
+      <article class="diagnostic" aria-labelledby="diagnostic-title">
+        <h3 id="diagnostic-title">Unicode display-risk diagnostic</h3>
+        <dl>
+          <div><dt>Recognized scripts</dt><dd id="scripts-output">—</dd></div>
+          <div><dt>Risk signals</dt><dd id="risks-output">—</dd></div>
+        </dl>
+        <p class="fine-print">These are defensive display-risk signals. They are not a full UTS #39 confusable analysis, source-code security verdict, or proof of malicious intent.</p>
+      </article>
+    </section>
+
+    <section class="panel" aria-labelledby="evidence-title">
+      <p class="eyebrow">Due diligence</p>
+      <h2 id="evidence-title">Evidence surfaces a reviewer can independently inspect</h2>
+      <div class="evidence-grid">
+        <article><h3>Real browsers</h3><p>Playwright runs Chromium, Firefox, WebKit, and mobile Chromium against controlled RTL fixtures.</p><a href="https://github.com/khaledaltheeb/rawafid-arabic-rtl-a11y-toolkit/blob/main/docs/TEST-MATRIX.md">Test matrix</a></article>
+        <article><h3>Accessibility</h3><p>axe-core plus controlled WCAG-oriented tests for reflow, text spacing, focus visibility, target size, forced colors, and reduced motion.</p><a href="https://github.com/khaledaltheeb/rawafid-arabic-rtl-a11y-toolkit/blob/main/conformance/manifest.json">Conformance manifest</a></article>
+        <article><h3>Localization QA</h3><p>Key parity, placeholder parity, empty-message and bidi-control checks with JSON and SARIF 2.1.0 evidence output.</p><a href="https://github.com/khaledaltheeb/rawafid-arabic-rtl-a11y-toolkit/blob/main/docs/SARIF-INTEROPERABILITY.md">SARIF interoperability</a></article>
+        <article><h3>Security</h3><p>CodeQL, Dependency Review, moderate-or-higher npm audit threshold, pinned Actions, threat model, and explicit remediation policy.</p><a href="https://github.com/khaledaltheeb/rawafid-arabic-rtl-a11y-toolkit/blob/main/docs/OSPS-BASELINE.md">OSPS evidence map</a></article>
+        <article><h3>Research metadata</h3><p>CodeMeta 3.1, CITATION.cff, machine-readable research assets, Unicode-focused corpora, and freshness validation.</p><a href="https://github.com/khaledaltheeb/rawafid-arabic-rtl-a11y-toolkit/blob/main/codemeta.json">CodeMeta</a></article>
+        <article><h3>Release integrity</h3><p>The release design binds the verified npm tarball to registry integrity, provenance, SBOM, and GitHub attestations. Claims remain release-specific.</p><a href="https://github.com/khaledaltheeb/rawafid-arabic-rtl-a11y-toolkit/blob/main/docs/RELEASE-PROVENANCE.md">Release provenance</a></article>
+      </div>
+    </section>
+
+    <section class="panel boundary" aria-labelledby="boundary-title">
+      <p class="eyebrow">Claim boundaries</p>
+      <h2 id="boundary-title">What this project deliberately does not claim</h2>
+      <ul>
+        <li>No automatic WCAG certification or blanket accessibility conformance.</li>
+        <li>No full Unicode Bidirectional Algorithm, UTS #39, or UAX #29 conformance claim.</li>
+        <li>No provider endorsement, academic endorsement, or partner approval unless independently evidenced.</li>
+        <li>No npm publication or provenance claim until a public registry release can be verified.</li>
+      </ul>
+    </section>
+  </main>
+
+  <footer>
+    <div class="shell footer__inner">
+      <div><strong>Maintained by Khaled Altheeb</strong><br><a href="mailto:contact@healthrenewal.org">contact@healthrenewal.org</a> · <a href="https://healthrenewal.org/">healthrenewal.org</a></div>
+      <div>Apache-2.0 · General-purpose open-source software</div>
+    </div>
+  </footer>
+
+  <script type="module" src="/review-lab/site.js"></script>
+</body>
+</html>
