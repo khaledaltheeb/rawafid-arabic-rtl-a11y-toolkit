@@ -7,6 +7,7 @@
   "additionalProperties": false,
   "required": [
     "schemaVersion",
+    "schema",
     "artifact",
     "package",
     "entrypoint",
@@ -17,6 +18,9 @@
   "properties": {
     "schemaVersion": {
       "const": 1
+    },
+    "schema": {
+      "const": "schemas/review-site-artifact.schema.json"
     },
     "artifact": {
       "const": "rawafid-public-review-lab"
