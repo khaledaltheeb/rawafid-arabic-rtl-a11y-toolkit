@@ -1,0 +1,34 @@
+{
+  "@context": "https://w3id.org/codemeta/3.1",
+  "@type": "SoftwareSourceCode",
+  "name": "Rawafid Arabic/RTL Accessibility & Localization Toolkit",
+  "description": "Framework-agnostic TypeScript toolkit and interoperability evidence suite for Arabic/RTL web interfaces, localization, accessibility, Unicode-safe text, direction-aware UI behavior, and real-browser verification.",
+  "codeRepository": "https://github.com/khaledaltheeb/rawafid-arabic-rtl-a11y-toolkit",
+  "issueTracker": "https://github.com/khaledaltheeb/rawafid-arabic-rtl-a11y-toolkit/issues",
+  "url": "https://healthrenewal.org/",
+  "license": "https://spdx.org/licenses/Apache-2.0",
+  "version": "0.2.0",
+  "programmingLanguage": ["TypeScript", "JavaScript", "CSS", "HTML"],
+  "runtimePlatform": "Node.js >=22; modern web browsers",
+  "applicationCategory": ["Internationalization", "Accessibility", "DeveloperTool", "ResearchSoftware"],
+  "keywords": [
+    "Arabic",
+    "RTL",
+    "bidirectional text",
+    "Unicode",
+    "internationalization",
+    "localization",
+    "accessibility",
+    "WCAG",
+    "Playwright",
+    "TypeScript"
+  ],
+  "developmentStatus": "active",
+  "isAccessibleForFree": true,
+  "author": [{
+    "@type": "Organization",
+    "name": "Rawafid contributors",
+    "url": "https://healthrenewal.org/"
+  }],
+  "citation": "https://github.com/khaledaltheeb/rawafid-arabic-rtl-a11y-toolkit/blob/main/CITATION.cff"
+}
