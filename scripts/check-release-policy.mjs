@@ -16,21 +16,26 @@ requireText('npm view "$PACKAGE_NAME@$PACKAGE_VERSION" dist.integrity', 'registr
 requireText('LOCAL_INTEGRITY: ${{ steps.pack.outputs.integrity }}', 'local integrity handoff');
 requireText('uses: actions/attest@508db95dd578ae2727ebd6217d5ba78e4fbda05d # v4.2.1', 'SHA-pinned attestation action');
 requireText('sbom-path: sbom.spdx.json', 'SBOM attestation');
+requireText('run: npm run site:build', 'release-tag public review artifact build');
+requireText('review-site/', 'public review artifact in retained release evidence');
+requireText('subject-path: review-site/**', 'public review artifact provenance attestation');
 
 const attestUses = source.match(/uses: actions\/attest@508db95dd578ae2727ebd6217d5ba78e4fbda05d/gmu) ?? [];
-if (attestUses.length !== 2) errors.push(`release.yml: expected exactly two pinned actions/attest uses, found ${attestUses.length}.`);
+if (attestUses.length !== 3) errors.push(`release.yml: expected exactly three pinned actions/attest uses, found ${attestUses.length}.`);
 const disabledStorageRecords = source.match(/create-storage-record:\s*false/gmu) ?? [];
-if (disabledStorageRecords.length !== 2) errors.push(`release.yml: expected storage records disabled on both attestations, found ${disabledStorageRecords.length}.`);
+if (disabledStorageRecords.length !== 3) errors.push(`release.yml: expected storage records disabled on all three attestations, found ${disabledStorageRecords.length}.`);
 const publishCommands = source.match(/\bnpm publish\b/gmu) ?? [];
 if (publishCommands.length !== 1) errors.push(`release.yml: expected exactly one npm publish command, found ${publishCommands.length}.`);
 
 const orderedSteps = [
   'Build exact release tarball',
   'Generate SPDX SBOM',
+  'Build reproducible public review surface',
   'Publish exact tarball using npm Trusted Publishing',
   'Verify npm registry artifact identity',
   'Attest release build provenance',
   'Attest release SBOM',
+  'Attest public review surface provenance',
 ];
 let previous = -1;
 for (const step of orderedSteps) {
@@ -54,5 +59,5 @@ if (errors.length > 0) {
   console.error(errors.join('\n'));
   process.exitCode = 1;
 } else {
-  console.log('Release policy contract passed: exact tarball publication, npm integrity verification, provenance attestation, and SBOM attestation are enforced.');
+  console.log('Release policy contract passed: exact npm publication, registry identity, SBOM, package provenance, and reproducible review-site provenance are enforced.');
 }
