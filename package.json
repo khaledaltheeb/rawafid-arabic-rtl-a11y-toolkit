@@ -4,7 +4,11 @@
   "description": "Framework-agnostic Arabic/RTL, localization, accessibility, bidi-safety, and direction-aware UI primitives for the web.",
   "type": "module",
   "license": "Apache-2.0",
-  "author": "Rawafid contributors",
+  "author": {
+    "name": "Khaled Altheeb",
+    "email": "khaledaltheeb@gmail.com",
+    "url": "https://healthrenewal.org/"
+  },
   "homepage": "https://healthrenewal.org/",
   "repository": {
     "type": "git",

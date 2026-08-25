@@ -22,18 +22,34 @@ const [pkg, codemeta, catalog, partner] = await Promise.all([
 const errors = [];
 const assert = (condition, message) => { if (!condition) errors.push(message); };
 const canonicalRepository = 'https://github.com/khaledaltheeb/rawafid-arabic-rtl-a11y-toolkit';
+const canonicalSteward = 'Khaled Altheeb';
+const canonicalDirectEmail = 'khaledaltheeb@gmail.com';
+const canonicalOrganizationEmail = 'contact@healthrenewal.org';
+const canonicalWebsite = 'https://healthrenewal.org/';
 
 assert(codemeta['@context'] === 'https://w3id.org/codemeta/3.1', 'codemeta.json must use the released CodeMeta 3.1 context.');
 assert(codemeta['@type'] === 'SoftwareSourceCode', 'codemeta.json must describe SoftwareSourceCode.');
 assert(codemeta.version === pkg.version, `CodeMeta version ${codemeta.version} must match package version ${pkg.version}.`);
 assert(codemeta.codeRepository === canonicalRepository, 'CodeMeta repository must be canonical.');
 assert(codemeta.issueTracker === `${canonicalRepository}/issues`, 'CodeMeta issue tracker must be canonical.');
+assert(codemeta.url === canonicalWebsite && pkg.homepage === canonicalWebsite, 'CodeMeta and package metadata must use the canonical Rawafid website.');
 assert(codemeta.license === 'https://spdx.org/licenses/Apache-2.0' && pkg.license === 'Apache-2.0', 'CodeMeta and package metadata must agree on Apache-2.0.');
 for (const field of ['description', 'runtimePlatform', 'developmentStatus', 'citation', 'continuousIntegration', 'readme', 'buildInstructions']) {
   assert(typeof codemeta[field] === 'string' && codemeta[field].length > 0, `codemeta.json must provide ${field}.`);
 }
 assert(Array.isArray(codemeta.programmingLanguage) && codemeta.programmingLanguage.length > 0, 'CodeMeta must list programming languages.');
 assert(Array.isArray(codemeta.keywords) && codemeta.keywords.some((value) => String(value).toLowerCase() === 'arabic'), 'CodeMeta keywords must preserve Arabic discoverability.');
+
+assert(pkg.author?.name === canonicalSteward, 'package.json author must identify Khaled Altheeb.');
+assert(pkg.author?.email === canonicalDirectEmail, 'package.json author email must be the canonical direct project email.');
+assert(pkg.author?.url === canonicalWebsite, 'package.json author URL must use the canonical website.');
+const codemetaAuthor = codemeta.author?.find((entry) => entry?.name === canonicalSteward);
+assert(Boolean(codemetaAuthor), 'CodeMeta author must identify Khaled Altheeb.');
+assert(codemetaAuthor?.email === `mailto:${canonicalDirectEmail}`, 'CodeMeta author must publish the canonical direct email.');
+const codemetaMaintainer = codemeta.maintainer?.find((entry) => entry?.name === canonicalSteward);
+assert(Boolean(codemetaMaintainer), 'CodeMeta maintainer must identify Khaled Altheeb.');
+assert(codemetaMaintainer?.email === `mailto:${canonicalOrganizationEmail}`, 'CodeMeta maintainer must publish the canonical Rawafid organizational email.');
+assert(codemetaMaintainer?.url === canonicalWebsite, 'CodeMeta maintainer must use the canonical website.');
 
 assert(catalog.schemaVersion === 1, 'research/assets.json schemaVersion must be 1.');
 assert(Array.isArray(catalog.assets) && catalog.assets.length >= 1, 'research/assets.json must contain assets.');

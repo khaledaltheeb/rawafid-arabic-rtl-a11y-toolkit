@@ -5,7 +5,10 @@ message: >-
 title: Rawafid Arabic/RTL Accessibility & Localization Toolkit
 type: software
 authors:
-  - name: Rawafid contributors
+  - family-names: Altheeb
+    given-names: Khaled
+    email: khaledaltheeb@gmail.com
+    website: https://healthrenewal.org/
 repository-code: https://github.com/khaledaltheeb/rawafid-arabic-rtl-a11y-toolkit
 url: https://healthrenewal.org/
 license: Apache-2.0
