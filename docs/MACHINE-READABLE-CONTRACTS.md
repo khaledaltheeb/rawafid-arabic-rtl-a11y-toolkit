@@ -9,6 +9,7 @@ The toolkit exposes its interoperability, standards, localization, and evidence 
 | `schemas/partner-suite.schema.json` | `conformance/partner-suite.json` |
 | `schemas/conformance-manifest.schema.json` | `conformance/manifest.json` |
 | `schemas/localization-contract.schema.json` | `qa/localization-contract.json` |
+| `schemas/localization-evidence.schema.json` | generated `partner-results/localization-qa.json` |
 | `schemas/evidence-summary.schema.json` | generated `partner-results/evidence-summary.json` |
 
 Every schema declares:
@@ -31,7 +32,7 @@ JSON Schema identifies Draft 2020-12 as the current published specification. The
 - all declare Draft 2020-12;
 - every schema has a unique HTTPS `$id`;
 - schemas describe root objects with required fields;
-- committed contract instances and schemas agree on contract version and key required fields.
+- committed and generated contract instances available at check time agree with their schema version and key required fields.
 
 The repository's existing semantic validators (`conformance:check`, `partner:check`, localization QA, and the evidence-summary validator) remain the authoritative CI guards for project-specific invariants.
 
