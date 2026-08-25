@@ -58,9 +58,11 @@
     "build:reproducible": "node scripts/check-reproducible-build.mjs",
     "site:build": "npm run build && node scripts/build-review-site.mjs",
     "site:check": "npm run build && node scripts/check-review-site.mjs",
+    "site:verify-deployment": "node scripts/verify-review-site-deployment.mjs",
+    "site:deployment-verifier-check": "npm run build && node scripts/check-review-site-deployment-verifier.mjs",
     "public-api:check": "npm run build && node scripts/check-public-api.mjs",
     "public-types:check": "npm run build && node scripts/check-public-types.mjs",
-    "check": "npm run check:core && npm run package:lint && npm run package:types && npm run package:contract && npm run package:artifact && npm run consumer:smoke && npm run build:reproducible && npm run site:check && npm run public-api:check && npm run public-types:check",
+    "check": "npm run check:core && npm run package:lint && npm run package:types && npm run package:contract && npm run package:artifact && npm run consumer:smoke && npm run build:reproducible && npm run site:check && npm run site:deployment-verifier-check && npm run public-api:check && npm run public-types:check",
     "prepack": "npm run build",
     "scope:check": "node scripts/scope-guard.mjs",
     "supply-chain:check": "node scripts/check-action-pins.mjs && node scripts/check-release-policy.mjs"
