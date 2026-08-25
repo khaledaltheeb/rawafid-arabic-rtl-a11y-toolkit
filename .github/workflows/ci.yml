@@ -59,12 +59,21 @@ jobs:
         run: npm ci --no-audit --no-fund
       - name: Generate localization QA evidence
         run: npm run localization:evidence
+      - name: Build and verify standalone review lab
+        run: npm run review-site:check
       - name: Install Playwright browsers
         run: npx playwright install --with-deps chromium firefox webkit
       - name: Browser tests
         run: npm run test:e2e
       - name: Validate partner evidence summary
         run: node scripts/validate-partner-evidence-summary.mjs partner-results/evidence-summary.json
+      - name: Upload standalone review lab
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
+        with:
+          name: public-review-lab-static
+          path: review-site/
+          retention-days: 30
+          if-no-files-found: error
       - name: Upload partner interoperability evidence
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
         if: always()
