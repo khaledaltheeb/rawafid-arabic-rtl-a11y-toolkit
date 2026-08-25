@@ -20,7 +20,7 @@
       "path": "tests/fixtures/grapheme-interoperability-corpus.json",
       "type": "research-corpus",
       "domains": ["unicode-text-segmentation", "arabic", "grapheme-clusters", "emoji", "safe-truncation"],
-      "evidence": ["tests/unit/grapheme-interoperability-corpus.test.ts"],
+      "evidence": ["tests/unit/grapheme-corpus.test.ts"],
       "documentation": "docs/GRAPHEME-INTEROPERABILITY-CORPUS.md",
       "nonClaim": "This asset does not claim complete UAX #29 conformance; runtime Intl.Segmenter supplies segmentation behavior."
     },
@@ -41,7 +41,7 @@
       "type": "machine-contract",
       "domains": ["localization", "placeholders", "markup", "bidi-isolates", "zero-width"],
       "evidence": ["partner-results/localization-qa.json"],
-      "documentation": "docs/LOCALIZATION-QA.md",
+      "documentation": "docs/LOCALIZATION-QA-EVIDENCE.md",
       "nonClaim": "The contract checks structural message integrity and does not establish translation quality or linguistic correctness."
     }
   ]
