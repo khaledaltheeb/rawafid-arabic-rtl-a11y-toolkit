@@ -1,0 +1,49 @@
+header:
+  schema-version: 2.2.0
+  last-updated: '2026-08-25'
+  last-reviewed: '2026-08-25'
+  url: https://raw.githubusercontent.com/khaledaltheeb/rawafid-arabic-rtl-a11y-toolkit/main/security-insights.yml
+  comment: |
+    Machine-readable security posture for the single-repository Rawafid
+    Arabic/RTL Accessibility & Localization Toolkit. Account-bound controls
+    are intentionally not represented as verified merely because repository
+    documentation recommends them.
+
+project:
+  name: Rawafid Arabic/RTL Accessibility & Localization Toolkit
+  administrators:
+    - name: khaledaltheeb
+      social: https://github.com/khaledaltheeb
+      primary: true
+  repositories:
+    - name: rawafid-arabic-rtl-a11y-toolkit
+      url: https://github.com/khaledaltheeb/rawafid-arabic-rtl-a11y-toolkit
+      comment: |
+        Canonical public source repository for the reusable toolkit.
+  vulnerability-reporting:
+    reports-accepted: true
+    bug-bounty-available: false
+  homepage: https://healthrenewal.org/
+  roadmap: https://github.com/khaledaltheeb/rawafid-arabic-rtl-a11y-toolkit/blob/main/ROADMAP.md
+
+repository:
+  url: https://github.com/khaledaltheeb/rawafid-arabic-rtl-a11y-toolkit
+  status: active
+  accepts-change-request: true
+  accepts-automated-change-request: true
+  core-team:
+    - name: khaledaltheeb
+      social: https://github.com/khaledaltheeb
+      primary: true
+  license:
+    url: https://github.com/khaledaltheeb/rawafid-arabic-rtl-a11y-toolkit/blob/main/LICENSE
+    expression: Apache-2.0
+  security:
+    assessments:
+      self:
+        comment: |
+          Repository-maintained evidence includes a threat model, CodeQL,
+          Dependency Review, OpenSSF Scorecard, deterministic package gates,
+          SHA-pinned GitHub Actions, public-scope checks, and machine-readable
+          standards evidence. This is a self-assessment, not an independent
+          audit, certification, or claim that account-bound controls are enabled.
