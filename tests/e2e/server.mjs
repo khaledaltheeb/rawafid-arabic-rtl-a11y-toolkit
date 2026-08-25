@@ -14,6 +14,14 @@ const routes = new Map([
   ['/dist/index.js', ['dist/index.js', 'text/javascript; charset=utf-8']],
   ['/styles/a11y.css', ['styles/a11y.css', 'text/css; charset=utf-8']],
   ['/styles/logical.css', ['styles/logical.css', 'text/css; charset=utf-8']],
+  ['/artifact/review-lab', ['review-site/review-lab/index.html', 'text/html; charset=utf-8']],
+  ['/artifact/review-lab/', ['review-site/review-lab/index.html', 'text/html; charset=utf-8']],
+  ['/artifact/review-lab/site.css', ['review-site/review-lab/site.css', 'text/css; charset=utf-8']],
+  ['/artifact/review-lab/site.js', ['review-site/review-lab/site.js', 'text/javascript; charset=utf-8']],
+  ['/artifact/dist/index.js', ['review-site/dist/index.js', 'text/javascript; charset=utf-8']],
+  ['/artifact/styles/a11y.css', ['review-site/styles/a11y.css', 'text/css; charset=utf-8']],
+  ['/artifact/styles/logical.css', ['review-site/styles/logical.css', 'text/css; charset=utf-8']],
+  ['/artifact/artifact-manifest.json', ['review-site/artifact-manifest.json', 'application/json; charset=utf-8']],
 ]);
 
 const server = createServer(async (request, response) => {
@@ -36,8 +44,8 @@ const server = createServer(async (request, response) => {
       response.end('Not found');
       return;
     }
-    const [path, contentType] = route;
-    const content = await readFile(resolve(root, path));
+    const [filePath, contentType] = route;
+    const content = await readFile(resolve(root, filePath));
     response.writeHead(200, {
       'content-type': contentType,
       'cache-control': 'no-store',
