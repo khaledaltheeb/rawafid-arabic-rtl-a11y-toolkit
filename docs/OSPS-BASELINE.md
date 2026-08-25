@@ -8,6 +8,7 @@ Statuses are deliberately narrow:
 - **Observed external state** — the control depends on a service/account setting that has been read directly through the service API.
 - **External-unverified** — the control depends on a GitHub/npm/account setting that has not been directly observed.
 - **Conditional** — the requirement is release-, scale-, or workflow-dependent and is evaluated when its condition becomes true.
+- **Partial / Gap** — useful evidence exists, but one or more requirements are not fully enforced or observed.
 - **Gap** — the repository or observed service state does not satisfy the control or does not provide enough evidence to claim it.
 
 Canonical baseline: https://baseline.openssf.org/versions/2026-02-19
@@ -49,7 +50,7 @@ Canonical baseline: https://baseline.openssf.org/versions/2026-02-19
 | OSPS-BR-02.01 unique release identifiers | Verified in repository | Semantic package versions and tag/version equality checks in `release.yml`. |
 | OSPS-BR-04.01 descriptive release modification log | Verified in repository | `CHANGELOG.md` follows structured release history; release workflow validates exact version/tag identity. |
 | OSPS-BR-05.01 standardized dependency tooling | Verified in repository | `npm ci` with committed lockfile; exact dev dependency versions. |
-| OSPS-BR-06.01 signed release or signed manifest | Conditional | npm provenance/OIDC design exists, but successful public provenance publication must be verified for each release. |
+| OSPS-BR-06.01 signed release or signed manifest | Conditional | npm provenance/OIDC and GitHub artifact-attestation mechanisms are configured, but successful public release-specific evidence must be verified per release. |
 | OSPS-DO-06.01 dependency selection/tracking documentation | Verified in repository | `docs/DEPENDENCY-BOOTSTRAP.md`, deterministic installation and Dependabot configuration. |
 | OSPS-DO-07.01 build instructions | Verified in repository | README development commands and deterministic CI/package scripts. |
 | OSPS-GV-01.01 list members with sensitive access | Gap | Public governance identifies project roles, but a complete current sensitive-resource access roster is account-bound and not yet maintained as a verified registry. |
@@ -69,21 +70,27 @@ Canonical baseline: https://baseline.openssf.org/versions/2026-02-19
 
 These do **not** imply Level 3 eligibility. They are useful evidence for sophisticated reviewers.
 
-- **OSPS-AC-04.02:** workflows use explicit least-privilege permission blocks and SHA-pinned actions.
-- **OSPS-BR-07.02:** secrets and production configuration are explicitly excluded by `OPEN_SOURCE_SCOPE.md`; release design avoids long-lived npm publication tokens.
-- **OSPS-QA-02.02:** release workflow generates an SPDX SBOM artifact; successful release-specific publication remains evidence-bound.
-- **OSPS-QA-06.02 / 06.03:** `docs/QUALITY-GATES.md`, test matrix and contribution policy document when tests run and require tests for behavior changes.
-- **OSPS-SA-03.02:** `docs/THREAT-MODEL.md` documents threat surfaces including Unicode bidi controls, localization, CI/supply chain, package publication and public/private scope boundaries.
-- **OSPS-VM-05 / VM-06 family:** Dependency Review and CodeQL run automatically, but project-specific remediation thresholds should be documented before claiming full conformance to those controls.
+| Control | Status | Evidence / boundary |
+| --- | --- | --- |
+| OSPS-AC-04.02 least-privilege CI permissions | Verified in repository | Workflows use explicit permission blocks and SHA-pinned actions. |
+| OSPS-BR-07.02 protect sensitive build/release material | Verified in repository | Secrets and production configuration are excluded by `OPEN_SOURCE_SCOPE.md`; release design avoids long-lived npm publication tokens. |
+| OSPS-QA-02.02 SBOM generation | Conditional | Release workflow generates an SPDX SBOM and attests the exact release tarball; successful public release evidence remains release-specific. |
+| OSPS-QA-06.02 / 06.03 test policy | Verified in repository | `docs/QUALITY-GATES.md`, test matrix and contribution policy document when tests run and require tests for behavior changes. |
+| OSPS-SA-03.02 threat model / attack surface | Verified in repository | `docs/THREAT-MODEL.md` covers Unicode bidi, localization, CI/supply chain, package publication and public/private scope boundaries. |
+| **OSPS-VM-05.01 SCA remediation threshold** | **Verified in repository** | `docs/SECURITY-REMEDIATION-POLICY.md` defines moderate-or-higher dependency vulnerabilities as release-blocking unless remediated or supported by an evidence-backed non-exploitability disposition; license findings have an explicit review threshold. |
+| **OSPS-VM-05.02 address SCA violations before release** | **Verified in repository** | `security:sca` runs `npm audit --audit-level=moderate` inside `check:core`; `release.yml` runs the full quality gate after deterministic install and before package creation/publication. |
+| **OSPS-VM-05.03 automatic dependency evaluation/blocking** | **Partial / Gap** | `npm audit` evaluates the committed dependency graph in quality CI and Dependency Review evaluates dependency changes when GitHub Dependency Graph is available. However, `main` is observed unprotected, so a failing PR status is not proven to be merge-blocking at the repository setting level. |
+| **OSPS-VM-06.01 SAST remediation threshold** | **Verified in repository** | `docs/SECURITY-REMEDIATION-POLICY.md` defines CodeQL critical/high as release-blocking, medium as explicit review/disposition, and low/informational as triage/tracking. |
+| **OSPS-VM-06.02 automatic SAST evaluation/blocking** | **Partial / Gap** | CodeQL runs automatically on pull requests, `main`, and a weekly schedule, but CodeQL alert severity is not independently enforced as a required merge gate while `main` remains unprotected. |
 
 ## Highest-priority external closures
 
 The strongest remaining security-posture improvements are not more source files; they are verifiable enforcement states:
 
-1. **Protect `main` now.** Create a repository ruleset or branch protection rule that blocks direct/force pushes and deletion, requires pull requests, and requires the applicable CI, CodeQL and Dependency Review checks before merge. Re-read branch/ruleset state after configuration and only then mark OSPS-AC-03.01, OSPS-AC-03.02 and OSPS-QA-03.01 as satisfied.
+1. **Protect `main` now.** Create a repository ruleset or branch protection rule that blocks direct/force pushes and deletion, requires pull requests, and requires the applicable CI, CodeQL and Dependency Review checks before merge. Re-read branch/ruleset state after configuration and only then mark OSPS-AC-03.01, OSPS-AC-03.02, OSPS-QA-03.01, and the enforcement portions of OSPS-VM-05.03/VM-06.02 as satisfied.
 2. Verify maintainer MFA/passkey state for sensitive repository operations.
 3. Enable and verify GitHub private vulnerability reporting and security scanning features available to the repository.
-4. After first npm publication, verify Trusted Publishing/OIDC provenance and retain release-specific SBOM/provenance evidence.
+4. After first npm publication, verify Trusted Publishing/OIDC provenance plus release-specific SBOM and artifact attestations.
 5. Decide whether to adopt DCO sign-off and whether a measurable vulnerability-response SLA can be sustained before documenting either as a requirement.
 
 ## Evidence principle
