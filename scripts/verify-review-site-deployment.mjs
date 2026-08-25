@@ -3,6 +3,9 @@ import { readFile } from 'node:fs/promises';
 import { resolve } from 'node:path';
 import process from 'node:process';
 
+const PACKAGE_NAME = '@rawafid/arabic-rtl-a11y-toolkit';
+const SEMVER = /^[0-9]+\.[0-9]+\.[0-9]+(?:[-+][0-9A-Za-z.-]+)?$/u;
+
 function usage() {
   return 'Usage: node scripts/verify-review-site-deployment.mjs --base-url <https://host/path/> [--manifest <path>] [--allow-http]';
 }
@@ -24,9 +27,13 @@ function sha256(bytes) {
 function assertManifest(manifest) {
   if (
     manifest?.schemaVersion !== 1
+    || manifest?.schema !== 'schemas/review-site-artifact.schema.json'
     || manifest?.artifact !== 'rawafid-public-review-lab'
     || manifest?.deploymentModel !== 'static-files-subpath-safe'
     || manifest?.entrypoint !== 'review-lab/index.html'
+    || manifest?.package?.name !== PACKAGE_NAME
+    || typeof manifest?.package?.version !== 'string'
+    || !SEMVER.test(manifest.package.version)
     || !Array.isArray(manifest.files)
     || manifest.files.length === 0
   ) {
@@ -39,7 +46,9 @@ function assertManifest(manifest) {
       typeof entry?.path !== 'string'
       || entry.path.startsWith('/')
       || entry.path.includes('\\')
-      || entry.path.split('/').includes('..')
+      || entry.path.includes('?')
+      || entry.path.includes('#')
+      || entry.path.split('/').some((segment) => segment === '..' || segment === '.')
     ) throw new Error(`unsafe manifest file path: ${entry?.path}`);
     if (seen.has(entry.path)) throw new Error(`duplicate manifest file path: ${entry.path}`);
     seen.add(entry.path);
@@ -98,7 +107,12 @@ try {
   let verifiedBytes = 0;
   for (const entry of manifest.files) {
     const remoteUrl = new URL(entry.path, base);
-    if (remoteUrl.origin !== base.origin || !remoteUrl.pathname.startsWith(base.pathname)) {
+    if (
+      remoteUrl.origin !== base.origin
+      || !remoteUrl.pathname.startsWith(base.pathname)
+      || remoteUrl.search
+      || remoteUrl.hash
+    ) {
       throw new Error(`manifest path escapes deployment base URL: ${entry.path}`);
     }
     const bytes = await fetchBytes(remoteUrl);
