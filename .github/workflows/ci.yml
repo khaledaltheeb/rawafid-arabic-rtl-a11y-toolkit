@@ -63,6 +63,8 @@ jobs:
         run: npx playwright install --with-deps chromium firefox webkit
       - name: Browser tests
         run: npm run test:e2e
+      - name: Aggregate cross-engine interoperability observations
+        run: node scripts/aggregate-interoperability-observations.mjs
       - name: Validate partner evidence summary
         run: node scripts/validate-partner-evidence-summary.mjs partner-results/evidence-summary.json
       - name: Upload partner interoperability evidence
