@@ -82,11 +82,11 @@ This supplements source unit tests and package-shape tools rather than duplicati
 
 `npm run public-api:check` imports the same built root package and exact-compares all runtime export names with `api/public-api.json`.
 
-The baseline currently contains 75 reviewed root exports. CI fails when a reviewed export disappears or an unreviewed export appears, making compatibility changes explicit in pull-request review and release-version decisions.
+The authoritative reviewed export set lives in `api/public-api.json`. Documentation intentionally does not maintain a duplicate numeric count; CI fails when a reviewed export disappears or an unreviewed export appears, making compatibility changes explicit in pull-request review and release-version decisions.
 
 ## Browser tests
 
-Playwright first builds the package, starts the controlled local fixture, and loads the actual `dist/index.js` plus published CSS entry points in:
+Playwright first builds the package, starts the controlled local fixtures, and loads the actual `dist/index.js` plus published CSS entry points in:
 
 - Chromium desktop;
 - Firefox desktop;
@@ -113,7 +113,24 @@ Assertions cover:
 - vertical grid movement;
 - grid Home/End behavior;
 - pseudo-localization, grapheme-safe truncation, and Unicode-risk helpers from built output;
-- horizontal document overflow regression.
+- horizontal document overflow regression;
+- `dir=auto` first-strong behavior and `<bdi>` isolation in the standards conformance lab;
+- `dirname` form submission preserving an RTL field direction;
+- controlled 24×24 CSS-pixel pointer-target floor checks;
+- controlled 320 CSS-pixel reflow without horizontal page overflow;
+- deterministic paired RTL/LTR logical-edge behavior for visual-regression integrations.
+
+## Standards evidence contract
+
+`conformance/manifest.json` maps controlled browser claims to their standards source, fixture, automated test, scope, and explicit non-claim. `npm run conformance:check` prevents claims from pointing to missing fixtures/tests or escaping the repository boundary.
+
+This contract is evidence about controlled cases. It is not a formal WCAG, Unicode, HTML, or browser certification.
+
+## Partner interoperability suite
+
+`conformance/partner-suite.json` defines a curated, vendor-neutral subset of high-value browser tests. `npm run partner:check` verifies the manifest and `npm run test:partner` runs the declared interoperability workload.
+
+CI emits machine-readable JSON and JUnit Playwright results and uploads them with both conformance manifests as the `partner-interoperability-evidence` artifact on every browser run. See `docs/PARTNER-INTEROPERABILITY.md`.
 
 ## Repository/security matrix
 
@@ -131,7 +148,7 @@ Every pull request also passes, when applicable:
 Repository automation does not replace:
 
 - screen-reader testing with product-specific dynamic content;
-- zoom/reflow and text-spacing review;
+- zoom/reflow and text-spacing review beyond the controlled regression fixtures;
 - high-contrast/forced-colors product review;
 - localization review by fluent speakers;
 - product-specific complex-widget semantics and interaction testing;
