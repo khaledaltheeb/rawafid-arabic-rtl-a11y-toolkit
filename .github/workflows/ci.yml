@@ -77,6 +77,7 @@ jobs:
             qa/localization-contract.json
             schemas/
             tests/fixtures/unicode-display-risk-corpus.json
+            tests/fixtures/grapheme-interoperability-corpus.json
           retention-days: 30
           if-no-files-found: error
       - name: Upload Playwright report on failure
