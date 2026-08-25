@@ -69,7 +69,8 @@
     "package:lint": "npm run build && publint",
     "package:types": "npm run build && attw --pack . --profile esm-only --entrypoints .",
     "package:contract": "npm run build && node scripts/check-package-contract.mjs",
-    "check": "npm run check:core && npm run package:lint && npm run package:types && npm run package:contract",
+    "public-api:check": "npm run build && node scripts/check-public-api.mjs",
+    "check": "npm run check:core && npm run package:lint && npm run package:types && npm run package:contract && npm run public-api:check",
     "prepack": "npm run build",
     "scope:check": "node scripts/scope-guard.mjs",
     "supply-chain:check": "node scripts/check-action-pins.mjs"

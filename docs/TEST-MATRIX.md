@@ -30,6 +30,9 @@
 - Arabic-script detection;
 - standard and extended Arabic combining marks;
 - conservative normalization and stable search keys;
+- Latin, Arabic-Indic, and Eastern Arabic-Indic decimal digit detection/conversion;
+- mixed recognized digit-system reporting;
+- search normalization that preserves punctuation, separators, signs, and unrelated Unicode numerics;
 - grapheme-safe length/slicing/truncation;
 - locale-sensitive word and sentence segmentation;
 - safe structured highlighting and locale case-expansion boundary preservation;
@@ -41,6 +44,7 @@
 - invalid navigation state;
 - roving focus and disabled-item skipping;
 - locale-aware typeahead and deterministic buffer expiry;
+- digit-system-equivalent typeahead matching;
 - modifier/composition policy remains host-owned;
 - single/multiple/range selection;
 - active focus remains independent from selected state;
@@ -68,10 +72,17 @@ It verifies:
 - SSR/non-DOM import safety;
 - script-aware direction behavior;
 - locale-aware typeahead from built output;
+- decimal-digit search normalization from built output;
 - active-vs-selected selection independence from built output;
 - RTL grid physical left/right movement and row Home behavior from built output.
 
 This supplements source unit tests and package-shape tools rather than duplicating them.
+
+## Public API compatibility
+
+`npm run public-api:check` imports the same built root package and exact-compares all runtime export names with `api/public-api.json`.
+
+The baseline currently contains 75 reviewed root exports. CI fails when a reviewed export disappears or an unreviewed export appears, making compatibility changes explicit in pull-request review and release-version decisions.
 
 ## Browser tests
 
@@ -93,6 +104,8 @@ Assertions cover:
 - live-region behavior from the built toolkit;
 - RTL roving tab movement and disabled-item skipping;
 - built-package locale-aware typeahead;
+- equivalence of Latin `25`, Arabic-Indic `٢٥`, and Eastern Arabic-Indic `۲۵` in search/typeahead;
+- preservation of original source text, Arabic separators, signs, punctuation, Roman numerals, and superscripts during decimal-digit normalization;
 - modified shortcut and IME/composition non-consumption;
 - semantic 2×3 RTL grid structure;
 - one grid cell in the page tab sequence;

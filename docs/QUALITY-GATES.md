@@ -57,7 +57,17 @@ The gate imports the actual built `dist/index.js` in a non-DOM Node process and 
 
 This is deliberately separate from source unit tests: source can be correct while generated declarations, bundling, or export maps are wrong.
 
-## Gate 8: browser/accessibility
+## Gate 8: public API compatibility
+
+`npm run public-api:check`
+
+The gate imports the real built package and exact-compares its runtime root exports with the reviewed `api/public-api.json` snapshot. It fails closed on both removal of a reviewed export and addition of an unreviewed export.
+
+A snapshot update is therefore an explicit compatibility decision, not an automatic regeneration step. The review must classify the change under the project's Semantic Versioning policy and provide migration/deprecation guidance when an incompatible change is intentional.
+
+This runtime-name gate complements, but does not replace, TypeScript declaration validation and behavioral contract tests.
+
+## Gate 9: browser/accessibility
 
 Playwright runs Chromium, Firefox, WebKit, and a mobile Chromium profile against the **built package**.
 
@@ -71,6 +81,7 @@ The controlled Arabic RTL fixture exercises:
 - live regions;
 - RTL roving composite focus with disabled-item skipping;
 - locale-aware typeahead from the built package;
+- Latin, Arabic-Indic, and Eastern Arabic-Indic digit equivalence for search/typeahead while preserving source text and punctuation;
 - modified-shortcut and IME/composition boundaries;
 - a semantic 2×3 RTL grid with one page-tab stop;
 - physical RTL horizontal movement, vertical movement, Home and End;
@@ -79,7 +90,7 @@ The controlled Arabic RTL fixture exercises:
 
 axe-core is executed against the complete controlled fixture. A zero-violation automated result is a regression gate only and is not a WCAG certification.
 
-## Gate 9: repository security
+## Gate 10: repository security
 
 - CodeQL.
 - Dependency Review.
@@ -88,13 +99,13 @@ axe-core is executed against the complete controlled fixture. A zero-violation a
 - minimal workflow permissions.
 - documented threat/scope boundaries.
 
-## Gate 10: publication
+## Gate 11: publication
 
 Publication requires the repository release workflow's fail-closed conditions, including exact tag/package-version identity, supported publishing runtime/toolchain, deterministic install, full package checks, dry-run packaging, and SPDX SBOM generation.
 
 For a brand-new npm package, the repository does not pretend OIDC can bootstrap package creation. The one-time first publication requires separately verified npm scope access/account security; subsequent releases may use the configured Trusted Publisher/OIDC path after it has actually been established.
 
-## Gate 11: evidence integrity
+## Gate 12: evidence integrity
 
 Before a release note, README statement, provider application, or public claim describes a gate or capability as verified:
 
