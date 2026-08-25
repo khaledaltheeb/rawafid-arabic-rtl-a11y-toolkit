@@ -17,6 +17,36 @@
     .target { min-inline-size: 24px; min-block-size: 24px; padding: 4px 8px; }
     input, textarea { inline-size: 100%; min-inline-size: 0; max-inline-size: 100%; }
     .mixed { overflow-wrap: anywhere; }
+    .focus-viewport {
+      block-size: 180px;
+      overflow-y: auto;
+      scroll-padding-block-start: 60px;
+      border: 1px solid currentColor;
+      border-radius: 6px;
+      position: relative;
+    }
+    .focus-sticky {
+      position: sticky;
+      inset-block-start: 0;
+      z-index: 2;
+      min-block-size: 48px;
+      padding: 12px;
+      background: Canvas;
+      color: CanvasText;
+      border-block-end: 1px solid currentColor;
+    }
+    .focus-content { padding: 12px; }
+    .focus-spacer { block-size: 220px; }
+    [data-focus-target] { scroll-margin-block-start: 60px; }
+    .spacing-sample {
+      max-inline-size: 36rem;
+      overflow-wrap: anywhere;
+    }
+    .spacing-sample p { margin-block: 0 1em; }
+    .spacing-probe {
+      inline-size: 100%;
+      min-inline-size: 0;
+    }
     @media (max-width: 320px) {
       body { padding: 8px; }
       .card { padding: 12px; }
@@ -56,6 +86,28 @@
     <section class="card" aria-labelledby="reflow-title">
       <h2 id="reflow-title">Reflow</h2>
       <p class="mixed">Arabic العربية English support@example.org 1234567890 / نسخة-طويلة-للاختبار-بدون-افتراض-اتجاه.</p>
+    </section>
+
+    <section class="card" aria-labelledby="focus-title">
+      <h2 id="focus-title">Focus not obscured</h2>
+      <div class="focus-viewport" data-focus-viewport tabindex="-1">
+        <div class="focus-sticky" data-focus-sticky>Sticky author-created header</div>
+        <div class="focus-content">
+          <button type="button">Start control</button>
+          <div class="focus-spacer" aria-hidden="true"></div>
+          <button type="button" data-focus-target>Focused target / هدف التركيز</button>
+          <div class="focus-spacer" aria-hidden="true"></div>
+        </div>
+      </div>
+    </section>
+
+    <section class="card" aria-labelledby="spacing-title" data-spacing-card>
+      <h2 id="spacing-title">Text spacing override</h2>
+      <div class="spacing-sample" data-spacing-sample dir="auto">
+        <p data-spacing-paragraph>هذا نص عربي طويل نسبيًا لاختبار زيادة تباعد الأسطر والكلمات والحروف دون قص المحتوى أو فقدانه. Rawafid accessibility interoperability.</p>
+        <p data-spacing-paragraph>English text mixed with العربية and support@example.org must remain readable, wrap naturally, and keep the control below usable.</p>
+        <button class="spacing-probe" type="button" data-spacing-control>Continue / متابعة</button>
+      </div>
     </section>
   </main>
 </body>
