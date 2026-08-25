@@ -26,8 +26,16 @@
   "developmentStatus": "active",
   "isAccessibleForFree": true,
   "author": [{
-    "@type": "Organization",
-    "name": "Rawafid contributors",
+    "@type": "Person",
+    "name": "Khaled Altheeb",
+    "email": "mailto:khaledaltheeb@gmail.com",
+    "url": "https://github.com/khaledaltheeb"
+  }],
+  "maintainer": [{
+    "@type": "Person",
+    "name": "Khaled Altheeb",
+    "email": "mailto:contact@healthrenewal.org",
+    "telephone": "+962795945817",
     "url": "https://healthrenewal.org/"
   }],
   "citation": "https://github.com/khaledaltheeb/rawafid-arabic-rtl-a11y-toolkit/blob/main/CITATION.cff",
