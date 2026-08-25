@@ -29,6 +29,8 @@ const built = await import(`${pathToFileURL(entryPath).href}?contract=${Date.now
 const requiredExports = [
   'getLocaleDirection',
   'getLocaleCapabilities',
+  'getLocaleNumberSymbols',
+  'parseLocalizedDecimal',
   'supportedIntlValues',
   'segmentGraphemes',
   'segmentWords',
@@ -74,6 +76,19 @@ if (!digitReport.mixed || digitReport.digitCount !== 3 || digitReport.systems.le
 }
 if (built.findTypeaheadMatch([{ label: '٢٥ العربية' }], '25', { locale: 'ar' }) !== 0) {
   throw new Error('Built package digit-aware typeahead contract failed.');
+}
+
+const arabicSymbols = built.getLocaleNumberSymbols('ar-JO', { numberingSystem: 'arab' });
+if (arabicSymbols.numberingSystem !== 'arab' || arabicSymbols.digits.join('') !== '٠١٢٣٤٥٦٧٨٩') {
+  throw new Error('Built package locale-number-symbol contract failed.');
+}
+const arabicParsed = built.parseLocalizedDecimal('١٢٬٣٤٥٫٦', 'ar-JO', { numberingSystem: 'arab' });
+if (!arabicParsed.ok || arabicParsed.normalized !== '12345.6' || arabicParsed.value !== 12345.6) {
+  throw new Error('Built package localized-decimal parsing contract failed.');
+}
+const indianParsed = built.parseLocalizedDecimal('12,34,567.89', 'en-IN');
+if (!indianParsed.ok || indianParsed.value !== 1234567.89) {
+  throw new Error('Built package non-Western grouping contract failed.');
 }
 
 const selection = built.normalizeSelection(4, 0, [2], 'single');
