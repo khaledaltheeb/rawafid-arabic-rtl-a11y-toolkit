@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
   "suite": "rawafid-partner-interoperability-v1",
-  "purpose": "Vendor-neutral browser, accessibility-environment, Arabic/RTL, bidi, localized-input, reflow, visual-reference, and Unicode-risk evidence for external testing and research integrations.",
+  "purpose": "Vendor-neutral browser, accessibility-environment, Arabic/RTL, bidi, localized-input, reflow, visual-reference, Unicode-risk, and cross-engine observation evidence for external testing and research integrations.",
   "runner": "Playwright Test",
   "projects": [
     "chromium-desktop",
@@ -33,6 +33,10 @@
     {
       "path": "tests/e2e/digits.spec.ts",
       "domains": ["digit-systems", "arabic-indic", "extended-arabic-indic", "search-interoperability"]
+    },
+    {
+      "path": "tests/e2e/interoperability-observatory.spec.ts",
+      "domains": ["cross-engine-observability", "intl", "unicode-segmentation", "logical-css", "dir-auto"]
     }
   ],
   "assets": [
@@ -46,13 +50,15 @@
     "json": "partner-results/playwright-results.json",
     "junit": "partner-results/junit.xml",
     "html": "playwright-report/",
-    "summary": "partner-results/evidence-summary.json"
+    "summary": "partner-results/evidence-summary.json",
+    "observatory": "partner-results/interoperability-observations.json"
   },
   "nonClaims": [
     "Passing the controlled suite is not a WCAG certification.",
     "Passing the suite does not prove linguistic correctness for every locale.",
     "Passing the suite does not establish universal correctness on browsers, operating-system accessibility themes, or assistive technologies outside the tested matrix.",
     "The Unicode risk corpus does not claim UAX #9 or UTS #39 conformance and is not a maliciousness-verdict dataset.",
+    "An observatory divergence is an observed difference, not automatically a browser defect or standards violation.",
     "Provider-specific execution is not claimed until a provider integration is configured and observed."
   ]
 }
