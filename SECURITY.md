@@ -39,13 +39,16 @@ The toolkit deliberately avoids HTML-generating highlight/localization APIs. `se
 
 Locale tags are canonicalized with the platform `Intl` implementation. Do not concatenate untrusted locale input into filesystem paths, module specifiers, SQL, or URLs without an independent allowlist/encoding policy.
 
-## Supply chain
+## Supply chain and remediation
 
 - External GitHub Actions are pinned to immutable full commit SHAs.
 - Direct development dependencies use exact versions.
 - Dependency Review and CodeQL workflows are included.
+- `npm audit --audit-level=moderate` is part of the mandatory quality gate.
 - npm publishing is designed for OIDC Trusted Publishing with provenance.
 - The release workflow refuses to publish without a committed lockfile.
+
+The project's measurable SCA/SAST thresholds, release-blocking criteria, and suppression requirements are defined in [docs/SECURITY-REMEDIATION-POLICY.md](./docs/SECURITY-REMEDIATION-POLICY.md). Passing automated analysis is evidence about the configured checks, not proof that the codebase is vulnerability-free.
 
 ## Public-scope integrity
 
