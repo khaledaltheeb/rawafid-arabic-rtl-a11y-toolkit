@@ -22,6 +22,15 @@
       "nonClaim": "These independently authored vectors cover selected HTML direction-estimation semantics and are not a copy of, or substitute for, the complete W3C Internationalization test suite."
     },
     {
+      "id": "w3c-i18n-dir-auto-input-dynamic",
+      "title": "Controlled dir=auto form controls recompute direction from dynamically changed values across text, search, tel, url, and email inputs",
+      "source": "https://www.w3.org/International/tests/html-css/list-text-direction.en.php",
+      "test": "tests/e2e/conformance-lab.spec.ts",
+      "fixture": "tests/e2e/conformance-lab.html",
+      "scope": "browser",
+      "nonClaim": "These independently authored vectors test selected dynamic input directionality behavior; they do not claim complete HTML or W3C Internationalization test-suite conformance."
+    },
+    {
       "id": "html-dirname-submission",
       "title": "Form submission preserves textarea direction through dirname",
       "source": "https://html.spec.whatwg.org/multipage/form-control-infrastructure.html#attr-fe-dirname",
