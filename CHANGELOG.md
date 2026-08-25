@@ -22,6 +22,8 @@ All notable changes to this project are documented here. The project follows Sem
 - Conservative decimal digit-system detection, explicit conversion, and search-key normalization for `latn`, `arab`, and `arabext`, including mixed-system diagnostics without altering separators or identifiers.
 - Digit-system-equivalent Arabic search keys and typeahead matching so Latin, Arabic-Indic, and Extended Arabic-Indic decimal digits can match without changing display labels.
 - Built-package contract gate that imports the real `dist/index.js`, validates export/subpath integrity and SSR-safe import behavior, and executes direction, digit, typeahead, selection, and RTL-grid runtime invariants.
+- External packed-consumer verification that installs the actual npm tarball into a clean project, checks package-name runtime imports and CSS export subpaths, and compiles a strict TypeScript consumer against the installed declarations.
+- Reproducible-build verification that performs two clean `dist` builds in the same environment and exact-compares path, byte-length, and SHA-256 manifests for every generated file.
 - `docs/GLOBAL-PLATFORM.md` defining the integrated global engineering layer, standards posture, and non-claims.
 - `docs/INTEROPERABILITY.md` defining framework-neutral integration boundaries, localization workflow, Unicode policy signals, and browser evidence.
 - `docs/SELECTION-MODELS.md` defining active-versus-selected state semantics and selection boundaries.
@@ -48,7 +50,7 @@ All notable changes to this project are documented here. The project follows Sem
 - Strengthened `docs/API-CONTRACT.md` with explicit host-ICU/CLDR variability contracts, typeahead/selection/grid boundaries, and built-package verification semantics.
 - Expanded `docs/QUALITY-GATES.md` with an explicit built-package behavior gate and full composite-browser evidence model.
 - Expanded `docs/TEST-MATRIX.md` to cover locale intelligence, typeahead, selection, rectangular grid navigation, package-contract invariants, and the semantic browser grid.
-- Extended the main `npm run check` gate so package-contract validation is mandatory after source, lint, type, unit, publint, and declaration-resolution checks.
+- Extended the main `npm run check` gate so package-contract, artifact-boundary, packed-consumer, reproducible-build, runtime API, and declaration-fingerprint verification are mandatory after source, lint, type, unit, publint, and declaration-resolution checks.
 
 ### Fixed
 
