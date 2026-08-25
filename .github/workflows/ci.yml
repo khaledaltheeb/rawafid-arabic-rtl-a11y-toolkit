@@ -57,6 +57,8 @@ jobs:
         run: npm install --global npm@11.17.0 --no-audit --no-fund
       - name: Install dependencies deterministically
         run: npm ci --no-audit --no-fund
+      - name: Generate localization QA evidence
+        run: npm run localization:evidence
       - name: Install Playwright browsers
         run: npx playwright install --with-deps chromium firefox webkit
       - name: Browser tests
@@ -72,6 +74,7 @@ jobs:
             partner-results/
             conformance/manifest.json
             conformance/partner-suite.json
+            qa/localization-contract.json
             tests/fixtures/unicode-display-risk-corpus.json
           retention-days: 30
           if-no-files-found: error

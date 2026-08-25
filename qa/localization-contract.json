@@ -1,0 +1,20 @@
+{
+  "schemaVersion": 1,
+  "contract": "rawafid-localization-qa-v1",
+  "referenceLocale": "en",
+  "checks": [
+    {"id":"key-parity","severity":"error","purpose":"Translations must preserve the reference catalog key set."},
+    {"id":"non-empty","severity":"error","purpose":"Translated messages must not be empty."},
+    {"id":"placeholder-multiset-parity","severity":"error","purpose":"Named placeholders and their occurrence counts must match the reference message."},
+    {"id":"markup-token-parity","severity":"error","purpose":"Simple HTML-like opening, closing, and self-closing tag tokens must remain structurally represented."},
+    {"id":"legacy-bidi-control","severity":"error","purpose":"Legacy bidi embeddings and overrides are forbidden in localization catalogs."},
+    {"id":"isolate-balance","severity":"error","purpose":"Unicode bidi isolate initiators must be balanced by PDI without stray terminators."},
+    {"id":"zero-width-context","severity":"info","purpose":"Zero-width characters are reported for review but are not rejected because ZWNJ/ZWJ can be linguistically legitimate in Arabic-script languages."}
+  ],
+  "nonClaims": [
+    "This contract is not a linguistic quality score.",
+    "Markup token parity is a conservative structural check, not a full HTML parser or sanitizer.",
+    "A zero-width finding is contextual evidence, not a maliciousness verdict.",
+    "Passing this contract does not imply Transifex, Weblate, Unicode MessageFormat, or other provider certification."
+  ]
+}
