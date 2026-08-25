@@ -63,7 +63,7 @@
     "test:watch": "vitest",
     "test:e2e": "playwright test",
     "test:a11y": "playwright test tests/e2e/accessibility.spec.ts",
-    "test:partner": "playwright test tests/e2e/accessibility.spec.ts tests/e2e/conformance-lab.spec.ts tests/e2e/visual-reference.spec.ts tests/e2e/number-input.spec.ts tests/e2e/digits.spec.ts",
+    "test:partner": "node scripts/run-partner-suite.mjs",
     "lint": "eslint . --max-warnings=0",
     "catalogs:check": "node scripts/validate-catalogs.mjs",
     "docs:check": "node scripts/check-documentation-contract.mjs",
