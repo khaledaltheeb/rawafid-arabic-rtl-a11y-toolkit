@@ -25,6 +25,7 @@ const RTL_LETTER_SCRIPT = /[\p{Script=Adlam}\p{Script=Arabic}\p{Script=Hebrew}\p
 const LETTER = /\p{Letter}/u;
 const RTL_DIRECTIONAL_MARK = /[\u061C\u200F]/u;
 const LTR_DIRECTIONAL_MARK = /\u200E/u;
+const CANONICAL_SCRIPT_SUBTAG = /^[A-Z][a-z]{3}$/u;
 
 /**
  * Lightweight first-strong direction inference for short UI values. Digits,
@@ -50,8 +51,23 @@ export function normalizeLocaleTag(locale: string): string {
 }
 
 /**
+ * Return an explicitly supplied ISO 15924 script from a canonical BCP 47 tag.
+ * Explicit script metadata is authoritative: a runtime's likely-subtag or
+ * Locale Info data must never override `az-Arab`, `az-Latn`, `ar-Latn`, etc.
+ */
+function explicitScriptFromCanonicalLocale(canonical: string): string | undefined {
+  const subtags = canonical.split('-');
+  for (let index = 1; index < subtags.length; index += 1) {
+    const subtag = subtags[index];
+    if (CANONICAL_SCRIPT_SUBTAG.test(subtag)) return subtag;
+  }
+  return undefined;
+}
+
+/**
  * Resolve direction from the locale's effective script, never from language
- * alone. Intl.Locale#maximize supplies the likely script when one is omitted.
+ * alone. Explicit BCP 47 script metadata wins. Intl.Locale#maximize supplies
+ * the likely script only when one is omitted.
  */
 type LocaleTextInfo = { direction?: string };
 type LocaleWithTextInfo = Intl.Locale & {
@@ -73,17 +89,20 @@ function directionFromLocaleInfo(locale: Intl.Locale): Direction | undefined {
 
 export function getLocaleDirection(locale: string, fallback: Direction = 'ltr'): Direction {
   try {
-    const parsed = new Intl.Locale(normalizeLocaleTag(locale));
+    const canonical = normalizeLocaleTag(locale);
+    const explicitScript = explicitScriptFromCanonicalLocale(canonical);
+    if (explicitScript) return RTL_SCRIPTS.has(explicitScript) ? 'rtl' : 'ltr';
 
-    // Prefer ECMA-402 Locale Info when available. Current engines expose
-    // getTextInfo(); some older engines shipped the equivalent textInfo accessor.
-    // This delegates script metadata to the platform/CLDR and automatically
-    // understands newly added scripts such as Garay when the runtime does.
+    const parsed = new Intl.Locale(canonical);
+
+    // Locale Info is useful only when the caller did not provide an explicit
+    // script. Some engines derive direction from the language's default script,
+    // which must not override an explicit BCP 47 script subtag.
     const platformDirection = directionFromLocaleInfo(parsed);
     if (platformDirection) return platformDirection;
 
     // Compatibility fallback for engines without Locale Info.
-    const script = parsed.script ?? parsed.maximize().script;
+    const script = parsed.maximize().script;
     if (!script) return fallback;
     return RTL_SCRIPTS.has(script) ? 'rtl' : 'ltr';
   } catch {
