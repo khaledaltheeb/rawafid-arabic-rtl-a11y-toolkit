@@ -1,0 +1,111 @@
+<!doctype html>
+<html lang="en" data-visual-fixture="rtl-ltr-v1">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>RTL/LTR visual reference</title>
+  <link rel="stylesheet" href="/styles/logical.css">
+  <link rel="stylesheet" href="/styles/a11y.css">
+  <style>
+    * { box-sizing: border-box; }
+    html { font-family: system-ui, sans-serif; }
+    body { margin: 0; padding: 24px; }
+    main { max-width: 1100px; margin-inline: auto; }
+    .comparison {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 24px;
+    }
+    .panel {
+      min-width: 0;
+      padding: 20px;
+      border: 1px solid currentColor;
+      border-radius: 12px;
+    }
+    .logical-card {
+      margin-block: 18px;
+      padding-block: 14px;
+      padding-inline: 24px 14px;
+      border: 1px solid currentColor;
+      border-inline-start-width: 4px;
+      border-radius: 8px;
+    }
+    .row {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      min-width: 0;
+    }
+    .row > :last-child { min-width: 0; }
+    .mixed-value {
+      display: inline-block;
+      max-width: 100%;
+      overflow-wrap: anywhere;
+    }
+    .actions {
+      display: flex;
+      gap: 8px;
+      margin-block-start: 16px;
+    }
+    input {
+      inline-size: 100%;
+      min-inline-size: 0;
+      padding: 8px 10px;
+      border: 1px solid currentColor;
+      border-radius: 6px;
+    }
+    @media (max-width: 720px) {
+      body { padding: 12px; }
+      .comparison { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+  <main>
+    <h1>Bidirectional visual reference</h1>
+    <p>This fixture intentionally renders the same logical component in LTR and RTL for deterministic interoperability checks.</p>
+
+    <div class="comparison" data-comparison>
+      <section class="panel" dir="ltr" lang="en" data-panel="ltr" aria-labelledby="ltr-title">
+        <h2 id="ltr-title">English / LTR</h2>
+        <article class="logical-card" data-card>
+          <div class="row">
+            <span aria-hidden="true">→</span>
+            <div>
+              <strong>Account</strong><br>
+              <bdi class="mixed-value">support@example.org / إصدار 2.4</bdi>
+            </div>
+          </div>
+        </article>
+        <label>Email
+          <input dir="ltr" type="email" value="support@example.org" data-email>
+        </label>
+        <div class="actions">
+          <button type="button">Previous</button>
+          <button type="button">Next</button>
+        </div>
+      </section>
+
+      <section class="panel" dir="rtl" lang="ar" data-panel="rtl" aria-labelledby="rtl-title">
+        <h2 id="rtl-title">العربية / RTL</h2>
+        <article class="logical-card" data-card>
+          <div class="row">
+            <span aria-hidden="true">←</span>
+            <div>
+              <strong>الحساب</strong><br>
+              <bdi class="mixed-value">support@example.org / version 2.4</bdi>
+            </div>
+          </div>
+        </article>
+        <label>البريد الإلكتروني
+          <input dir="ltr" type="email" value="support@example.org" data-email>
+        </label>
+        <div class="actions">
+          <button type="button">السابق</button>
+          <button type="button">التالي</button>
+        </div>
+      </section>
+    </div>
+  </main>
+</body>
+</html>
