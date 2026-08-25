@@ -29,7 +29,9 @@ Requires catalog key parity, string values, non-empty messages, placeholder pari
 
 ## Gate 5: logic
 
-Vitest unit tests exercise normal, edge, counterexample, and failure behavior. Locale-data assertions should test owned invariants rather than freeze incidental ICU/CLDR wording when the package does not own that wording.
+Vitest unit tests exercise normal, edge, counterexample, and failure behavior. Locale-data assertions test package-owned invariants instead of freezing incidental ICU/CLDR wording or lists.
+
+The current interaction layer includes unit evidence for RTL/LTR keyboard movement, roving focus, locale-aware typeahead, disabled-state handling, active-vs-selected independence, single/multiple/range selection, rectangular grid coordinates, RTL physical arrows, row wrapping policy, paging, and grid boundary errors.
 
 ## Gate 6: package shape
 
@@ -38,13 +40,46 @@ Vitest unit tests exercise normal, edge, counterexample, and failure behavior. L
 - Are The Types Wrong validates declaration/runtime resolution.
 - the committed lockfile is the deterministic CI dependency input.
 
-## Gate 7: browser/accessibility
+## Gate 7: built package behavior
 
-Playwright runs Chromium, Firefox, WebKit, and a mobile Chromium profile against the **built package**. The controlled RTL fixture exercises mixed-direction text, forms, emails/identifiers, breadcrumb navigation, tabular content, logical CSS, live regions, RTL composite focus behavior, QA helpers, and horizontal-overflow regression checks.
+`npm run package:contract`
 
-axe-core is executed against the controlled fixture. A zero-violation automated result is a regression gate only and is not a WCAG certification.
+The gate imports the actual built `dist/index.js` in a non-DOM Node process and verifies:
 
-## Gate 8: repository security
+- JavaScript/declaration root export mapping;
+- required CSS/package subpaths;
+- representative public exports;
+- import safety without browser globals;
+- script-direction behavior;
+- locale-aware typeahead;
+- active-vs-selected selection state;
+- physical RTL rectangular-grid movement and row Home behavior.
+
+This is deliberately separate from source unit tests: source can be correct while generated declarations, bundling, or export maps are wrong.
+
+## Gate 8: browser/accessibility
+
+Playwright runs Chromium, Firefox, WebKit, and a mobile Chromium profile against the **built package**.
+
+The controlled Arabic RTL fixture exercises:
+
+- document language/direction and script-aware direction resolution;
+- mixed-direction text and `<bdi>` isolation;
+- Arabic forms plus intrinsically LTR identifiers/email;
+- breadcrumb and tabular content;
+- CSS logical inline-start mapping;
+- live regions;
+- RTL roving composite focus with disabled-item skipping;
+- locale-aware typeahead from the built package;
+- modified-shortcut and IME/composition boundaries;
+- a semantic 2×3 RTL grid with one page-tab stop;
+- physical RTL horizontal movement, vertical movement, Home and End;
+- pseudo-localization, grapheme-safe truncation, and Unicode-risk output;
+- horizontal-overflow regression checks.
+
+axe-core is executed against the complete controlled fixture. A zero-violation automated result is a regression gate only and is not a WCAG certification.
+
+## Gate 9: repository security
 
 - CodeQL.
 - Dependency Review.
@@ -53,13 +88,13 @@ axe-core is executed against the controlled fixture. A zero-violation automated 
 - minimal workflow permissions.
 - documented threat/scope boundaries.
 
-## Gate 9: publication
+## Gate 10: publication
 
 Publication requires the repository release workflow's fail-closed conditions, including exact tag/package-version identity, supported publishing runtime/toolchain, deterministic install, full package checks, dry-run packaging, and SPDX SBOM generation.
 
 For a brand-new npm package, the repository does not pretend OIDC can bootstrap package creation. The one-time first publication requires separately verified npm scope access/account security; subsequent releases may use the configured Trusted Publisher/OIDC path after it has actually been established.
 
-## Gate 10: evidence integrity
+## Gate 11: evidence integrity
 
 Before a release note, README statement, provider application, or public claim describes a gate or capability as verified:
 
