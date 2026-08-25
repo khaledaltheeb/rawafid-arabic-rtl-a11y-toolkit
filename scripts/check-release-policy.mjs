@@ -53,9 +53,11 @@ if (!releaseSource.includes('Registry artifact integrity mismatch')) {
   errors.push('release.yml: registry integrity mismatch must fail closed.');
 }
 
-requireText(preflightSource, 'release-preflight.yml', 'workflow_dispatch:', 'manual-only trigger');
+requireText(preflightSource, 'release-preflight.yml', 'workflow_dispatch:', 'manual preflight trigger');
+requireText(preflightSource, 'release-preflight.yml', "- 'preflight/**'", 'isolated preflight branch trigger');
 requireText(preflightSource, 'release-preflight.yml', 'permissions:\n  contents: read', 'read-only workflow permission');
 requireText(preflightSource, 'release-preflight.yml', 'persist-credentials: false', 'non-persistent checkout credentials');
+requireText(preflightSource, 'release-preflight.yml', "github.event_name == 'workflow_dispatch' && inputs.ref || github.sha", 'event-bound checkout ref selection');
 requireText(preflightSource, 'release-preflight.yml', 'npm run check', 'full release-candidate gate');
 requireText(preflightSource, 'release-preflight.yml', 'npm pack --json --ignore-scripts > npm-pack.json', 'exact candidate tarball build');
 requireText(preflightSource, 'release-preflight.yml', 'npm sbom --sbom-format=spdx --sbom-type=library > sbom.spdx.json', 'SPDX SBOM');
@@ -71,7 +73,7 @@ if (/attestations:\s*write/u.test(preflightSource) || /actions\/attest@/u.test(p
   errors.push('release-preflight.yml: attestations are forbidden; preflight must not create release provenance claims.');
 }
 if (/\brelease:\s*\n/u.test(preflightSource) || /types:\s*\[published\]/u.test(preflightSource)) {
-  errors.push('release-preflight.yml: release-published triggers are forbidden; preflight must remain manual-only.');
+  errors.push('release-preflight.yml: release-published triggers are forbidden; preflight must remain separate from publication.');
 }
 const preflightPackCommands = preflightSource.match(/npm pack --json --ignore-scripts/gmu) ?? [];
 if (preflightPackCommands.length !== 1) errors.push(`release-preflight.yml: expected exactly one exact tarball build, found ${preflightPackCommands.length}.`);
@@ -97,5 +99,5 @@ if (errors.length > 0) {
   console.error(errors.join('\n'));
   process.exitCode = 1;
 } else {
-  console.log('Release policy contract passed: publishing remains release-only, while manual preflight builds equivalent candidate evidence without publication, OIDC, or attestations.');
+  console.log('Release policy contract passed: publishing remains release-only, while manual or isolated preflight branches build equivalent candidate evidence without publication, OIDC, or attestations.');
 }
