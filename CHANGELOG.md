@@ -16,13 +16,18 @@ All notable changes to this project are documented here. The project follows Sem
 - Structured `formatToParts` wrappers for numbers, dates, lists, and relative time for component-level and bidi-aware rendering.
 - Unicode display-risk diagnostics covering bidi controls/overrides, unbalanced isolates, zero-width characters, and mixed-script identifiers without claiming full UTS #39 confusable detection.
 - RTL-aware roving-focus and roving-tabindex state helpers with disabled-item handling for composite widgets.
-- Locale-aware typeahead matching and deterministic multi-character buffer state for composite widgets, with Arabic and Latin-script tests.
-- Built-package contract gate that imports the real `dist/index.js`, validates export/subpath integrity, checks SSR-safe import behavior, and executes representative runtime invariants.
+- Locale-aware typeahead matching with `Intl.Collator` search semantics, grapheme-safe prefixes, deterministic multi-character buffer state, and Arabic/Latin-script tests.
+- Composite selection primitives that keep active/focus state independent from selected state, including single, multiple, non-empty, disabled-item, and inclusive-range behavior.
+- Direction-aware rectangular grid navigation with RTL physical horizontal arrows, vertical movement, row Home/End, grid Control+Home/End, caller-defined paging, conservative non-wrapping data-grid defaults, and opt-in layout-grid wrapping.
+- Built-package contract gate that imports the real `dist/index.js`, validates export/subpath integrity and SSR-safe import behavior, and executes direction, typeahead, selection, and RTL-grid runtime invariants.
 - `docs/GLOBAL-PLATFORM.md` defining the integrated global engineering layer, standards posture, and non-claims.
 - `docs/INTEROPERABILITY.md` defining framework-neutral integration boundaries, localization workflow, Unicode policy signals, and browser evidence.
-- Cross-module unit coverage for the global platform capabilities, including Arabic plural categories and locale-sensitive segmentation/formatting.
-- Expanded built-package browser fixture covering mixed-direction forms, breadcrumb navigation, tabular identifiers/numbers, RTL composite tabs, pseudo-localization, grapheme-safe truncation, and Unicode display-risk output.
-- Browser assertions that RTL roving focus skips disabled items and that the expanded fixture remains free of horizontal document overflow.
+- `docs/SELECTION-MODELS.md` defining active-versus-selected state semantics and selection boundaries.
+- `docs/GRID-NAVIGATION.md` defining rectangular grid index, RTL movement, wrapping, paging, and host-semantics boundaries.
+- `docs/COMPOSITE-INTERACTIONS.md` defining the integrated movement/typeahead/selection/grid architecture and its source/package/browser verification layers.
+- Cross-module unit coverage for global platform capabilities, including Arabic plural categories, locale-sensitive segmentation/formatting, typeahead, selection, and RTL/LTR grid behavior.
+- Expanded built-package browser fixture covering mixed-direction forms, breadcrumbs, tabular identifiers/numbers, RTL composite tabs, locale-aware typeahead, a semantic 2×3 RTL grid, pseudo-localization, grapheme-safe truncation, and Unicode display-risk output.
+- Browser assertions for RTL roving focus, disabled-item skipping, typeahead, modifier/composition boundaries, physical RTL grid movement, vertical movement, Home/End, single grid tab stop, and horizontal-overflow prevention across Chromium, Firefox, WebKit, and mobile Chromium.
 
 ### Changed
 
@@ -34,10 +39,12 @@ All notable changes to this project are documented here. The project follows Sem
 - Added repository ownership metadata and clarified first-publication readiness requirements.
 - Defined the canonical project identity: the platform name is Rawafid (روافد), the official production website is `https://healthrenewal.org/`, and this GitHub repository is the separate open-source source-code home for the toolkit.
 - Pointed npm package homepage metadata to the official Rawafid website while preserving GitHub as the canonical repository and issue tracker.
-- Expanded the public API surface with reusable Unicode, localization QA, locale metadata, segmentation, pluralization, structured formatting, display-name, grapheme, typeahead, and composite-widget interaction primitives while retaining zero runtime dependencies.
+- Expanded the public API surface with reusable Unicode, localization QA, locale metadata, segmentation, pluralization, structured formatting, display-name, grapheme, typeahead, selection, and grid-interaction primitives while retaining zero runtime dependencies.
 - Reworked the README into a capability map and integration guide for the broader global platform surface.
 - Advanced the roadmap to reflect completed grapheme, pseudo-localization, Unicode diagnostics, locale-capability, roving-focus, and mixed-direction fixture work instead of listing it as future scope.
-- Strengthened `docs/API-CONTRACT.md` with explicit host-ICU/CLDR variability contracts, typeahead boundaries, and built-package verification semantics.
+- Strengthened `docs/API-CONTRACT.md` with explicit host-ICU/CLDR variability contracts, typeahead/selection/grid boundaries, and built-package verification semantics.
+- Expanded `docs/QUALITY-GATES.md` with an explicit built-package behavior gate and full composite-browser evidence model.
+- Expanded `docs/TEST-MATRIX.md` to cover locale intelligence, typeahead, selection, rectangular grid navigation, package-contract invariants, and the semantic browser grid.
 - Extended the main `npm run check` gate so package-contract validation is mandatory after source, lint, type, unit, publint, and declaration-resolution checks.
 
 ### Fixed
@@ -50,6 +57,8 @@ All notable changes to this project are documented here. The project follows Sem
 - Roving-tabindex recovery now preserves locality by choosing the next enabled item when the active item becomes disabled.
 - Pseudo-localization fractional expansion ratios now produce deterministic text expansion instead of being rounded away.
 - Structured list-format part typing now derives from the host API return type instead of relying on a TypeScript library alias absent from the Node 22 baseline.
+- Removed an unstable German collation test assumption (`Ö` versus `O`) and retained only locale behavior guaranteed by the platform contract instead of forcing ICU/CLDR-specific expectations.
+- Corrected the semantic RTL grid fixture layout so each ARIA row renders as an actual three-column visual row.
 
 ### Remaining external setup
 
