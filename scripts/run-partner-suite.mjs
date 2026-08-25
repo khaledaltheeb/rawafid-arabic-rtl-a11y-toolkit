@@ -10,8 +10,9 @@ if (!Array.isArray(manifest.specs) || manifest.specs.length === 0) {
 }
 
 const specs = manifest.specs.map((entry) => entry.path);
+const forwarded = process.argv.slice(2);
 const playwrightCli = resolve(root, 'node_modules/@playwright/test/cli.js');
-const result = spawnSync(process.execPath, [playwrightCli, 'test', ...specs], {
+const result = spawnSync(process.execPath, [playwrightCli, 'test', ...specs, ...forwarded], {
   cwd: root,
   stdio: 'inherit',
   env: process.env,
