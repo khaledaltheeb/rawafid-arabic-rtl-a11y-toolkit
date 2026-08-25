@@ -4,6 +4,7 @@ coverage/
 playwright-report/
 test-results/
 partner-results/
+review-site/
 .env
 .env.*
 !.env.example
