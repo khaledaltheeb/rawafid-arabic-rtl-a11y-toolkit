@@ -1,0 +1,62 @@
+<!doctype html>
+<html lang="en" data-conformance-lab="v1">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Rawafid standards conformance lab</title>
+  <link rel="stylesheet" href="/styles/a11y.css">
+  <link rel="stylesheet" href="/styles/logical.css">
+  <style>
+    * { box-sizing: border-box; }
+    html { font-family: system-ui, sans-serif; }
+    body { margin: 0; padding: 16px; }
+    main { max-width: 960px; margin-inline: auto; }
+    .stack { display: grid; gap: 16px; }
+    .card { border: 1px solid currentColor; border-radius: 8px; padding: 16px; min-width: 0; }
+    .target-row { display: flex; gap: 8px; flex-wrap: wrap; }
+    .target { min-inline-size: 24px; min-block-size: 24px; padding: 4px 8px; }
+    input, textarea { inline-size: 100%; min-inline-size: 0; max-inline-size: 100%; }
+    .mixed { overflow-wrap: anywhere; }
+    @media (max-width: 320px) {
+      body { padding: 8px; }
+      .card { padding: 12px; }
+    }
+  </style>
+</head>
+<body>
+  <main class="stack">
+    <h1>Standards conformance lab</h1>
+
+    <section class="card" aria-labelledby="auto-title">
+      <h2 id="auto-title">Automatic direction</h2>
+      <p id="auto-ar" dir="auto" data-dir-auto>مرحبا Rawafid</p>
+      <p id="auto-en" dir="auto" data-dir-auto>Hello روافد</p>
+      <p class="mixed"><bdi data-bdi>support@example.org — إصدار 3</bdi></p>
+    </section>
+
+    <section class="card" aria-labelledby="form-title">
+      <h2 id="form-title">Direction-aware form submission</h2>
+      <form id="direction-form" action="/echo" method="get">
+        <label>Unknown-direction message
+          <textarea name="message" dirname="message.dir" dir="auto" data-direction-field>مرحبا بالعالم</textarea>
+        </label>
+        <button class="target" type="submit" data-submit>Submit</button>
+      </form>
+    </section>
+
+    <section class="card" aria-labelledby="target-title">
+      <h2 id="target-title">Pointer target floor</h2>
+      <div class="target-row">
+        <button class="target" type="button" data-target>1</button>
+        <button class="target" type="button" data-target>2</button>
+        <a class="target" href="#auto-title" data-target>Jump</a>
+      </div>
+    </section>
+
+    <section class="card" aria-labelledby="reflow-title">
+      <h2 id="reflow-title">Reflow</h2>
+      <p class="mixed">Arabic العربية English support@example.org 1234567890 / نسخة-طويلة-للاختبار-بدون-افتراض-اتجاه.</p>
+    </section>
+  </main>
+</body>
+</html>
