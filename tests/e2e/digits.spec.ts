@@ -2,17 +2,14 @@ import { expect, test } from '@playwright/test';
 
 type Toolkit = typeof import('../../src/index');
 
-async function loadToolkitInBrowser(): Promise<Toolkit> {
-  return (0, eval)('import("/dist/index.js")') as Promise<Toolkit>;
-}
-
 test.beforeEach(async ({ page }) => {
   await page.goto('/');
 });
 
 test('built browser package preserves source text while normalizing decimal digits for search', async ({ page }) => {
   const result = await page.evaluate(async () => {
-    const toolkit = await (0, eval)('import("/dist/index.js")') as Toolkit;
+    const moduleUrl = '/dist/index.js';
+    const toolkit = await import(moduleUrl) as Toolkit;
     const source = 'الإصدار ۲۵ — القيمة ١٢٬٥٠٠';
     return {
       source,
@@ -29,7 +26,8 @@ test('built browser package preserves source text while normalizing decimal digi
 
 test('built locale-aware typeahead treats Latin, Arabic-Indic, and Eastern Arabic-Indic digits as search-equivalent', async ({ page }) => {
   const matches = await page.evaluate(async () => {
-    const toolkit = await (0, eval)('import("/dist/index.js")') as Toolkit;
+    const moduleUrl = '/dist/index.js';
+    const toolkit = await import(moduleUrl) as Toolkit;
     const items = [
       { label: 'الإصدار ٢٥' },
       { label: 'الإصدار ۲۶' },
@@ -47,11 +45,10 @@ test('built locale-aware typeahead treats Latin, Arabic-Indic, and Eastern Arabi
 
 test('digit conversion preserves punctuation, separators, signs, and unrelated Unicode numerics', async ({ page }) => {
   const result = await page.evaluate(async () => {
-    const toolkit = await (0, eval)('import("/dist/index.js")') as Toolkit;
+    const moduleUrl = '/dist/index.js';
+    const toolkit = await import(moduleUrl) as Toolkit;
     return toolkit.convertDigits('−١٢٫٥٪ | +۱۲٬۵۰۰ | Ⅻ²', 'latn');
   });
 
   expect(result).toBe('−12٫5٪ | +12٬500 | Ⅻ²');
 });
-
-void loadToolkitInBrowser;
