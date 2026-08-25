@@ -1,0 +1,48 @@
+{
+  "$schema": "../schemas/research-assets.schema.json",
+  "schemaVersion": 1,
+  "project": "Rawafid Arabic/RTL Accessibility & Localization Toolkit",
+  "reviewedAt": "2026-08-25",
+  "assets": [
+    {
+      "id": "unicode-display-risk-corpus",
+      "title": "Arabic-aware Unicode display-risk corpus",
+      "path": "tests/fixtures/unicode-display-risk-corpus.json",
+      "type": "research-corpus",
+      "domains": ["unicode-security", "arabic", "bidi-controls", "mixed-script", "zero-width"],
+      "evidence": ["tests/unit/unicode-security-corpus.test.ts"],
+      "documentation": "docs/UNICODE-RISK-CORPUS.md",
+      "nonClaim": "This asset is an independently authored regression corpus, not Unicode conformance data and not a maliciousness-verdict dataset."
+    },
+    {
+      "id": "grapheme-interoperability-corpus",
+      "title": "Arabic-aware grapheme interoperability corpus",
+      "path": "tests/fixtures/grapheme-interoperability-corpus.json",
+      "type": "research-corpus",
+      "domains": ["unicode-text-segmentation", "arabic", "grapheme-clusters", "emoji", "safe-truncation"],
+      "evidence": ["tests/unit/grapheme-corpus.test.ts"],
+      "documentation": "docs/GRAPHEME-INTEROPERABILITY-CORPUS.md",
+      "nonClaim": "This asset does not claim complete UAX #29 conformance; runtime Intl.Segmenter supplies segmentation behavior."
+    },
+    {
+      "id": "standards-conformance-manifest",
+      "title": "Standards conformance evidence manifest",
+      "path": "conformance/manifest.json",
+      "type": "evidence-manifest",
+      "domains": ["w3c-i18n", "html", "wcag-2.2", "accessibility"],
+      "evidence": ["tests/e2e/conformance-lab.spec.ts", "tests/e2e/accessibility-environments.spec.ts"],
+      "documentation": "docs/TEST-MATRIX.md",
+      "nonClaim": "The manifest records controlled regression evidence and does not constitute third-party certification."
+    },
+    {
+      "id": "localization-qa-contract",
+      "title": "Arabic/RTL localization QA contract",
+      "path": "qa/localization-contract.json",
+      "type": "machine-contract",
+      "domains": ["localization", "placeholders", "markup", "bidi-isolates", "zero-width"],
+      "evidence": ["partner-results/localization-qa.json"],
+      "documentation": "docs/LOCALIZATION-QA-EVIDENCE.md",
+      "nonClaim": "The contract checks structural message integrity and does not establish translation quality or linguistic correctness."
+    }
+  ]
+}
