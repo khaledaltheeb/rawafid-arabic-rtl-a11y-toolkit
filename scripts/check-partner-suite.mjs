@@ -5,10 +5,14 @@ import { resolve } from 'node:path';
 const root = process.cwd();
 const manifestPath = resolve(root, 'conformance/partner-suite.json');
 const manifest = JSON.parse(await readFile(manifestPath, 'utf8'));
+const packageJson = JSON.parse(await readFile(resolve(root, 'package.json'), 'utf8'));
 
 if (manifest.schemaVersion !== 1) throw new Error('Unsupported partner-suite schemaVersion');
 if (!manifest.suite || !manifest.purpose || manifest.runner !== 'Playwright Test') {
   throw new Error('Partner suite identity is incomplete');
+}
+if (packageJson.scripts?.['test:partner'] !== 'node scripts/run-partner-suite.mjs') {
+  throw new Error('test:partner must delegate to the manifest-driven partner runner.');
 }
 if (!Array.isArray(manifest.projects) || manifest.projects.length === 0) {
   throw new Error('Partner suite must declare browser projects');
@@ -32,6 +36,7 @@ for (const spec of manifest.specs) {
   }
   await verifyPath(spec.path, 'Partner spec');
 }
+await verifyPath('scripts/run-partner-suite.mjs', 'Partner runner');
 
 if (!Array.isArray(manifest.assets)) throw new Error('Partner suite must declare an assets array');
 for (const asset of manifest.assets) {
@@ -49,4 +54,4 @@ if (!Array.isArray(manifest.nonClaims) || manifest.nonClaims.length === 0) {
   throw new Error('Partner suite must state non-claim boundaries');
 }
 
-console.log(`Partner interoperability contract passed for ${manifest.specs.length} specs and ${manifest.assets.length} research assets across ${manifest.projects.length} browser projects.`);
+console.log(`Partner interoperability contract passed for ${manifest.specs.length} specs and ${manifest.assets.length} research assets across ${manifest.projects.length} browser projects; test:partner is manifest-driven.`);
