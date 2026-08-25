@@ -75,6 +75,7 @@ jobs:
             conformance/manifest.json
             conformance/partner-suite.json
             qa/localization-contract.json
+            schemas/
             tests/fixtures/unicode-display-risk-corpus.json
           retention-days: 30
           if-no-files-found: error
