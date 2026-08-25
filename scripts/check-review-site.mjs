@@ -42,8 +42,24 @@ for (const entry of manifest.files) {
 }
 
 const html = await readFile(join(outputRoot, 'index.html'), 'utf8');
-for (const absolutePath of ['/review-lab/', '/dist/index.js', '/styles/a11y.css', '/styles/logical.css']) {
-  if (html.includes(absolutePath)) fail(`index.html still depends on absolute path ${absolutePath}.`);
+const forbiddenAbsoluteAttributes = [
+  'href="/styles/a11y.css"',
+  'href="/styles/logical.css"',
+  'href="/review-lab/site.css"',
+  'src="/review-lab/site.js"',
+];
+for (const attribute of forbiddenAbsoluteAttributes) {
+  if (html.includes(attribute)) fail(`index.html still contains absolute asset reference ${attribute}.`);
+}
+
+const requiredPortableAttributes = [
+  'href="./styles/a11y.css"',
+  'href="./styles/logical.css"',
+  'href="./site.css"',
+  'src="./site.js"',
+];
+for (const attribute of requiredPortableAttributes) {
+  if (!html.includes(attribute)) fail(`index.html is missing portable asset reference ${attribute}.`);
 }
 
 const script = await readFile(join(outputRoot, 'site.js'), 'utf8');
