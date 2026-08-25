@@ -7,6 +7,7 @@ const port = Number(process.env.PORT ?? 4173);
 const routes = new Map([
   ['/', ['tests/e2e/fixture.html', 'text/html; charset=utf-8']],
   ['/visual-reference', ['tests/e2e/visual-reference.html', 'text/html; charset=utf-8']],
+  ['/conformance-lab', ['tests/e2e/conformance-lab.html', 'text/html; charset=utf-8']],
   ['/dist/index.js', ['dist/index.js', 'text/javascript; charset=utf-8']],
   ['/styles/a11y.css', ['styles/a11y.css', 'text/css; charset=utf-8']],
   ['/styles/logical.css', ['styles/logical.css', 'text/css; charset=utf-8']],
@@ -15,6 +16,17 @@ const routes = new Map([
 const server = createServer(async (request, response) => {
   try {
     const url = new URL(request.url ?? '/', `http://${request.headers.host ?? '127.0.0.1'}`);
+
+    if (url.pathname === '/echo') {
+      response.writeHead(200, {
+        'content-type': 'application/json; charset=utf-8',
+        'cache-control': 'no-store',
+        'x-content-type-options': 'nosniff',
+      });
+      response.end(JSON.stringify(Object.fromEntries(url.searchParams.entries())));
+      return;
+    }
+
     const route = routes.get(url.pathname);
     if (!route) {
       response.writeHead(404, { 'content-type': 'text/plain; charset=utf-8' });
