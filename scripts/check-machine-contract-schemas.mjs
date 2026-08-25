@@ -7,6 +7,7 @@ const schemaFiles = [
   'schemas/partner-suite.schema.json',
   'schemas/conformance-manifest.schema.json',
   'schemas/localization-contract.schema.json',
+  'schemas/localization-evidence.schema.json',
   'schemas/evidence-summary.schema.json',
 ];
 
@@ -25,6 +26,7 @@ const bindings = [
   ['conformance/partner-suite.json', 'schemas/partner-suite.schema.json', ['schemaVersion', 'suite', 'specs']],
   ['conformance/manifest.json', 'schemas/conformance-manifest.schema.json', ['schemaVersion', 'project', 'claims']],
   ['qa/localization-contract.json', 'schemas/localization-contract.schema.json', ['schemaVersion', 'contract', 'checks']],
+  ['partner-results/localization-qa.json', 'schemas/localization-evidence.schema.json', ['schemaVersion', 'contract', 'summary', 'findings']],
 ];
 
 for (const [instancePath, schemaPath, expectedFields] of bindings) {
@@ -39,4 +41,4 @@ for (const [instancePath, schemaPath, expectedFields] of bindings) {
   }
 }
 
-console.log(`Machine-readable contract metadata passed for ${schemaFiles.length} Draft 2020-12 schemas and ${bindings.length} committed contract bindings.`);
+console.log(`Machine-readable contract metadata passed for ${schemaFiles.length} Draft 2020-12 schemas and ${bindings.length} contract bindings.`);
