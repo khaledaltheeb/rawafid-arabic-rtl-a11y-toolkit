@@ -17,6 +17,7 @@
     .target { min-inline-size: 24px; min-block-size: 24px; padding: 4px 8px; }
     input, textarea { inline-size: 100%; min-inline-size: 0; max-inline-size: 100%; }
     .mixed { overflow-wrap: anywhere; }
+    .input-direction-grid { display: grid; gap: 8px; }
     .focus-viewport {
       block-size: 180px;
       overflow-y: auto;
@@ -62,6 +63,17 @@
       <div data-dir-auto-traversal="ignore-explicit-dir" dir="auto"><span dir="rtl">مرحبا</span> Beta</div>
       <div data-dir-auto-traversal="skip-weak-neutral" dir="auto">123 — ( ) مرحبا</div>
       <div data-dir-auto-traversal="no-strong-default" dir="auto">123 — ( )</div>
+    </section>
+
+    <section class="card" aria-labelledby="dynamic-input-title">
+      <h2 id="dynamic-input-title">Dynamic input direction</h2>
+      <div class="input-direction-grid">
+        <input type="text" dir="auto" data-dir-auto-input="text" aria-label="Text direction probe">
+        <input type="search" dir="auto" data-dir-auto-input="search" aria-label="Search direction probe">
+        <input type="tel" dir="auto" data-dir-auto-input="tel" aria-label="Telephone direction probe">
+        <input type="url" dir="auto" data-dir-auto-input="url" aria-label="URL direction probe">
+        <input type="email" dir="auto" data-dir-auto-input="email" aria-label="Email direction probe">
+      </div>
     </section>
 
     <section class="card" aria-labelledby="form-title">
