@@ -1,0 +1,81 @@
+{
+  "schemaVersion": 1,
+  "title": "Rawafid Unicode display-risk regression corpus",
+  "basis": [
+    "Unicode Standard Annex #9: Unicode Bidirectional Algorithm 17.0.0",
+    "Unicode Technical Standard #39: Unicode Security Mechanisms 17.0.0"
+  ],
+  "scope": "Independent regression vectors for the toolkit's deliberately limited display-risk diagnostics. This corpus is not copied from Unicode conformance data and does not claim UAX #9 or UTS #39 conformance.",
+  "cases": [
+    {
+      "id": "plain-arabic",
+      "value": "مرحبا بالعالم",
+      "expectedRisks": [],
+      "expectedScripts": ["Arabic"],
+      "interpretation": "ordinary Arabic text"
+    },
+    {
+      "id": "plain-latin-email",
+      "value": "support@example.org",
+      "expectedRisks": [],
+      "expectedScripts": ["Latin"],
+      "interpretation": "ordinary intrinsically LTR identifier"
+    },
+    {
+      "id": "mixed-arabic-latin-label",
+      "value": "روافد Rawafid",
+      "expectedRisks": ["mixed-script"],
+      "expectedScripts": ["Arabic", "Latin"],
+      "interpretation": "legitimate mixed-language display text; diagnostic is context, not a maliciousness verdict"
+    },
+    {
+      "id": "mixed-latin-cyrillic-lookalike",
+      "value": "pаypal",
+      "expectedRisks": ["mixed-script"],
+      "expectedScripts": ["Latin", "Cyrillic"],
+      "interpretation": "mixed-script identifier requiring policy review; the second character is Cyrillic"
+    },
+    {
+      "id": "bidi-override",
+      "value": "invoice\u202Etxt.exe",
+      "expectedRisks": ["bidi-control", "bidi-override"],
+      "expectedScripts": ["Latin"],
+      "interpretation": "legacy explicit override control in an identifier-like value"
+    },
+    {
+      "id": "balanced-rtl-isolate",
+      "value": "prefix \u2067مرحبا\u2069 suffix",
+      "expectedRisks": ["bidi-control", "mixed-script"],
+      "expectedScripts": ["Latin", "Arabic"],
+      "interpretation": "balanced isolation is structurally valid but explicit controls are still observable policy signals"
+    },
+    {
+      "id": "unbalanced-rtl-isolate",
+      "value": "prefix \u2067مرحبا",
+      "expectedRisks": ["bidi-control", "unbalanced-isolate", "mixed-script"],
+      "expectedScripts": ["Latin", "Arabic"],
+      "interpretation": "unterminated isolate"
+    },
+    {
+      "id": "zero-width-inside-latin",
+      "value": "rawa\u200Bfid",
+      "expectedRisks": ["zero-width"],
+      "expectedScripts": ["Latin"],
+      "interpretation": "zero-width space inside identifier-like Latin text"
+    },
+    {
+      "id": "arabic-zwnj-context-sensitive",
+      "value": "می\u200Cخواهم",
+      "expectedRisks": ["zero-width"],
+      "expectedScripts": ["Arabic"],
+      "interpretation": "ZWNJ can be linguistically legitimate in Arabic-script languages; the signal must not be treated as a verdict"
+    },
+    {
+      "id": "mixed-greek-latin",
+      "value": "paypaλ",
+      "expectedRisks": ["mixed-script"],
+      "expectedScripts": ["Latin", "Greek"],
+      "interpretation": "mixed-script identifier-like value"
+    }
+  ]
+}
