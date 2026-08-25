@@ -18,6 +18,17 @@ describe('locale-aware typeahead', () => {
     expect(findTypeaheadMatch(items, 'e', { locale: 'fr' })).toBe(0);
   });
 
+  it('matches equivalent decimal digits across Latin and Arabic-script systems', () => {
+    const items = [
+      { label: '25 English' },
+      { label: '٢٥ العربية' },
+      { label: '۲۵ فارسی' },
+    ];
+    expect(findTypeaheadMatch(items, '25', { locale: 'ar', startIndex: 0 })).toBe(1);
+    expect(findTypeaheadMatch(items, '۲۵', { locale: 'fa', startIndex: 1 })).toBe(2);
+    expect(findTypeaheadMatch(items, '٢٥', { locale: 'en', startIndex: 2 })).toBe(0);
+  });
+
   it('wraps by default and can be constrained to the remaining range', () => {
     const items = [{ label: 'Alpha' }, { label: 'Beta' }, { label: 'Gamma' }];
     expect(findTypeaheadMatch(items, 'a', { locale: 'en', startIndex: 2 })).toBe(0);
