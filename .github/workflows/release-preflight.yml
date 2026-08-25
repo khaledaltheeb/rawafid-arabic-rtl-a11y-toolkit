@@ -1,3 +1,4 @@
+# Self-triggered once to validate the current main before the first public release.
 name: Release preflight
 
 on:
