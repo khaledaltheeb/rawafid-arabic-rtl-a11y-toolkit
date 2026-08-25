@@ -63,7 +63,6 @@ test('focused control is not obscured by author-created sticky content', async (
   await page.goto('/conformance-lab');
 
   const viewport = page.locator('[data-focus-viewport]');
-  const sticky = page.locator('[data-focus-sticky]');
   const target = page.locator('[data-focus-target]');
 
   await viewport.evaluate((element) => { element.scrollTop = 0; });
