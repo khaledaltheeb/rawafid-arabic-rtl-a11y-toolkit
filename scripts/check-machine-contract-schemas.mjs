@@ -10,6 +10,7 @@ const schemaFiles = [
   'schemas/localization-evidence.schema.json',
   'schemas/evidence-summary.schema.json',
   'schemas/research-assets.schema.json',
+  'schemas/review-site-artifact.schema.json',
 ];
 
 const ids = new Set();
@@ -43,4 +44,4 @@ for (const [instancePath, schemaPath, expectedFields] of bindings) {
   }
 }
 
-console.log(`Machine-readable contract metadata passed for ${schemaFiles.length} Draft 2020-12 schemas and ${bindings.length} contract bindings.`);
+console.log(`Machine-readable contract metadata passed for ${schemaFiles.length} Draft 2020-12 schemas and ${bindings.length} committed contract bindings; generated review-site binding is verified by site:check.`);
