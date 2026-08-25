@@ -1,0 +1,45 @@
+{
+  "schemaVersion": 1,
+  "suite": "rawafid-partner-interoperability-v1",
+  "purpose": "Vendor-neutral browser, accessibility, Arabic/RTL, bidi, localized-input, reflow, and visual-reference evidence for external testing and research integrations.",
+  "runner": "Playwright Test",
+  "projects": [
+    "chromium-desktop",
+    "firefox-desktop",
+    "webkit-desktop",
+    "chromium-mobile"
+  ],
+  "specs": [
+    {
+      "path": "tests/e2e/accessibility.spec.ts",
+      "domains": ["accessibility", "rtl", "keyboard", "bidi", "axe", "grid", "typeahead"]
+    },
+    {
+      "path": "tests/e2e/conformance-lab.spec.ts",
+      "domains": ["standards", "dir-auto", "dirname", "wcag-2.2", "reflow", "target-size"]
+    },
+    {
+      "path": "tests/e2e/visual-reference.spec.ts",
+      "domains": ["visual-regression", "logical-css", "rtl-ltr", "responsive"]
+    },
+    {
+      "path": "tests/e2e/number-input.spec.ts",
+      "domains": ["i18n", "localized-number-input", "arabic-digits", "bidi"]
+    },
+    {
+      "path": "tests/e2e/digits.spec.ts",
+      "domains": ["digit-systems", "arabic-indic", "extended-arabic-indic", "search-interoperability"]
+    }
+  ],
+  "outputs": {
+    "json": "partner-results/playwright-results.json",
+    "junit": "partner-results/junit.xml",
+    "html": "playwright-report/"
+  },
+  "nonClaims": [
+    "Passing the controlled suite is not a WCAG certification.",
+    "Passing the suite does not prove linguistic correctness for every locale.",
+    "Passing the suite does not establish universal correctness on browsers or assistive technologies outside the tested matrix.",
+    "Provider-specific execution is not claimed until a provider integration is configured and observed."
+  ]
+}

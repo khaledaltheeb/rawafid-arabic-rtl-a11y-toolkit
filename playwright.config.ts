@@ -1,6 +1,12 @@
 import { defineConfig, devices } from '@playwright/test';
 
 const ciOnlyConfig = process.env.CI ? { workers: 2 } : {};
+const ciReporters = [
+  ['github'] as const,
+  ['html', { open: 'never' }] as const,
+  ['json', { outputFile: 'partner-results/playwright-results.json' }] as const,
+  ['junit', { outputFile: 'partner-results/junit.xml', includeProjectInTestName: true }] as const,
+];
 
 export default defineConfig({
   testDir: './tests/e2e',
@@ -8,7 +14,7 @@ export default defineConfig({
   forbidOnly: Boolean(process.env.CI),
   retries: process.env.CI ? 2 : 0,
   ...ciOnlyConfig,
-  reporter: process.env.CI ? [['github'], ['html', { open: 'never' }]] : 'list',
+  reporter: process.env.CI ? ciReporters : 'list',
   timeout: 30_000,
   expect: { timeout: 5_000 },
   webServer: {
