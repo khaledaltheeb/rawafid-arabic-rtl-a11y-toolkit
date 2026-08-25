@@ -2,6 +2,8 @@
 
 This repository is structured to make legitimate open-source infrastructure applications easier. Program acceptance is always at the provider's discretion and current provider terms control.
 
+For the evidence-backed, provider-by-provider application pack, use [`docs/OSS-APPLICATION-DOSSIER.md`](./OSS-APPLICATION-DOSSIER.md). It records canonical facts, evidence links, current eligibility cautions, a reusable technical narrative, and rejection-risk controls. Re-check official provider criteria immediately before every submission.
+
 ## Canonical identity for applications
 
 - Platform/organization name: **Rawafid (روافد)**.
@@ -21,7 +23,7 @@ If an application asks for the official website, use `healthrenewal.org`. If it 
 - Automated RTL/accessibility tests that demonstrate why browser-testing infrastructure is useful.
 - Real localization files/workflows that demonstrate why translation infrastructure is useful.
 - Clear separation from private/scientific Rawafid content.
-- No paid tier, service sales, or commercialization path for this toolkit when applying to programs that prohibit them.
+- Truthful project-specific funding, revenue, and commercialization answers for programs that impose those criteria.
 - Consistent identity metadata linking Rawafid, `healthrenewal.org`, and the canonical source repository without conflating their roles.
 
 ## Provider fit
@@ -33,4 +35,4 @@ If an application asks for the official website, use `healthrenewal.org`. If it 
 - IDE programs: active maintainers and a sustained developer-facing project.
 - Git hosting programs: public licensed project under a qualifying namespace.
 
-Do not claim eligibility that has not been confirmed by the provider.
+Do not claim eligibility that has not been confirmed by the provider. Do not copy one provider's eligibility answer into another provider's form: funding, revenue, commercialization, namespace, activity, and public-visibility requirements differ.
