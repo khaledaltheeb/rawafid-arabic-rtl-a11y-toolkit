@@ -13,6 +13,15 @@
       "nonClaim": "This verifies the controlled fixture and browser behavior; it does not prove every consuming application applies direction metadata correctly."
     },
     {
+      "id": "w3c-i18n-dir-auto-traversal",
+      "title": "Controlled dir=auto traversal ignores isolated or explicitly directed descendants and skips weak or neutral prefixes",
+      "source": "https://www.w3.org/International/tests/html-css/list-text-direction.en.php",
+      "test": "tests/e2e/conformance-lab.spec.ts",
+      "fixture": "tests/e2e/conformance-lab.html",
+      "scope": "browser",
+      "nonClaim": "These independently authored vectors cover selected HTML direction-estimation semantics and are not a copy of, or substitute for, the complete W3C Internationalization test suite."
+    },
+    {
       "id": "html-dirname-submission",
       "title": "Form submission preserves textarea direction through dirname",
       "source": "https://html.spec.whatwg.org/multipage/form-control-infrastructure.html#attr-fe-dirname",
