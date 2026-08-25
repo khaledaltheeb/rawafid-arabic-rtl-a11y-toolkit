@@ -10,7 +10,7 @@ test('dir=auto and bdi preserve mixed-direction semantics', async ({ page }) => 
   );
 
   expect(directions).toEqual(['rtl', 'ltr']);
-  await expect(page.locator('[data-bdi]')).toHaveAttribute('dir', null);
+  await expect(page.locator('[data-bdi]')).not.toHaveAttribute('dir');
 });
 
 test('dirname submits the user-entered field direction', async ({ page }) => {
