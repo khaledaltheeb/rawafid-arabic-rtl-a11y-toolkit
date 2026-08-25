@@ -70,6 +70,7 @@ jobs:
             partner-results/
             conformance/manifest.json
             conformance/partner-suite.json
+            tests/fixtures/unicode-display-risk-corpus.json
           retention-days: 30
           if-no-files-found: error
       - name: Upload Playwright report on failure
