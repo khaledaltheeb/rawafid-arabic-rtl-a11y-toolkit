@@ -39,6 +39,8 @@
     "test:a11y": "playwright test tests/e2e/accessibility.spec.ts",
     "test:partner": "node scripts/run-partner-suite.mjs",
     "partner:runner-check": "npm run test:partner -- --list",
+    "site:build": "npm run build && node scripts/build-review-site.mjs",
+    "site:check": "npm run site:build && node scripts/check-review-site.mjs",
     "lint": "eslint . --max-warnings=0",
     "catalogs:check": "node scripts/validate-catalogs.mjs",
     "localization:evidence": "node scripts/localization-evidence.mjs",
