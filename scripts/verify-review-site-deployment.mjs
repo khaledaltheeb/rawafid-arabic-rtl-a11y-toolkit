@@ -69,7 +69,10 @@ async function fetchBytes(url) {
       signal: AbortSignal.timeout(15_000),
     });
   } catch (error) {
-    throw new Error(`request failed for ${url.href}: ${error instanceof Error ? error.message : String(error)}`);
+    throw new Error(
+      `request failed for ${url.href}: ${error instanceof Error ? error.message : String(error)}`,
+      { cause: error },
+    );
   }
   if (!response.ok) throw new Error(`${url.href} returned HTTP ${response.status}`);
   return Buffer.from(await response.arrayBuffer());
