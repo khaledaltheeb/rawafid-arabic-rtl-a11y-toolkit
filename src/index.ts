@@ -13,6 +13,7 @@ export * from './text/highlight';
 export * from './text/grapheme';
 export * from './text/segment';
 export * from './text/unicode-security';
+export * from './text/digits';
 export * from './a11y/keyboard';
 export * from './a11y/roving-focus';
 export * from './a11y/typeahead';
