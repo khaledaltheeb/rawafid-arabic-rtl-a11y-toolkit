@@ -58,3 +58,78 @@ test('320 CSS pixel viewport reflows without two-dimensional page scrolling', as
 
   expect(dimensions.scrollWidth).toBeLessThanOrEqual(dimensions.clientWidth);
 });
+
+test('focused control is not obscured by author-created sticky content', async ({ page }) => {
+  await page.goto('/conformance-lab');
+
+  const viewport = page.locator('[data-focus-viewport]');
+  const target = page.locator('[data-focus-target]');
+
+  await viewport.evaluate((element) => { element.scrollTop = 0; });
+  await target.evaluate((element) => {
+    element.scrollIntoView({ block: 'start', inline: 'nearest' });
+    element.focus();
+  });
+  await expect(target).toBeFocused();
+
+  const geometry = await page.evaluate(() => {
+    const viewportElement = document.querySelector<HTMLElement>('[data-focus-viewport]');
+    const stickyElement = document.querySelector<HTMLElement>('[data-focus-sticky]');
+    const targetElement = document.querySelector<HTMLElement>('[data-focus-target]');
+    if (!viewportElement || !stickyElement || !targetElement) throw new Error('Missing focus fixture element');
+    const viewportRect = viewportElement.getBoundingClientRect();
+    const stickyRect = stickyElement.getBoundingClientRect();
+    const targetRect = targetElement.getBoundingClientRect();
+    return {
+      viewportTop: viewportRect.top,
+      viewportBottom: viewportRect.bottom,
+      stickyBottom: stickyRect.bottom,
+      targetTop: targetRect.top,
+      targetBottom: targetRect.bottom,
+    };
+  });
+
+  expect(geometry.stickyBottom).toBeGreaterThan(geometry.viewportTop);
+  expect(geometry.targetBottom).toBeGreaterThan(geometry.stickyBottom);
+  expect(geometry.targetTop).toBeGreaterThanOrEqual(geometry.stickyBottom - 1);
+  expect(geometry.targetTop).toBeLessThan(geometry.viewportBottom);
+});
+
+test('WCAG text-spacing override does not clip content or functionality', async ({ page }) => {
+  await page.goto('/conformance-lab');
+
+  await page.locator('[data-spacing-sample]').evaluate((element) => {
+    const root = element as HTMLElement;
+    root.style.lineHeight = '1.5';
+    root.style.letterSpacing = '0.12em';
+    root.style.wordSpacing = '0.16em';
+    for (const paragraph of root.querySelectorAll<HTMLElement>('[data-spacing-paragraph]')) {
+      paragraph.style.marginBlockEnd = '2em';
+    }
+  });
+
+  const result = await page.evaluate(() => {
+    const card = document.querySelector<HTMLElement>('[data-spacing-card]');
+    const sample = document.querySelector<HTMLElement>('[data-spacing-sample]');
+    const control = document.querySelector<HTMLElement>('[data-spacing-control]');
+    const paragraphs = [...document.querySelectorAll<HTMLElement>('[data-spacing-paragraph]')];
+    if (!card || !sample || !control || paragraphs.length === 0) throw new Error('Missing spacing fixture');
+
+    const cardRect = card.getBoundingClientRect();
+    const controlRect = control.getBoundingClientRect();
+    return {
+      sampleOverflow: sample.scrollWidth > sample.clientWidth + 1,
+      cardOverflow: card.scrollWidth > card.clientWidth + 1,
+      paragraphHeights: paragraphs.map((paragraph) => paragraph.getBoundingClientRect().height),
+      controlVisible: controlRect.height > 0 && controlRect.width > 0,
+      controlInsideCard: controlRect.bottom <= cardRect.bottom + 1,
+    };
+  });
+
+  expect(result.sampleOverflow).toBe(false);
+  expect(result.cardOverflow).toBe(false);
+  expect(result.paragraphHeights.every((height) => height > 0)).toBe(true);
+  expect(result.controlVisible).toBe(true);
+  expect(result.controlInsideCard).toBe(true);
+  await page.locator('[data-spacing-control]').click();
+});

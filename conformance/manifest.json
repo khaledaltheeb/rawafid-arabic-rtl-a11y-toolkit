@@ -38,6 +38,24 @@
       "fixture": "tests/e2e/conformance-lab.html",
       "scope": "browser",
       "nonClaim": "This is a targeted reflow invariant and does not establish complete WCAG 1.4.10 conformance for arbitrary content or applications."
+    },
+    {
+      "id": "wcag22-focus-not-obscured-controlled",
+      "title": "Controlled focused component remains visible below author-created sticky content",
+      "source": "https://www.w3.org/WAI/WCAG22/Understanding/focus-not-obscured-minimum.html",
+      "test": "tests/e2e/conformance-lab.spec.ts",
+      "fixture": "tests/e2e/conformance-lab.html",
+      "scope": "browser",
+      "nonClaim": "This verifies one deterministic sticky-content case using scroll padding; it is not a complete WCAG 2.4.11 evaluation of arbitrary overlays or downstream interfaces."
+    },
+    {
+      "id": "wcag22-text-spacing-controlled",
+      "title": "Controlled Arabic and mixed-direction content tolerates WCAG text-spacing overrides without clipping or loss of the adjacent control",
+      "source": "https://www.w3.org/WAI/WCAG22/Understanding/text-spacing.html",
+      "test": "tests/e2e/conformance-lab.spec.ts",
+      "fixture": "tests/e2e/conformance-lab.html",
+      "scope": "browser",
+      "nonClaim": "This is a controlled regression case and does not establish WCAG 1.4.12 conformance for every typography system, language, script, component, or consuming application."
     }
   ]
 }
