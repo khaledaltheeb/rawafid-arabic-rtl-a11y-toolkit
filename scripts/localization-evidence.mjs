@@ -2,6 +2,7 @@ import { mkdir, readFile, readdir, writeFile } from 'node:fs/promises';
 import { resolve } from 'node:path';
 
 const root = process.cwd();
+const packageJson = JSON.parse(await readFile(resolve(root, 'package.json'), 'utf8'));
 const contract = JSON.parse(await readFile(resolve(root, 'qa/localization-contract.json'), 'utf8'));
 const directory = resolve(root, 'locales');
 const files = (await readdir(directory)).filter((file) => file.endsWith('.json')).sort();
@@ -89,12 +90,65 @@ const report = {
   nonClaims: contract.nonClaims,
 };
 
+const ruleDefinitions = new Map(contract.checks.map((check) => [check.id, check]));
+for (const finding of findings) {
+  if (!ruleDefinitions.has(finding.check)) {
+    ruleDefinitions.set(finding.check, {
+      id: finding.check,
+      severity: finding.severity,
+      purpose: finding.message,
+    });
+  }
+}
+
+const sarif = {
+  $schema: 'https://json.schemastore.org/sarif-2.1.0.json',
+  version: '2.1.0',
+  runs: [{
+    tool: {
+      driver: {
+        name: 'Rawafid Localization QA',
+        semanticVersion: packageJson.version,
+        informationUri: 'https://github.com/khaledaltheeb/rawafid-arabic-rtl-a11y-toolkit',
+        rules: [...ruleDefinitions.values()].map((check) => ({
+          id: check.id,
+          shortDescription: { text: check.purpose },
+          defaultConfiguration: { level: check.severity === 'error' ? 'error' : 'note' },
+          properties: {
+            tags: ['localization', 'i18n', 'arabic-rtl'],
+          },
+        })),
+      },
+    },
+    automationDetails: { id: contract.contract },
+    results: findings.map((finding) => ({
+      ruleId: finding.check,
+      level: finding.severity === 'error' ? 'error' : 'note',
+      message: { text: `${finding.locale}:${finding.key ?? '-'} — ${finding.message}` },
+      locations: [{
+        physicalLocation: {
+          artifactLocation: { uri: `locales/${finding.locale}.json`, uriBaseId: '%SRCROOT%' },
+        },
+        logicalLocations: finding.key ? [{ name: finding.key, kind: 'localization-key' }] : undefined,
+      }],
+      properties: {
+        locale: finding.locale,
+        key: finding.key,
+        rawSeverity: finding.severity,
+      },
+    })),
+  }],
+};
+
 await mkdir(resolve(root, 'partner-results'), { recursive: true });
-await writeFile(resolve(root, 'partner-results/localization-qa.json'), `${JSON.stringify(report, null, 2)}\n`, 'utf8');
+await Promise.all([
+  writeFile(resolve(root, 'partner-results/localization-qa.json'), `${JSON.stringify(report, null, 2)}\n`, 'utf8'),
+  writeFile(resolve(root, 'partner-results/localization-qa.sarif'), `${JSON.stringify(sarif, null, 2)}\n`, 'utf8'),
+]);
 
 if (errors.length) {
   for (const finding of errors) console.error(`${finding.locale}:${finding.key ?? '-'}:${finding.check}: ${finding.message}`);
   process.exitCode = 1;
 } else {
-  console.log(`Localization evidence passed for ${catalogs.size} locales and ${referenceKeys.length} reference keys (${report.summary.informational} informational findings).`);
+  console.log(`Localization evidence passed for ${catalogs.size} locales and ${referenceKeys.length} reference keys (${report.summary.informational} informational findings); SARIF 2.1.0 emitted.`);
 }

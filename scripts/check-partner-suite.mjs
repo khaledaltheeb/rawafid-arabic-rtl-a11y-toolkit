@@ -46,12 +46,15 @@ for (const asset of manifest.assets) {
   await verifyPath(asset.path, 'Partner asset');
 }
 
-for (const format of ['json', 'junit', 'html', 'summary']) {
+for (const format of ['json', 'junit', 'html', 'summary', 'localizationSarif']) {
   if (!manifest.outputs?.[format]) throw new Error(`Partner suite missing ${format} output contract`);
+}
+if (manifest.outputs.localizationSarif !== 'partner-results/localization-qa.sarif') {
+  throw new Error('Partner suite localizationSarif output must match the generated localization QA SARIF path.');
 }
 
 if (!Array.isArray(manifest.nonClaims) || manifest.nonClaims.length === 0) {
   throw new Error('Partner suite must state non-claim boundaries');
 }
 
-console.log(`Partner interoperability contract passed for ${manifest.specs.length} specs and ${manifest.assets.length} research assets across ${manifest.projects.length} browser projects; test:partner is manifest-driven.`);
+console.log(`Partner interoperability contract passed for ${manifest.specs.length} specs and ${manifest.assets.length} research assets across ${manifest.projects.length} browser projects; test:partner is manifest-driven and localization SARIF is declared.`);
