@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
   "suite": "rawafid-partner-interoperability-v1",
-  "purpose": "Vendor-neutral browser, accessibility-environment, Arabic/RTL, bidi, localized-input, reflow, visual-reference, Unicode-risk, and text-segmentation evidence for external testing and research integrations.",
+  "purpose": "Vendor-neutral browser, accessibility-environment, Arabic/RTL, bidi, localized-input, reflow, visual-reference, Unicode-risk, text-segmentation, and localization-analysis evidence for external testing and research integrations.",
   "runner": "Playwright Test",
   "projects": [
     "chromium-desktop",
@@ -51,7 +51,8 @@
     "json": "partner-results/playwright-results.json",
     "junit": "partner-results/junit.xml",
     "html": "playwright-report/",
-    "summary": "partner-results/evidence-summary.json"
+    "summary": "partner-results/evidence-summary.json",
+    "localizationSarif": "partner-results/localization-qa.sarif"
   },
   "nonClaims": [
     "Passing the controlled suite is not a WCAG certification.",
@@ -59,6 +60,7 @@
     "Passing the suite does not establish universal correctness on browsers, operating-system accessibility themes, or assistive technologies outside the tested matrix.",
     "The Unicode risk corpus does not claim UAX #9 or UTS #39 conformance and is not a maliciousness-verdict dataset.",
     "The grapheme corpus does not claim complete UAX #29 conformance; runtime Intl.Segmenter supplies segmentation behavior.",
+    "Localization SARIF is an interchange transport for existing QA findings, not a security or linguistic certification.",
     "Provider-specific execution is not claimed until a provider integration is configured and observed."
   ]
 }
