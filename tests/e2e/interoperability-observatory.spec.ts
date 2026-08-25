@@ -41,9 +41,9 @@ test('capture Arabic/RTL and Intl interoperability observations', async ({ page 
 
   await page.goto('/visual-reference');
   const logicalEdges = await page.evaluate(() => {
-    const ltr = document.querySelector<HTMLElement>('[data-direction-panel="ltr"]');
-    const rtl = document.querySelector<HTMLElement>('[data-direction-panel="rtl"]');
-    if (!ltr || !rtl) throw new Error('Missing visual-reference direction panels.');
+    const ltr = document.querySelector<HTMLElement>('[data-panel="ltr"] [data-card]');
+    const rtl = document.querySelector<HTMLElement>('[data-panel="rtl"] [data-card]');
+    if (!ltr || !rtl) throw new Error('Missing visual-reference logical cards.');
     const ltrStyle = getComputedStyle(ltr);
     const rtlStyle = getComputedStyle(rtl);
     return {
