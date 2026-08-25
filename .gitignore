@@ -2,6 +2,7 @@ node_modules/
 dist/
 review-site/
 .review-site-check-*/
+.deployment-verifier-fixture/
 coverage/
 playwright-report/
 test-results/
