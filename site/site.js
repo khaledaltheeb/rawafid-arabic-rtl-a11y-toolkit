@@ -1,3 +1,5 @@
+/* global document */
+
 import {
   diagnoseUnicodeDisplay,
   formatDate,
