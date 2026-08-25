@@ -35,6 +35,10 @@ const requiredExports = [
   'selectPluralCategory',
   'formatNumberParts',
   'diagnoseUnicodeDisplay',
+  'detectDigitSystems',
+  'containsMixedDigitSystems',
+  'convertDigits',
+  'normalizeDigitsForSearch',
   'nextRovingFocusIndex',
   'findTypeaheadMatch',
   'updateTypeaheadBuffer',
@@ -57,6 +61,19 @@ if (typeof built.findTypeaheadMatch !== 'function') throw new Error('findTypeahe
 if (built.getLocaleDirection('ar-Latn') !== 'ltr') throw new Error('Built package direction contract failed.');
 if (built.findTypeaheadMatch([{ label: 'العربية' }], 'الع', { locale: 'ar' }) !== 0) {
   throw new Error('Built package typeahead contract failed.');
+}
+if (built.normalizeDigitsForSearch('٢٥ / ۲۵ / 25') !== '25 / 25 / 25') {
+  throw new Error('Built package digit normalization contract failed.');
+}
+if (built.convertDigits('123', 'arab') !== '١٢٣') {
+  throw new Error('Built package digit conversion contract failed.');
+}
+const digitReport = built.detectDigitSystems('1٢۳');
+if (!digitReport.mixed || digitReport.digitCount !== 3 || digitReport.systems.length !== 3) {
+  throw new Error('Built package digit detection contract failed.');
+}
+if (built.findTypeaheadMatch([{ label: '٢٥ العربية' }], '25', { locale: 'ar' }) !== 0) {
+  throw new Error('Built package digit-aware typeahead contract failed.');
 }
 
 const selection = built.normalizeSelection(4, 0, [2], 'single');

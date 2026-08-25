@@ -1,3 +1,5 @@
+import { normalizeDigitsForSearch } from '../text/digits';
+
 export type TypeaheadItem = {
   label: string;
   disabled?: boolean;
@@ -12,7 +14,7 @@ export type TypeaheadOptions = {
 };
 
 function normalizeSearchText(value: string): string {
-  return value.normalize('NFC').trimStart();
+  return normalizeDigitsForSearch(value.normalize('NFC')).trimStart();
 }
 
 function startsWithCollation(
@@ -38,6 +40,8 @@ function startsWithCollation(
 /**
  * Find the next enabled item whose label begins with the accumulated typeahead
  * query. Search starts after startIndex by default and optionally wraps.
+ * Arabic-Indic, Extended Arabic-Indic, and Latin decimal digits are treated
+ * as equivalent search keys while the original labels remain unchanged.
  *
  * This is state-free by design: the consuming widget owns the timeout/buffer
  * policy and passes the current accumulated query to this function.

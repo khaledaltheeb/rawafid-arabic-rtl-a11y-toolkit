@@ -1,3 +1,5 @@
+import { normalizeDigitsForSearch } from './digits';
+
 /** Marks whose Script_Extensions includes Arabic, across current Unicode blocks. */
 const ARABIC_DIACRITICS = /(?=\p{Script_Extensions=Arabic})\p{Mark}/gu;
 const TATWEEL = /\u0640/gu;
@@ -45,7 +47,9 @@ export function normalizeArabicText(
 }
 
 export function createArabicSearchKey(text: string): string {
-  return normalizeArabicText(text, { normalizeAlefMaksura: true })
+  return normalizeDigitsForSearch(
+    normalizeArabicText(text, { normalizeAlefMaksura: true }),
+  )
     .toLocaleLowerCase('ar')
     .replace(/\s+/gu, ' ')
     .trim();
