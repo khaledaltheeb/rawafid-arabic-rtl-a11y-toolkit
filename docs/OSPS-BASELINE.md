@@ -5,9 +5,10 @@ This document maps repository evidence to the **Open Source Project Security (OS
 Statuses are deliberately narrow:
 
 - **Verified in repository** — evidence is directly visible in versioned source/configuration or observed CI behavior.
-- **External-unverified** — the control depends on a GitHub/npm/account setting that repository contents cannot prove.
+- **Observed external state** — the control depends on a service/account setting that has been read directly through the service API.
+- **External-unverified** — the control depends on a GitHub/npm/account setting that has not been directly observed.
 - **Conditional** — the requirement is release-, scale-, or workflow-dependent and is evaluated when its condition becomes true.
-- **Gap** — the repository does not yet provide enough evidence to claim the control.
+- **Gap** — the repository or observed service state does not satisfy the control or does not provide enough evidence to claim it.
 
 Canonical baseline: https://baseline.openssf.org/versions/2026-02-19
 
@@ -17,8 +18,8 @@ Canonical baseline: https://baseline.openssf.org/versions/2026-02-19
 | --- | --- | --- |
 | OSPS-AC-01.01 MFA for sensitive resources | External-unverified | MFA is an account/platform state; repository files cannot prove it. |
 | OSPS-AC-02.01 restricted collaborator permissions | External-unverified | GitHub collaborator defaults and grants require account-level verification. |
-| OSPS-AC-03.01 protect primary branch from direct commits | External-unverified | `docs/REPOSITORY-SETTINGS.md` requires protected `main`, but the ruleset state has not been directly verified through an available settings API. |
-| OSPS-AC-03.02 protect primary branch deletion | External-unverified | Same account-bound ruleset boundary as AC-03.01. |
+| OSPS-AC-03.01 protect primary branch from direct commits | **Gap — observed external state** | GitHub branch metadata read on 2026-08-25 reported `main` as `protected: false`; no enforced branch protection/ruleset was observed. Repository CI exists, but enforcement is absent until a ruleset is enabled. |
+| OSPS-AC-03.02 protect primary branch deletion | **Gap — observed external state** | The same 2026-08-25 GitHub branch metadata reported no protection on `main`; deletion/force-push safeguards are therefore not evidenced as enforced. |
 | OSPS-BR-01.01 sanitize untrusted CI metadata | Verified in repository | Workflows do not interpolate PR titles, commit messages, branch names, or other untrusted metadata into shell commands. Workflow changes are treated as security-sensitive. |
 | OSPS-BR-01.03 isolate untrusted code from privileged CI credentials | Verified in repository | Pull-request CI uses read-only repository permissions; publication is release-triggered and uses a separate OIDC environment. |
 | OSPS-BR-03.01 encrypted official project channels | Verified in repository | Canonical website and source links use HTTPS. |
@@ -55,7 +56,7 @@ Canonical baseline: https://baseline.openssf.org/versions/2026-02-19
 | OSPS-GV-01.02 roles/responsibilities | Verified in repository | `GOVERNANCE.md` and `CODEOWNERS`. |
 | OSPS-GV-03.02 contributor acceptance requirements | Verified in repository | `CONTRIBUTING.md`, public-scope rules, tests, standards rationale and PR checklist. |
 | OSPS-LE-01.01 contributor legal authorization assertion | Gap | No DCO/CLA sign-off requirement is currently claimed. |
-| OSPS-QA-03.01 status checks on primary-branch changes | External-unverified | CI gates run on PRs and `main`; enforcement as required checks depends on the repository ruleset. |
+| OSPS-QA-03.01 status checks on primary-branch changes | **Gap — observed external state** | CI, CodeQL and Dependency Review run on pull requests, but GitHub branch metadata read on 2026-08-25 reported `main` as unprotected. Required-check enforcement is therefore not active. |
 | OSPS-QA-06.01 automated tests before acceptance | Verified in repository | Node 22/24/26 quality lanes plus Chromium/Firefox/WebKit/mobile Playwright matrix. |
 | OSPS-SA-01.01 design documentation | Verified in repository | `docs/ARCHITECTURE.md`, API contract, interaction models, threat model and global-platform documentation. |
 | OSPS-SA-02.01 external interface documentation | Verified in repository | Public API snapshot, declaration fingerprint and documentation-contract gate. |
@@ -79,7 +80,7 @@ These do **not** imply Level 3 eligibility. They are useful evidence for sophist
 
 The strongest remaining security-posture improvements are not more source files; they are verifiable enforcement states:
 
-1. Enable and verify a protected `main` ruleset that blocks direct pushes/deletion and requires the applicable CI/security checks.
+1. **Protect `main` now.** Create a repository ruleset or branch protection rule that blocks direct/force pushes and deletion, requires pull requests, and requires the applicable CI, CodeQL and Dependency Review checks before merge. Re-read branch/ruleset state after configuration and only then mark OSPS-AC-03.01, OSPS-AC-03.02 and OSPS-QA-03.01 as satisfied.
 2. Verify maintainer MFA/passkey state for sensitive repository operations.
 3. Enable and verify GitHub private vulnerability reporting and security scanning features available to the repository.
 4. After first npm publication, verify Trusted Publishing/OIDC provenance and retain release-specific SBOM/provenance evidence.
@@ -87,4 +88,4 @@ The strongest remaining security-posture improvements are not more source files;
 
 ## Evidence principle
 
-A repository file, workflow definition, badge, or recommendation is not proof of an account-bound setting. This map intentionally reports those controls as **External-unverified** until the relevant service state has been observed directly.
+A repository file, workflow definition, badge, or recommendation is not proof of an account-bound setting. Where an account-bound state can be observed directly through the service API, this map records the observed state and date. Where it cannot, the control remains **External-unverified** rather than being inferred from repository intent.
