@@ -44,7 +44,19 @@ The current interaction layer includes unit evidence for RTL/LTR keyboard moveme
 
 The artifact gate is intended to prevent accidental publication of source, tests, configuration, sensitive material, or uncontrolled package growth.
 
-## Gate 7: built package behavior
+## Gate 7: external consumer and reproducible build
+
+`npm run consumer:smoke`
+
+The consumer gate packs the real npm tarball, installs it into a clean temporary project, imports the toolkit by its published package name, executes representative runtime contracts, resolves both public CSS subpaths, and compiles a strict TypeScript consumer against the installed declarations. This catches failures that repository-local source tests cannot expose.
+
+`npm run build:reproducible`
+
+The reproducibility gate deletes `dist`, builds twice in the same clean environment, hashes every generated distribution file, and requires the complete path/size/SHA-256 manifest to match exactly. It detects nondeterministic generated output, timestamp leakage, unstable ordering, and environment-sensitive build artifacts before release.
+
+This is an intra-environment determinism guarantee only. It does not claim bit-for-bit reproducibility across arbitrary operating systems, toolchain versions, or CPU architectures unless separately demonstrated.
+
+## Gate 8: built package behavior
 
 `npm run package:contract`
 
@@ -61,7 +73,7 @@ The gate imports the actual built `dist/index.js` in a non-DOM Node process and 
 
 This is deliberately separate from source unit tests: source can be correct while generated declarations, bundling, or export maps are wrong.
 
-## Gate 8: public API and TypeScript compatibility
+## Gate 9: public API and TypeScript compatibility
 
 `npm run public-api:check`
 
@@ -73,7 +85,7 @@ The declaration gate normalizes generated `dist/index.d.ts`, computes SHA-256, a
 
 Baseline updates are explicit compatibility decisions, not automatic regeneration steps. Review must inspect the generated declaration change, classify compatibility under Semantic Versioning, and provide deprecation/migration guidance where appropriate. The fingerprint is a change tripwire, not a semantic compatibility oracle.
 
-## Gate 9: browser/accessibility
+## Gate 10: browser/accessibility
 
 Playwright runs Chromium, Firefox, WebKit, and a mobile Chromium profile against the **built package**.
 
@@ -96,7 +108,7 @@ The controlled Arabic RTL fixture exercises:
 
 axe-core is executed against the complete controlled fixture. A zero-violation automated result is a regression gate only and is not a WCAG certification.
 
-## Gate 10: repository security
+## Gate 11: repository security
 
 - CodeQL.
 - Dependency Review.
@@ -105,13 +117,13 @@ axe-core is executed against the complete controlled fixture. A zero-violation a
 - minimal workflow permissions.
 - documented threat/scope boundaries.
 
-## Gate 11: publication
+## Gate 12: publication
 
 Publication requires the repository release workflow's fail-closed conditions, including exact tag/package-version identity, supported publishing runtime/toolchain, deterministic install, full package checks, dry-run packaging, and SPDX SBOM generation.
 
 For a brand-new npm package, the repository does not pretend OIDC can bootstrap package creation. The one-time first publication requires separately verified npm scope access/account security; subsequent releases may use the configured Trusted Publisher/OIDC path after it has actually been established.
 
-## Gate 12: evidence integrity
+## Gate 13: evidence integrity
 
 Before a release note, README statement, provider application, or public claim describes a gate or capability as verified:
 
