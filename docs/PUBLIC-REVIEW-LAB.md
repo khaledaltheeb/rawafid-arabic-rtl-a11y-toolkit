@@ -38,7 +38,7 @@ The source commit remains available from the CI run that produced the artifact. 
 7. required CSS/module references disappear; or
 8. the page stops importing the toolkit's built `dist/index.js` runtime.
 
-The exact packaged artifact is also executed under an isolated `/artifact/` subpath in Chromium, Firefox, WebKit, and mobile Chromium. That browser matrix checks packaged runtime loading, explicit-script direction semantics, axe results, 320 CSS-pixel reflow, and the served deployment contract.
+The exact packaged artifact is also executed under an isolated `/artifact/` subpath in Chromium, Firefox, WebKit, and mobile Chromium. That browser matrix checks packaged runtime loading, explicit-script direction semantics, axe results, 320 CSS-pixel reflow, the served deployment contract, and the browser-enforced content security policy.
 
 These checks are part of the repository quality/evidence gates.
 
@@ -47,6 +47,32 @@ These checks are part of the repository quality/evidence gates.
 After the real-browser suite succeeds, CI runs `npm run site:build` and uploads the resulting directory as the `public-review-lab-static` workflow artifact. The artifact is retained for 30 days by the repository workflow.
 
 This provides a reviewable, deployment-ready output without coupling the project to a specific hosting vendor.
+
+## Browser security policy
+
+The deployable review page carries a meta-delivered Content Security Policy before other document metadata. It is deliberately self-contained:
+
+```text
+default-src 'none';
+script-src 'self';
+style-src 'self';
+img-src 'none';
+font-src 'none';
+connect-src 'none';
+media-src 'none';
+object-src 'none';
+frame-src 'none';
+worker-src 'none';
+manifest-src 'none';
+base-uri 'none';
+form-action 'none'
+```
+
+The policy does not permit `unsafe-inline` or `unsafe-eval`. The document also declares `referrer=no-referrer`.
+
+The exact-artifact Playwright suite actively attempts to append an inline script and requires both outcomes: the script must not execute and the browser must emit a `securitypolicyviolation` event for `script-src`. This is exercised across the same Chromium, Firefox, WebKit, and mobile Chromium projects as the rest of the artifact contract.
+
+A meta CSP cannot express every useful hosting control. In particular, `frame-ancestors` is not supported in a meta-delivered policy and must be delivered as an HTTP response header if a future public host is intended to deny framing. Therefore the repository does not claim clickjacking protection from `frame-ancestors` until the deployed host's response headers are independently observed. The same distinction applies to any host-only response-header policy: the static artifact can define its portable browser policy, but deployment headers are separate evidence.
 
 ## Verify a hosted deployment
 
@@ -76,7 +102,8 @@ A successful build proves that the repository can produce the declared static ar
 
 - a public deployment exists;
 - a particular URL is serving that exact artifact;
+- a future host is sending recommended header-only security controls;
 - a third-party provider has endorsed the project; or
 - the review surface constitutes blanket WCAG, Unicode, browser, or security certification.
 
-A successful deployment-verifier run narrows the second boundary to the observation time and manifest used by that run; it does not establish permanent hosting identity or provider endorsement.
+A successful deployment-verifier run narrows the second boundary to the observation time and manifest used by that run; it does not establish permanent hosting identity, deployment-header identity, or provider endorsement.
