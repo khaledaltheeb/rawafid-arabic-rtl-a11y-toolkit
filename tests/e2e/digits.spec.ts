@@ -1,6 +1,7 @@
 import { expect, test } from '@playwright/test';
+import type * as ToolkitModule from '../../src/index';
 
-type Toolkit = typeof import('../../src/index');
+type Toolkit = typeof ToolkitModule;
 
 test.beforeEach(async ({ page }) => {
   await page.goto('/');
