@@ -37,6 +37,24 @@ The project tracks web-platform standards rather than inventing Rawafid-specific
 
 Alignment with standards does **not** constitute automatic WCAG conformance, security certification, or linguistic correctness for every locale. See [docs/STANDARDS.md](./docs/STANDARDS.md) and [docs/GLOBAL-PLATFORM.md](./docs/GLOBAL-PLATFORM.md).
 
+## Due-diligence entry points
+
+External reviewers do not need to reconstruct the project's claims from README prose. The principal evidence surfaces are intentionally machine-readable or directly executable:
+
+| Review need | Evidence surface |
+| --- | --- |
+| Execute the partner interoperability workload | [`conformance/partner-suite.json`](./conformance/partner-suite.json) and [`docs/PARTNER-INTEROPERABILITY.md`](./docs/PARTNER-INTEROPERABILITY.md) |
+| Inspect standards-backed controlled claims | [`conformance/manifest.json`](./conformance/manifest.json) |
+| Discover reusable research/evidence assets | [`research/assets.json`](./research/assets.json) and [`schemas/research-assets.schema.json`](./schemas/research-assets.schema.json) |
+| Validate machine-readable contracts | [`schemas/`](./schemas/) and [`docs/MACHINE-READABLE-CONTRACTS.md`](./docs/MACHINE-READABLE-CONTRACTS.md) |
+| Review Arabic/RTL localization QA | [`qa/localization-contract.json`](./qa/localization-contract.json) and [`docs/LOCALIZATION-QA-EVIDENCE.md`](./docs/LOCALIZATION-QA-EVIDENCE.md) |
+| Review security posture and known gaps | [`security-insights.yml`](./security-insights.yml), [`SECURITY.md`](./SECURITY.md), and [`docs/OSPS-BASELINE.md`](./docs/OSPS-BASELINE.md) |
+| Discover/cite the software as research infrastructure | [`codemeta.json`](./codemeta.json) and [`CITATION.cff`](./CITATION.cff) |
+| Review package/release identity controls | [`docs/RELEASE-PROVENANCE.md`](./docs/RELEASE-PROVENANCE.md) and [`.github/workflows/release.yml`](./.github/workflows/release.yml) |
+| Prepare an evidence-backed OSS/provider application | [`docs/OSS-APPLICATION-DOSSIER.md`](./docs/OSS-APPLICATION-DOSSIER.md) |
+
+CI retains the partner results, standards/partner manifests, localization QA evidence, research catalogs, JSON Schemas, citation metadata, and research corpora together as a partner interoperability artifact. Release-specific npm/GitHub attestations are evidence-bound and are claimed only after a release has actually completed and can be independently verified.
+
 ## Capability map
 
 ### RTL and bidi
@@ -90,14 +108,16 @@ Alignment with standards does **not** constitute automatic WCAG conformance, sec
 
 - Vitest unit suite, including Arabic plural, multilingual segmentation, typeahead, selection, and RTL/LTR grid coverage.
 - Playwright matrix: Chromium, Firefox, WebKit, and mobile Chromium.
-- Controlled mixed-direction browser fixture with forms, breadcrumb, table, composite tabs, locale-aware typeahead, semantic RTL grid, live regions, and QA helpers.
+- Controlled mixed-direction browser fixture with forms, breadcrumb, table, composite tabs, locale-aware typeahead, semantic RTL grid, live regions, `dir=auto` traversal/dynamic input matrices, and QA helpers.
 - axe-core automated accessibility regression checks over the complete controlled fixture.
 - Built-package contract that imports real `dist/index.js` in non-DOM Node and executes direction, typeahead, selection, and RTL grid invariants.
 - GitHub Actions tests on Node 22, 24, and 26.
 - CodeQL, Dependency Review, and OpenSSF Scorecard workflows.
 - GitHub Actions pinned to full commit SHAs.
 - `publint` and Are The Types Wrong package validation.
-- npm Trusted Publishing/OIDC release design with provenance and SPDX SBOM generation after bootstrap publication requirements are satisfied.
+- npm Trusted Publishing/OIDC release design with npm provenance and SPDX SBOM generation after bootstrap publication requirements are satisfied.
+- Exact npm tarball publication policy: the locally verified `.tgz` is the publish subject, registry `dist.integrity` must match its SHA-512 value, and successful releases are configured to generate GitHub/Sigstore build and SBOM attestations.
+- A static release-policy contract prevents removal of the exact-tarball, integrity-verification, or attestation controls without failing the core quality gate.
 - Open-source scope guard and secret-like material checks.
 - GitLab CI and non-root Docker test environment.
 
@@ -220,7 +240,7 @@ The package has zero runtime dependencies. Development dependencies are exact-ve
 | Layer | Gate |
 | --- | --- |
 | Public scope | `npm run scope:check` |
-| Workflow supply chain | `npm run supply-chain:check` |
+| Workflow supply chain | `npm run supply-chain:check` (action pins + release-policy contract) |
 | Translation catalogs | `npm run catalogs:check` |
 | Static quality | ESLint + strict TypeScript |
 | Logic | Vitest |
@@ -229,8 +249,8 @@ The package has zero runtime dependencies. Development dependencies are exact-ve
 | Browsers | Playwright: Chromium / Firefox / WebKit / mobile |
 | Automated accessibility | axe-core |
 | Security analysis | CodeQL + Dependency Review |
-| OSS posture | OpenSSF Scorecard |
-| Release identity | npm Trusted Publishing + OIDC provenance after bootstrap |
+| OSS posture | OpenSSF Scorecard + Security Insights + OSPS evidence map |
+| Release identity | exact `.tgz` + npm SHA-512 identity + Trusted Publishing/npm provenance + GitHub build/SBOM attestation policy; public attestation evidence is release-specific |
 
 See [docs/QUALITY-GATES.md](./docs/QUALITY-GATES.md), [docs/TEST-MATRIX.md](./docs/TEST-MATRIX.md), and [docs/VERIFICATION-STATUS.md](./docs/VERIFICATION-STATUS.md).
 
@@ -239,8 +259,12 @@ See [docs/QUALITY-GATES.md](./docs/QUALITY-GATES.md), [docs/TEST-MATRIX.md](./do
 Bidi controls, Unicode format characters, localization files, dependency changes, and CI workflows are treated as security-sensitive surfaces. The project deliberately avoids HTML-generating localization/highlight helpers and distinguishes display-risk diagnostics from full Unicode security conformance.
 
 - [SECURITY.md](./SECURITY.md)
+- [security-insights.yml](./security-insights.yml)
+- [docs/OSPS-BASELINE.md](./docs/OSPS-BASELINE.md)
 - [docs/THREAT-MODEL.md](./docs/THREAT-MODEL.md)
 - [docs/REPOSITORY-SETTINGS.md](./docs/REPOSITORY-SETTINGS.md)
+
+The repository does not infer account-bound controls from workflow files. In particular, the OSPS evidence map records the directly observed GitHub branch-protection state and keeps unmet controls as gaps until the service setting itself is verified.
 
 ## Architecture, API, and compatibility
 
@@ -259,9 +283,9 @@ Pre-1.0 releases may refine APIs, but breaking changes still require explicit ch
 
 ## Open-source program readiness
 
-The repository is structured to provide legitimate engineering evidence for OSS programs: public reusable code, an OSI license, cross-browser test need, localization workflows, accessibility testing, public governance, security controls, and clear separation from Rawafid's scientific corpus. Where an application asks for the official platform website, use **https://healthrenewal.org/**; where it asks for source code, use this repository.
+The repository is structured to provide legitimate engineering evidence for OSS programs: public reusable code, an OSI license, cross-browser test need, localization workflows, accessibility testing, public governance, security controls, machine-readable partner contracts, research metadata/assets, and clear separation from Rawafid's scientific corpus. Where an application asks for the official platform website, use **https://healthrenewal.org/**; where it asks for source code, use this repository.
 
-Acceptance by BrowserStack, Transifex, Sentry, Weblate, JetBrains, Docker, GitLab, TestMu, or any other provider remains entirely subject to the provider's current rules. See [docs/OSS-PROGRAM-READINESS.md](./docs/OSS-PROGRAM-READINESS.md).
+Acceptance by BrowserStack, Transifex, Sentry, Weblate, JetBrains, Docker, GitLab, TestMu, or any other provider remains entirely subject to the provider's current rules. See [docs/OSS-PROGRAM-READINESS.md](./docs/OSS-PROGRAM-READINESS.md) and [docs/OSS-APPLICATION-DOSSIER.md](./docs/OSS-APPLICATION-DOSSIER.md).
 
 ## Contributing
 
