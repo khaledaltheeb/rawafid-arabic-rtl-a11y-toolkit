@@ -41,7 +41,8 @@
   "outputs": {
     "json": "partner-results/playwright-results.json",
     "junit": "partner-results/junit.xml",
-    "html": "playwright-report/"
+    "html": "playwright-report/",
+    "summary": "partner-results/evidence-summary.json"
   },
   "nonClaims": [
     "Passing the controlled suite is not a WCAG certification.",

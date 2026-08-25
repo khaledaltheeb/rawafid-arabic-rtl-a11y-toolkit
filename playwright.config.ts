@@ -6,6 +6,7 @@ const ciReporters = [
   ['html', { open: 'never' }] as const,
   ['json', { outputFile: 'partner-results/playwright-results.json' }] as const,
   ['junit', { outputFile: 'partner-results/junit.xml', includeProjectInTestName: true }] as const,
+  ['./scripts/partner-evidence-reporter.mjs', { outputFile: 'partner-results/evidence-summary.json' }] as const,
 ];
 
 export default defineConfig({

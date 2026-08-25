@@ -41,7 +41,7 @@ for (const asset of manifest.assets) {
   await verifyPath(asset.path, 'Partner asset');
 }
 
-for (const format of ['json', 'junit', 'html']) {
+for (const format of ['json', 'junit', 'html', 'summary']) {
   if (!manifest.outputs?.[format]) throw new Error(`Partner suite missing ${format} output contract`);
 }
 
