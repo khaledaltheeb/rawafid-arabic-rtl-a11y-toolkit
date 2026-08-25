@@ -64,6 +64,8 @@ jobs:
           echo "Built $tarball with $integrity"
       - name: Generate SPDX SBOM
         run: npm sbom --sbom-format=spdx --sbom-type=library > sbom.spdx.json
+      - name: Build reproducible public review surface
+        run: npm run site:build
       - name: Upload release evidence
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
         with:
@@ -72,6 +74,7 @@ jobs:
             ${{ steps.pack.outputs.tarball }}
             npm-pack.json
             sbom.spdx.json
+            review-site/
           if-no-files-found: error
           retention-days: 90
       - name: Detect existing registry version
@@ -126,6 +129,11 @@ jobs:
         with:
           subject-path: ${{ steps.pack.outputs.tarball }}
           sbom-path: sbom.spdx.json
+          create-storage-record: false
+      - name: Attest public review surface provenance
+        uses: actions/attest@508db95dd578ae2727ebd6217d5ba78e4fbda05d # v4.2.1
+        with:
+          subject-path: review-site/**
           create-storage-record: false
       - name: Confirm idempotent release
         if: steps.registry.outputs.exists == 'true'
