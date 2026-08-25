@@ -8,6 +8,7 @@ export interface LocalizedNumberSymbols {
   group: string | null;
   plusSign: string;
   minusSign: string;
+  bidiLiterals: readonly string[];
   primaryGroupingSize: number;
   secondaryGroupingSize: number;
 }
@@ -54,11 +55,13 @@ type NumberToken =
   | { type: 'decimal'; index: number }
   | { type: 'group'; index: number }
   | { type: 'plus'; index: number }
-  | { type: 'minus'; index: number };
+  | { type: 'minus'; index: number }
+  | { type: 'bidi-literal'; index: number };
 
 const LATN_DIGITS = [...'0123456789'];
 const ARAB_DIGITS = [...'٠١٢٣٤٥٦٧٨٩'];
 const ARABEXT_DIGITS = [...'۰۱۲۳۴۵۶۷۸۹'];
+const BIDI_FORMATTING_ONLY = /^[\u061C\u200E\u200F\u2066-\u2069]+$/u;
 
 function numberFormat(
   locale: Intl.LocalesArgument,
@@ -71,7 +74,7 @@ function numberFormat(
   });
 }
 
-function extractPart(parts: Intl.NumberFormatPart[], type: Intl.NumberFormatPartTypes): string | undefined {
+function extractPart(parts: Intl.NumberFormatPart[], type: Intl.NumberFormatPart['type']): string | undefined {
   return parts.find((part) => part.type === type)?.value;
 }
 
@@ -130,6 +133,9 @@ export function getLocaleNumberSymbols(
   }
 
   const group = extractPart(positiveParts, 'group') ?? null;
+  const bidiLiterals = [...new Set([...positiveParts, ...negativeParts]
+    .filter((part) => part.type === 'literal' && BIDI_FORMATTING_ONLY.test(part.value))
+    .map((part) => part.value))];
   const integerPartLengths = positiveParts
     .filter((part) => part.type === 'integer')
     .map((part) => countDigitTokens(part.value, digits));
@@ -144,6 +150,7 @@ export function getLocaleNumberSymbols(
     group,
     plusSign,
     minusSign,
+    bidiLiterals,
     primaryGroupingSize: group === null ? 0 : rightmost,
     secondaryGroupingSize: group === null ? 0 : previous,
   };
@@ -178,6 +185,7 @@ function tokenize(
     { token: symbols.minusSign, type: 'minus' as const },
     { token: '+', type: 'plus' as const },
     { token: '-', type: 'minus' as const },
+    ...symbols.bidiLiterals.map((token) => ({ token, type: 'bidi-literal' as const })),
   ]
     .filter((entry, index, entries) => entry.token.length > 0 && entries.findIndex((other) => other.token === entry.token && other.type === entry.type) === index)
     .sort((a, b) => b.token.length - a.token.length);
@@ -242,38 +250,43 @@ export function parseLocalizedDecimal(
   options: ParseLocalizedDecimalOptions = {},
 ): LocalizedDecimalParseResult {
   const symbols = getLocaleNumberSymbols(locale, options);
-  const source = input.trim();
+  const leadingTrimmed = input.trimStart();
+  const sourceOffset = input.length - leadingTrimmed.length;
+  const source = leadingTrimmed.trimEnd();
   if (source.length === 0) return failure(input, symbols, 'empty');
 
   const tokenized = tokenize(source, symbols, options.digitAcceptance ?? 'locale-and-latn');
-  if ('errorIndex' in tokenized) return failure(input, symbols, 'invalid-character', tokenized.errorIndex);
+  if ('errorIndex' in tokenized) return failure(input, symbols, 'invalid-character', sourceOffset + tokenized.errorIndex);
 
   let sign = '';
   let decimalSeen = false;
   let anyDigit = false;
+  let semanticTokenIndex = 0;
   const integerGroups: string[] = [''];
   let fraction = '';
 
-  for (let index = 0; index < tokenized.length; index += 1) {
-    const token = tokenized[index];
-    if (token === undefined) continue;
+  for (const token of tokenized) {
+    if (token.type === 'bidi-literal') continue;
 
     if (token.type === 'plus' || token.type === 'minus') {
-      if (index !== 0 || sign !== '') return failure(input, symbols, 'misplaced-sign', token.index);
+      if (semanticTokenIndex !== 0 || sign !== '') return failure(input, symbols, 'misplaced-sign', sourceOffset + token.index);
       sign = token.type === 'minus' ? '-' : '+';
+      semanticTokenIndex += 1;
       continue;
     }
 
+    semanticTokenIndex += 1;
+
     if (token.type === 'decimal') {
-      if (decimalSeen) return failure(input, symbols, 'multiple-decimals', token.index);
+      if (decimalSeen) return failure(input, symbols, 'multiple-decimals', sourceOffset + token.index);
       decimalSeen = true;
       continue;
     }
 
     if (token.type === 'group') {
-      if (options.allowGrouping === false) return failure(input, symbols, 'grouping-not-allowed', token.index);
-      if (decimalSeen) return failure(input, symbols, 'group-in-fraction', token.index);
-      if ((integerGroups.at(-1)?.length ?? 0) === 0) return failure(input, symbols, 'invalid-grouping', token.index);
+      if (options.allowGrouping === false) return failure(input, symbols, 'grouping-not-allowed', sourceOffset + token.index);
+      if (decimalSeen) return failure(input, symbols, 'group-in-fraction', sourceOffset + token.index);
+      if ((integerGroups.at(-1)?.length ?? 0) === 0) return failure(input, symbols, 'invalid-grouping', sourceOffset + token.index);
       integerGroups.push('');
       continue;
     }
