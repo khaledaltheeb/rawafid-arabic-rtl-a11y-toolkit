@@ -14,115 +14,140 @@ Internal modules not exported from `src/index.ts` are not public API.
 
 ## Direction contract
 
-`getLocaleDirection(locale, fallback)`:
+`getLocaleDirection(locale, fallback)` canonicalizes the locale with `Intl`, resolves the effective script, returns RTL only for known RTL scripts, never assumes a language name has one direction, and returns the caller fallback for invalid input.
 
-- canonicalizes the locale with `Intl`;
-- determines the effective script, using an explicit script when present or likely-subtag maximization otherwise;
-- returns RTL only for known RTL scripts;
-- never assumes every use of a language has one direction;
-- returns the caller-provided fallback for an invalid locale.
-
-`getTextDirection(text, fallback)` implements first-strong behavior for supported RTL scripts versus other Unicode letters. It is a heuristic for strings without explicit direction metadata, not a replacement for authoritative metadata.
+`getTextDirection(text, fallback)` implements first-strong behavior for supported RTL scripts versus other Unicode letters. It is a heuristic for strings without authoritative direction metadata.
 
 ## Bidi contract
 
-- isolate helpers wrap strings with Unicode isolate controls.
-- `stripUnsafeBidiOverrides` removes legacy U+202A..U+202E embedding/override controls only.
-- `stripBidiControls` removes the explicit control set supported by this package.
-- no bidi function promises source-code sanitization or confusable detection.
+- isolate helpers wrap strings with Unicode isolate controls;
+- `stripUnsafeBidiOverrides` removes legacy embedding/override controls only;
+- `stripBidiControls` removes the explicit control set supported by the package;
+- no bidi function claims source-code sanitization or complete confusable detection.
 
 ## Locale negotiation and capability contract
 
-`selectBestLocale` never silently crosses effective script boundaries during same-language fallback. Default locale selection remains explicit.
+`selectBestLocale` never silently crosses effective-script boundaries during same-language fallback.
 
-`getLocaleCapabilities(locale)` returns canonical language/script/region/direction and uses runtime ECMA-402 locale-info methods or equivalent accessors when available. Calendars, numbering systems, hour cycles, collations, time zones, and week information may therefore be empty or absent on engines that do not expose those APIs. The function does not fabricate CLDR metadata.
+`getLocaleCapabilities(locale)` returns canonical language/script/region/direction and runtime-exposed calendars, numbering systems, hour cycles, collations, time zones, and week information. Missing runtime capabilities remain empty/absent rather than being fabricated.
 
-`supportedIntlValues(kind)` exposes standardized runtime-supported values through `Intl.supportedValuesOf` when available. It fails explicitly when the runtime lacks that API rather than maintaining a private registry.
+`supportedIntlValues(kind)` delegates to `Intl.supportedValuesOf` and fails explicitly when unavailable instead of maintaining a private registry.
 
-`supportsLocale(locale, constructors)` reports whether the requested locale is supported by the selected built-in `Intl` constructors. It does not guarantee that every locale-sensitive API or every desired calendar/numbering-system extension is available.
+`supportsLocale(locale, constructors)` reports support in the selected built-in `Intl` constructors; it does not guarantee every locale extension or desired calendar/numbering system.
 
 ## Segmentation contract
 
-`segmentGraphemes`, `graphemeLength`, `sliceGraphemes`, and `truncateGraphemes` operate through `Intl.Segmenter` grapheme boundaries. This prevents common UTF-16 slicing errors involving combining marks and emoji sequences. Exact segmentation follows the running platform's Unicode/ICU implementation.
+`segmentGraphemes`, `graphemeLength`, `sliceGraphemes`, and `truncateGraphemes` use `Intl.Segmenter` grapheme boundaries and avoid common UTF-16 slicing errors.
 
-`segmentWords(value, locale)` returns every locale-sensitive word-boundary segment and carries the runtime-provided `isWordLike` signal. `words()` is the convenience form that returns only word-like segments. Punctuation and whitespace are not considered word-like when the host marks them otherwise.
+`segmentWords(value, locale)` exposes locale-sensitive word boundaries plus host-provided `isWordLike`; `words()` returns only word-like segments.
 
-`segmentSentences(value, locale)` returns locale-sensitive sentence-boundary segments. Sentence segmentation is a Unicode/platform boundary service, not semantic or linguistic parsing. Applications must not infer meaning, reading level, authorship, or grammatical correctness from these boundaries.
+`segmentSentences(value, locale)` exposes locale-sensitive sentence boundaries. It is not semantic, grammatical, authorship, or readability analysis.
+
+Exact segmentation follows the running platform's Unicode/ICU implementation.
 
 ## Plural rules contract
 
-`selectPluralCategory(value, locale, options)` delegates cardinal/ordinal plural category selection to `Intl.PluralRules`. It rejects non-finite numeric values. Arabic can therefore expose categories such as `zero`, `one`, `two`, `few`, `many`, and `other` according to the host's locale data.
+`selectPluralCategory(value, locale, options)` delegates cardinal/ordinal selection to `Intl.PluralRules` and rejects non-finite numeric values.
 
-`selectPluralRangeCategory(start, end, locale, options)` uses `Intl.PluralRules.prototype.selectRange` when the runtime provides it and fails explicitly when that capability is unavailable. It does not synthesize a range category from endpoint categories.
+`selectPluralRangeCategory(start, end, locale, options)` uses native `selectRange` when available and fails explicitly when unavailable; it does not synthesize a category from endpoint categories.
 
-`resolvePluralRules()` exposes the runtime-resolved options for auditing. Consumers should branch on plural categories, not hard-code language-specific arithmetic rules in application code.
+`resolvePluralRules()` exposes runtime-resolved options. Consumers should branch on returned categories rather than hard-code language arithmetic.
 
 ## Display-name contract
 
-`formatDisplayName` and `formatDisplayNames` delegate standardized code naming to `Intl.DisplayNames`. They support the code types exposed by the host/type baseline, such as languages, regions, scripts, currencies, calendars, and date-time fields. When `fallback: 'none'` is requested, a missing name may produce `undefined`.
-
-Translated display names are locale data, not package-owned copy. Their exact spelling, punctuation, capitalization, or terminology may change with ICU/CLDR updates without a SemVer change in this toolkit.
+`formatDisplayName` and `formatDisplayNames` delegate standardized code naming to `Intl.DisplayNames`. Locale-data wording may change with ICU/CLDR without a toolkit SemVer change.
 
 ## Structured formatting contract
 
-`formatNumberParts`, `formatDateParts`, `formatListParts`, and `formatRelativeTimeParts` expose the corresponding `Intl.*.formatToParts()` structures. These APIs are preferred when an application needs semantic styling, direction isolation, annotation, or component rendering around localized pieces.
+`formatNumberParts`, `formatDateParts`, `formatListParts`, and `formatRelativeTimeParts` expose the corresponding `Intl.*.formatToParts()` structures.
 
-Consumers must preserve the emitted part order and must not rebuild localized output using English-centric assumptions about separators, signs, currencies, list conjunctions, or date ordering.
+Consumers must preserve emitted part order and must not reconstruct localized output from English-centric assumptions about separators, signs, currency placement, conjunctions, or date ordering.
 
 ## Pseudo-localization contract
 
-`pseudoLocalize` is a localization QA utility, not translation. By default it decorates/accent-transforms human-readable copy while preserving common `{placeholder}`, printf-style, HTML-like tag, and entity tokens. Consumers should use invented/test content and should not treat pseudo-localized strings as natural-language output.
+`pseudoLocalize` is a localization QA utility, not translation. It can transform/expand human-readable copy while preserving common placeholders, printf-style tokens, HTML-like tags, and entities.
 
 ## Unicode display-risk contract
 
 `detectLetterScripts` reports recognized script families among Unicode letters while ignoring Common/Inherited characters.
 
-`diagnoseUnicodeDisplay` provides defense-in-depth signals for:
+`diagnoseUnicodeDisplay` provides defense-in-depth signals for bidi controls, legacy overrides, isolate imbalance, selected zero-width format characters, and mixed recognized scripts.
 
-- explicit bidi controls;
-- legacy bidi embedding/override controls;
-- unbalanced Unicode isolate controls;
-- selected zero-width format characters;
-- strings containing letters from more than one recognized script family.
-
-These diagnostics are not a complete Unicode Technical Standard #39 confusable implementation, identifier security profile, malware scanner, or Trojan Source/source-code analyzer. A mixed-script result is a signal for policy review, not proof of malicious content.
+These diagnostics are not a complete UTS #39 confusable implementation, identifier security profile, malware scanner, or Trojan Source analyzer. A risk is a review signal, not proof of malicious content.
 
 ## Arabic normalization contract
 
-Normalization is deliberately conservative and intended for search/display keys. It is not stemming, morphology, transliteration, diagnosis, terminology mapping, or semantic equivalence.
-
-By default it may:
-
-- remove Arabic-script combining marks;
-- remove tatweel;
-- normalize common Alef variants.
-
-It does not map `ة` to `ه`, and it does not collapse other distinct Arabic letters without an explicit option.
+Arabic normalization is deliberately conservative and intended for search/display keys. It is not stemming, morphology, transliteration, terminology mapping, or semantic equivalence. It does not map `ة` to `ه` or collapse distinct letters without an explicit option.
 
 ## Accessibility interaction contract
 
-`nextIndexFromKey` and roving-focus helpers model keyboard/index state only. They do not create DOM widgets, assign ARIA roles, or assert that a consuming widget conforms to WAI-ARIA Authoring Practices.
+`nextIndexFromKey` and roving-focus helpers model keyboard/index state only. They do not create DOM widgets, assign roles, or assert WAI-ARIA Authoring Practices conformance.
 
-`nextRovingFocusIndex` skips disabled items and respects horizontal RTL/LTR direction, vertical orientation, Home/End, and optional looping. `rovingTabIndexes` emits a single-tab-stop model for enabled items. The consuming application remains responsible for focus calls, semantic HTML, labels, states, roles, and pattern-specific interaction behavior.
+`nextRovingFocusIndex` skips disabled items and respects horizontal RTL/LTR direction, orientation, Home/End, and optional looping. `rovingTabIndexes` derives a single-tab-stop model. The host remains responsible for focus calls and semantics.
 
-`findTypeaheadMatch(items, query, options)` performs locale-sensitive prefix matching over enabled item labels using `Intl.Collator` search semantics and grapheme-safe prefix boundaries. It returns an index only; it does not move DOM focus, change selection, assign roles, or decide whether a particular widget pattern should implement typeahead.
+### Locale-aware typeahead
 
-`updateTypeaheadBuffer(previous, input, timestamp, timeoutMs)` is deterministic buffer-state logic. The caller owns event filtering, the actual timer, composition/IME handling, focus management, and pattern-specific behavior. Keeping those concerns outside the helper prevents hidden timers and browser-global side effects.
+`findTypeaheadMatch(items, query, options)` performs locale-sensitive prefix matching over enabled labels with `Intl.Collator` search semantics and grapheme-safe prefix boundaries. It returns an index only.
+
+`updateTypeaheadBuffer(previous, input, timestamp, timeoutMs)` provides deterministic buffer-state logic. The host owns timers, keyboard-event filtering, modifier shortcuts, composition/IME handling, focus, selection, and pattern-specific behavior.
+
+### Composite selection
+
+`normalizeSelection`, `selectSingle`, `toggleMultiple`, `selectRange`, and `isSelected` model selection state independently from active/focus state.
+
+The contract intentionally permits states such as `{ activeIndex: 0, selected: [2] }`. The toolkit does not silently implement selection-follows-focus.
+
+- disabled indices are excluded from normalized/new selection;
+- single mode permits at most one selected index;
+- multiple mode can optionally disallow an empty selection;
+- range selection is inclusive and skips disabled indices;
+- the host owns the selection anchor lifecycle, modifier-key policy, DOM focus, roles, and ARIA states.
+
+### Rectangular grid navigation
+
+`gridPosition` and `gridIndex` convert between a flat logical/DOM-order index and `{ row, column }` coordinates in a rectangular grid.
+
+`nextGridIndex(currentIndex, rowCount, columnCount, key, options)` calculates movement without mutating DOM or selection.
+
+- horizontal physical-arrow behavior is direction-aware;
+- in RTL, `ArrowRight` moves toward the previous logical column and `ArrowLeft` toward the next logical column;
+- vertical movement is direction-independent;
+- `Home`/`End` target the current row;
+- `ctrlKey: true` with Home/End targets the entire grid;
+- `PageUp`/`PageDown` use caller-provided `pageRows` and clamp at boundaries;
+- `wrapRows` defaults to `false` for conservative data-grid behavior and is an explicit opt-in for layout-grid-style wrapping.
+
+The grid helpers do not create `role="grid"`, choose cell-vs-descendant focus, implement editing mode, assign row/column ARIA metadata, select cells/rows/columns, manage virtualization, or claim APG conformance.
+
+See `docs/COMPOSITE-INTERACTIONS.md`, `docs/SELECTION-MODELS.md`, and `docs/GRID-NAVIGATION.md`.
 
 ## Accessibility DOM contract
 
-DOM utilities are safe to import in SSR/non-DOM environments. Functions requiring a document either accept one or degrade to a no-op where appropriate. Importing the package must not read `document` eagerly.
+DOM utilities are safe to import in SSR/non-DOM environments. Functions requiring a document either accept one or degrade to a no-op where appropriate. Importing the package must not eagerly read `document`.
 
 ## Built package contract
 
-`npm run package:contract` builds the distributable package, imports the real `dist/index.js` in a non-DOM Node environment, validates the root JavaScript/declaration export mapping, verifies required CSS/package subpaths, checks representative public exports, and executes selected runtime invariants.
+`npm run package:contract` builds the distributable package and imports the real `dist/index.js` in a non-DOM Node environment.
 
-This gate exists in addition to source tests, `publint`, and Are The Types Wrong because a valid source tree can still produce a broken package through export-map drift, missing generated declarations, eager DOM access, or bundling mistakes.
+It validates:
+
+- root JavaScript/declaration export mapping;
+- required CSS/package subpaths;
+- representative public exports;
+- SSR-safe import behavior;
+- script-direction behavior;
+- locale-aware typeahead;
+- active-vs-selected independence;
+- physical RTL grid movement and row Home behavior.
+
+This gate complements source tests, `publint`, and Are The Types Wrong because a correct source tree can still produce a broken distributable through export-map drift, missing declarations, eager DOM access, or bundling mistakes.
 
 ## Error contract
 
-Programmer-state errors such as invalid pagination ranges, invalid keyboard indices, invalid grapheme truncation lengths, invalid roving-focus/typeahead indices, invalid dates, non-finite timestamps, and non-finite plural values throw `RangeError` where documented. Invalid locale direction input uses the documented fallback behavior. Unsupported optional runtime capabilities fail explicitly rather than silently emulating standards behavior.
+Programmer-state errors such as invalid pagination ranges, keyboard/grid indices, grid coordinates/dimensions, grapheme truncation lengths, roving-focus/typeahead indices, invalid dates, non-finite timestamps, invalid page-row sizes, and non-finite plural values throw `RangeError` where documented.
+
+Invalid locale direction input uses its documented fallback. Unsupported optional runtime capabilities fail explicitly rather than silently emulating standards behavior.
 
 ## Formatting and locale-data variability
 
-`Intl` output and segmentation are platform data. Changes in browser/runtime ICU, Unicode, and CLDR versions may legitimately alter punctuation, digits, spacing, names, segment boundaries, plural behavior for corrected locale data, search collation behavior, week metadata, supported-value lists, or formatting conventions without a toolkit code change. Consumers should avoid asserting byte-for-byte localized output when the exact wording is not part of their own product contract.
+`Intl` output, segmentation, collation, display names, week metadata, plural behavior, and supported-value lists are platform data. Browser/runtime ICU, Unicode, and CLDR updates may legitimately change these results without a toolkit code change. Consumers should test package-owned invariants rather than freeze incidental localized wording or data lists.
