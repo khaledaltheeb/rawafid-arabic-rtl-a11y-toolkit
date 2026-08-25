@@ -23,6 +23,15 @@ project:
   vulnerability-reporting:
     reports-accepted: true
     bug-bounty-available: false
+    contact:
+      name: khaledaltheeb
+      social: https://github.com/khaledaltheeb
+      primary: true
+    policy: https://github.com/khaledaltheeb/rawafid-arabic-rtl-a11y-toolkit/blob/main/SECURITY.md
+    comment: |
+      Sensitive exploit details must not be filed publicly. GitHub private
+      vulnerability reporting is the preferred private channel when that
+      account-bound feature is enabled; its enablement is verified separately.
   homepage: https://healthrenewal.org/
   roadmap: https://github.com/khaledaltheeb/rawafid-arabic-rtl-a11y-toolkit/blob/main/ROADMAP.md
   documentation:
