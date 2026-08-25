@@ -40,12 +40,13 @@
     "outputs": {
       "type": "object",
       "additionalProperties": false,
-      "required": ["json", "junit", "html", "summary"],
+      "required": ["json", "junit", "html", "summary", "localizationSarif"],
       "properties": {
         "json": {"type": "string", "minLength": 1},
         "junit": {"type": "string", "minLength": 1},
         "html": {"type": "string", "minLength": 1},
-        "summary": {"type": "string", "minLength": 1}
+        "summary": {"type": "string", "minLength": 1},
+        "localizationSarif": {"type": "string", "pattern": "^partner-results/.+\\.sarif$"}
       }
     },
     "nonClaims": {"type": "array", "minItems": 1, "items": {"type": "string", "minLength": 1}}
