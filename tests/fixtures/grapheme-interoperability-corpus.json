@@ -1,0 +1,59 @@
+{
+  "schemaVersion": 1,
+  "title": "Rawafid grapheme interoperability corpus",
+  "scope": "Independently authored regression vectors for user-perceived grapheme boundaries exposed through Intl.Segmenter and the toolkit grapheme helpers. This is not copied from Unicode conformance data and does not claim full UAX #29 conformance.",
+  "basis": [
+    "Unicode Standard 17.0 core specification",
+    "Unicode Standard Annex #29: Unicode Text Segmentation"
+  ],
+  "cases": [
+    {
+      "id": "arabic-fatha",
+      "locale": "ar",
+      "value": "بَ",
+      "expectedSegments": ["بَ"]
+    },
+    {
+      "id": "arabic-shadda-fatha",
+      "locale": "ar",
+      "value": "نَّ",
+      "expectedSegments": ["نَّ"]
+    },
+    {
+      "id": "arabic-word-diacritics",
+      "locale": "ar",
+      "value": "مَرْحَبًا",
+      "expectedSegments": ["مَ", "رْ", "حَ", "بً", "ا"]
+    },
+    {
+      "id": "latin-combining-acute",
+      "locale": "en",
+      "value": "é",
+      "expectedSegments": ["é"]
+    },
+    {
+      "id": "jordan-flag",
+      "locale": "ar-JO",
+      "value": "🇯🇴",
+      "expectedSegments": ["🇯🇴"]
+    },
+    {
+      "id": "woman-technologist",
+      "locale": "und",
+      "value": "👩‍💻",
+      "expectedSegments": ["👩‍💻"]
+    },
+    {
+      "id": "family-zwj-sequence",
+      "locale": "und",
+      "value": "👨‍👩‍👧‍👦",
+      "expectedSegments": ["👨‍👩‍👧‍👦"]
+    },
+    {
+      "id": "mixed-arabic-emoji",
+      "locale": "ar",
+      "value": "أهلًا 👩‍💻",
+      "expectedSegments": ["أ", "ه", "لً", "ا", " ", "👩‍💻"]
+    }
+  ]
+}
