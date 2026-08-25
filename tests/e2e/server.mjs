@@ -6,6 +6,7 @@ const root = resolve(process.cwd());
 const port = Number(process.env.PORT ?? 4173);
 const routes = new Map([
   ['/', ['tests/e2e/fixture.html', 'text/html; charset=utf-8']],
+  ['/visual-reference', ['tests/e2e/visual-reference.html', 'text/html; charset=utf-8']],
   ['/dist/index.js', ['dist/index.js', 'text/javascript; charset=utf-8']],
   ['/styles/a11y.css', ['styles/a11y.css', 'text/css; charset=utf-8']],
   ['/styles/logical.css', ['styles/logical.css', 'text/css; charset=utf-8']],
