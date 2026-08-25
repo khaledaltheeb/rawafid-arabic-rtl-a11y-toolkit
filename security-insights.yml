@@ -25,6 +25,13 @@ project:
     bug-bounty-available: false
   homepage: https://healthrenewal.org/
   roadmap: https://github.com/khaledaltheeb/rawafid-arabic-rtl-a11y-toolkit/blob/main/ROADMAP.md
+  documentation:
+    code-of-conduct: https://github.com/khaledaltheeb/rawafid-arabic-rtl-a11y-toolkit/blob/main/CODE_OF_CONDUCT.md
+    design: https://github.com/khaledaltheeb/rawafid-arabic-rtl-a11y-toolkit/blob/main/docs/ARCHITECTURE.md
+    detailed-guide: https://github.com/khaledaltheeb/rawafid-arabic-rtl-a11y-toolkit/blob/main/README.md
+    quickstart-guide: https://github.com/khaledaltheeb/rawafid-arabic-rtl-a11y-toolkit/blob/main/README.md
+    release-process: https://github.com/khaledaltheeb/rawafid-arabic-rtl-a11y-toolkit/blob/main/docs/FIRST-PUBLICATION.md
+    support-policy: https://github.com/khaledaltheeb/rawafid-arabic-rtl-a11y-toolkit/blob/main/SECURITY.md
 
 repository:
   url: https://github.com/khaledaltheeb/rawafid-arabic-rtl-a11y-toolkit
@@ -38,9 +45,18 @@ repository:
   license:
     url: https://github.com/khaledaltheeb/rawafid-arabic-rtl-a11y-toolkit/blob/main/LICENSE
     expression: Apache-2.0
+  documentation:
+    contributing-guide: https://github.com/khaledaltheeb/rawafid-arabic-rtl-a11y-toolkit/blob/main/CONTRIBUTING.md
+    dependency-management-policy: https://github.com/khaledaltheeb/rawafid-arabic-rtl-a11y-toolkit/blob/main/docs/DEPENDENCY-BOOTSTRAP.md
+    governance: https://github.com/khaledaltheeb/rawafid-arabic-rtl-a11y-toolkit/blob/main/GOVERNANCE.md
+    review-policy: https://github.com/khaledaltheeb/rawafid-arabic-rtl-a11y-toolkit/blob/main/.github/pull_request_template.md
+    security-policy: https://github.com/khaledaltheeb/rawafid-arabic-rtl-a11y-toolkit/blob/main/SECURITY.md
   security:
     assessments:
       self:
+        name: Rawafid repository security posture self-assessment
+        date: '2026-08-25'
+        evidence: https://github.com/khaledaltheeb/rawafid-arabic-rtl-a11y-toolkit/blob/main/docs/OSPS-BASELINE.md
         comment: |
           Repository-maintained evidence includes a threat model, CodeQL,
           Dependency Review, OpenSSF Scorecard, deterministic package gates,
