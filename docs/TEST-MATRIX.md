@@ -118,6 +118,8 @@ Assertions cover:
 - `dirname` form submission preserving an RTL field direction;
 - controlled 24×24 CSS-pixel pointer-target floor checks;
 - controlled 320 CSS-pixel reflow without horizontal page overflow;
+- sticky author-content focus handling with scroll padding so a focused control is not obscured;
+- WCAG text-spacing override stress on Arabic/mixed-direction content without clipping, horizontal overflow, or loss of the adjacent control;
 - deterministic paired RTL/LTR logical-edge behavior for visual-regression integrations.
 
 ## Standards evidence contract
@@ -149,6 +151,7 @@ Repository automation does not replace:
 
 - screen-reader testing with product-specific dynamic content;
 - zoom/reflow and text-spacing review beyond the controlled regression fixtures;
+- focus-obscuration review for product-specific overlays, sticky regions, dialogs, and responsive breakpoints beyond the controlled fixture;
 - high-contrast/forced-colors product review;
 - localization review by fluent speakers;
 - product-specific complex-widget semantics and interaction testing;
