@@ -6,8 +6,11 @@ test('RTL/LTR visual reference mirrors logical styling without overflow', async 
   await expect(page.locator('html')).toHaveAttribute('data-visual-fixture', 'rtl-ltr-v1');
   await expect(page.locator('[data-panel="ltr"]')).toHaveAttribute('dir', 'ltr');
   await expect(page.locator('[data-panel="rtl"]')).toHaveAttribute('dir', 'rtl');
-  await expect(page.locator('[data-panel] [data-email]')).toHaveCount(2);
-  await expect(page.locator('[data-panel] [data-email]')).toHaveAttribute('dir', 'ltr');
+
+  const emailInputs = page.locator('[data-panel] [data-email]');
+  await expect(emailInputs).toHaveCount(2);
+  await expect(emailInputs.nth(0)).toHaveAttribute('dir', 'ltr');
+  await expect(emailInputs.nth(1)).toHaveAttribute('dir', 'ltr');
 
   const logicalEdges = await page.locator('[data-panel]').evaluateAll((panels) =>
     panels.map((panel) => {
