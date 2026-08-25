@@ -1,33 +1,35 @@
 import { readFile } from 'node:fs/promises';
 
-const source = await readFile(new URL('../.github/workflows/release.yml', import.meta.url), 'utf8');
+const releaseSource = await readFile(new URL('../.github/workflows/release.yml', import.meta.url), 'utf8');
+const preflightSource = await readFile(new URL('../.github/workflows/release-preflight.yml', import.meta.url), 'utf8');
 const errors = [];
-const requireText = (needle, label) => {
-  if (!source.includes(needle)) errors.push(`release.yml: missing ${label}: ${needle}`);
-};
 
-requireText('types: [published]', 'published-release trigger');
-requireText('contents: read', 'read-only contents permission');
-requireText('id-token: write', 'OIDC permission');
-requireText('attestations: write', 'attestation permission');
-requireText('npm pack --json --ignore-scripts > npm-pack.json', 'single explicit npm tarball build');
-requireText('npm publish "${{ steps.pack.outputs.tarball }}" --access public --provenance', 'exact-tarball trusted publication');
-requireText('npm view "$PACKAGE_NAME@$PACKAGE_VERSION" dist.integrity', 'registry integrity lookup');
-requireText('LOCAL_INTEGRITY: ${{ steps.pack.outputs.integrity }}', 'local integrity handoff');
-requireText('uses: actions/attest@508db95dd578ae2727ebd6217d5ba78e4fbda05d # v4.2.1', 'SHA-pinned attestation action');
-requireText('sbom-path: sbom.spdx.json', 'SBOM attestation');
-requireText('run: npm run site:build', 'release-tag public review artifact build');
-requireText('review-site/', 'public review artifact in retained release evidence');
-requireText('subject-path: review-site/**', 'public review artifact provenance attestation');
+function requireText(source, file, needle, label) {
+  if (!source.includes(needle)) errors.push(`${file}: missing ${label}: ${needle}`);
+}
 
-const attestUses = source.match(/uses: actions\/attest@508db95dd578ae2727ebd6217d5ba78e4fbda05d/gmu) ?? [];
+requireText(releaseSource, 'release.yml', 'types: [published]', 'published-release trigger');
+requireText(releaseSource, 'release.yml', 'contents: read', 'read-only contents permission');
+requireText(releaseSource, 'release.yml', 'id-token: write', 'OIDC permission');
+requireText(releaseSource, 'release.yml', 'attestations: write', 'attestation permission');
+requireText(releaseSource, 'release.yml', 'npm pack --json --ignore-scripts > npm-pack.json', 'single explicit npm tarball build');
+requireText(releaseSource, 'release.yml', 'npm publish "${{ steps.pack.outputs.tarball }}" --access public --provenance', 'exact-tarball trusted publication');
+requireText(releaseSource, 'release.yml', 'npm view "$PACKAGE_NAME@$PACKAGE_VERSION" dist.integrity', 'registry integrity lookup');
+requireText(releaseSource, 'release.yml', 'LOCAL_INTEGRITY: ${{ steps.pack.outputs.integrity }}', 'local integrity handoff');
+requireText(releaseSource, 'release.yml', 'uses: actions/attest@508db95dd578ae2727ebd6217d5ba78e4fbda05d # v4.2.1', 'SHA-pinned attestation action');
+requireText(releaseSource, 'release.yml', 'sbom-path: sbom.spdx.json', 'SBOM attestation');
+requireText(releaseSource, 'release.yml', 'run: npm run site:build', 'release-tag public review artifact build');
+requireText(releaseSource, 'release.yml', 'review-site/', 'public review artifact in retained release evidence');
+requireText(releaseSource, 'release.yml', 'subject-path: review-site/**', 'public review artifact provenance attestation');
+
+const attestUses = releaseSource.match(/uses: actions\/attest@508db95dd578ae2727ebd6217d5ba78e4fbda05d/gmu) ?? [];
 if (attestUses.length !== 3) errors.push(`release.yml: expected exactly three pinned actions/attest uses, found ${attestUses.length}.`);
-const disabledStorageRecords = source.match(/create-storage-record:\s*false/gmu) ?? [];
+const disabledStorageRecords = releaseSource.match(/create-storage-record:\s*false/gmu) ?? [];
 if (disabledStorageRecords.length !== 3) errors.push(`release.yml: expected storage records disabled on all three attestations, found ${disabledStorageRecords.length}.`);
-const publishCommands = source.match(/\bnpm publish\b/gmu) ?? [];
+const publishCommands = releaseSource.match(/\bnpm publish\b/gmu) ?? [];
 if (publishCommands.length !== 1) errors.push(`release.yml: expected exactly one npm publish command, found ${publishCommands.length}.`);
 
-const orderedSteps = [
+const releaseOrderedSteps = [
   'Build exact release tarball',
   'Generate SPDX SBOM',
   'Build reproducible public review surface',
@@ -38,26 +40,62 @@ const orderedSteps = [
   'Attest public review surface provenance',
 ];
 let previous = -1;
-for (const step of orderedSteps) {
-  const index = source.indexOf(`- name: ${step}`);
-  if (index < 0) {
-    errors.push(`release.yml: missing ordered step ${step}.`);
-    continue;
-  }
-  if (index <= previous) errors.push(`release.yml: release evidence step is out of order: ${step}.`);
-  previous = index;
+for (const step of releaseOrderedSteps) {
+  const index = releaseSource.indexOf(`- name: ${step}`);
+  if (index < 0) errors.push(`release.yml: missing ordered step ${step}.`);
+  else if (index <= previous) errors.push(`release.yml: release evidence step is out of order: ${step}.`);
+  previous = Math.max(previous, index);
 }
-
-if (!source.includes('if [ "$registry_integrity" = "$LOCAL_INTEGRITY" ]')) {
+if (!releaseSource.includes('if [ "$registry_integrity" = "$LOCAL_INTEGRITY" ]')) {
   errors.push('release.yml: registry integrity must be compared directly to the locally computed tarball integrity.');
 }
-if (!source.includes('exit 1') || !source.includes('Registry artifact integrity mismatch')) {
+if (!releaseSource.includes('Registry artifact integrity mismatch')) {
   errors.push('release.yml: registry integrity mismatch must fail closed.');
+}
+
+requireText(preflightSource, 'release-preflight.yml', 'workflow_dispatch:', 'manual-only trigger');
+requireText(preflightSource, 'release-preflight.yml', 'permissions:\n  contents: read', 'read-only workflow permission');
+requireText(preflightSource, 'release-preflight.yml', 'persist-credentials: false', 'non-persistent checkout credentials');
+requireText(preflightSource, 'release-preflight.yml', 'npm run check', 'full release-candidate gate');
+requireText(preflightSource, 'release-preflight.yml', 'npm pack --json --ignore-scripts > npm-pack.json', 'exact candidate tarball build');
+requireText(preflightSource, 'release-preflight.yml', 'npm sbom --sbom-format=spdx --sbom-type=library > sbom.spdx.json', 'SPDX SBOM');
+requireText(preflightSource, 'release-preflight.yml', 'run: npm run site:build', 'reproducible public review artifact build');
+requireText(preflightSource, 'release-preflight.yml', 'resolved_commit="$(git rev-parse HEAD)"', 'checked-out commit binding');
+requireText(preflightSource, 'release-preflight.yml', 'publicationAttempted: false', 'explicit publication non-claim');
+requireText(preflightSource, 'release-preflight.yml', 'attestationAttempted: false', 'explicit attestation non-claim');
+requireText(preflightSource, 'release-preflight.yml', 'name: release-preflight-evidence', 'retained preflight evidence artifact');
+
+if (/\bnpm publish\b/u.test(preflightSource)) errors.push('release-preflight.yml: npm publish is forbidden in nonpublishing preflight.');
+if (/id-token:\s*write/u.test(preflightSource)) errors.push('release-preflight.yml: OIDC write permission is forbidden in nonpublishing preflight.');
+if (/attestations:\s*write/u.test(preflightSource) || /actions\/attest@/u.test(preflightSource)) {
+  errors.push('release-preflight.yml: attestations are forbidden; preflight must not create release provenance claims.');
+}
+if (/\brelease:\s*\n/u.test(preflightSource) || /types:\s*\[published\]/u.test(preflightSource)) {
+  errors.push('release-preflight.yml: release-published triggers are forbidden; preflight must remain manual-only.');
+}
+const preflightPackCommands = preflightSource.match(/npm pack --json --ignore-scripts/gmu) ?? [];
+if (preflightPackCommands.length !== 1) errors.push(`release-preflight.yml: expected exactly one exact tarball build, found ${preflightPackCommands.length}.`);
+
+const preflightOrderedSteps = [
+  'Verify release candidate',
+  'Inspect package contents',
+  'Build exact release-candidate tarball',
+  'Generate SPDX SBOM',
+  'Build reproducible public review surface',
+  'Write preflight manifest',
+  'Upload preflight evidence',
+];
+previous = -1;
+for (const step of preflightOrderedSteps) {
+  const index = preflightSource.indexOf(`- name: ${step}`);
+  if (index < 0) errors.push(`release-preflight.yml: missing ordered step ${step}.`);
+  else if (index <= previous) errors.push(`release-preflight.yml: preflight evidence step is out of order: ${step}.`);
+  previous = Math.max(previous, index);
 }
 
 if (errors.length > 0) {
   console.error(errors.join('\n'));
   process.exitCode = 1;
 } else {
-  console.log('Release policy contract passed: exact npm publication, registry identity, SBOM, package provenance, and reproducible review-site provenance are enforced.');
+  console.log('Release policy contract passed: publishing remains release-only, while manual preflight builds equivalent candidate evidence without publication, OIDC, or attestations.');
 }
