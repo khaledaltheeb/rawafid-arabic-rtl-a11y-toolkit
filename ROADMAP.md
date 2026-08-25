@@ -28,12 +28,12 @@ Completed or in active verification:
 - Roving-tabindex/composite navigation state with RTL and disabled-item support.
 - Mixed-script form, table, breadcrumb, and composite-widget browser fixtures.
 - Built-package browser verification across Chromium, Firefox, WebKit, and mobile Chromium.
+- Stable paired RTL/LTR comparison fixture with logical-edge and narrow-viewport invariants, suitable as a deterministic surface for future visual-regression providers.
 - Integration contract for framework-neutral consumption.
 
 Remaining in this phase:
 
 - Additional dialog/disclosure/menu reference fixtures where the generic behavior can be modeled without pretending to own application semantics.
-- Stable RTL/LTR comparison fixtures suitable for visual-regression providers.
 - Translation-service workflow examples only after a legitimate provider integration is available.
 - Optional BrowserStack/TestMu CI adapters only after program approval and without embedding provider credentials.
 
