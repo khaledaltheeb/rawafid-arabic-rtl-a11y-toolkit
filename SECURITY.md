@@ -4,13 +4,21 @@ Security-sensitive surfaces in this project include Unicode bidirectional contro
 
 ## Reporting a vulnerability
 
-Do not publish exploit details in a public issue before maintainers have assessed the report. Use GitHub private vulnerability reporting once it is enabled on the public repository.
+**Security contact:** the primary repository maintainer, [`@khaledaltheeb`](https://github.com/khaledaltheeb).
+
+Do not publish exploit details in a public issue before maintainers have assessed the report. Use GitHub private vulnerability reporting when the repository exposes that reporting channel.
+
+The existence and enablement state of GitHub private vulnerability reporting is an account-bound repository setting and must be verified independently. If that private channel is unavailable, do not place sensitive exploit details in a public issue; use the maintainer identity above to establish a safe reporting path first.
 
 For non-sensitive correctness bugs, use the public issue tracker.
 
 ## Supported versions
 
 Before 1.0, security fixes are applied to the latest public release line and `main`. Maintainers may issue a new pre-1.0 minor/patch rather than backporting to older pre-release lines.
+
+## Coordinated disclosure expectations
+
+Maintainers should acknowledge a privately received security report as soon as practicable, establish a private remediation channel, assess affected supported versions, prepare a fix and advisory where warranted, and coordinate public disclosure only after users have a reasonable mitigation or update path. No fixed response-time SLA is claimed until the project can sustain and measure one reliably.
 
 ## Bidirectional text
 
@@ -43,4 +51,4 @@ Locale tags are canonicalized with the platform `Intl` implementation. Do not co
 
 `OPEN_SOURCE_SCOPE.md` is a security boundary. The repository must not contain Rawafid scientific/editorial content, private datasets, user information, secrets, production configuration, or proprietary content-pipeline logic.
 
-See [docs/THREAT-MODEL.md](./docs/THREAT-MODEL.md) for the full model.
+See [docs/THREAT-MODEL.md](./docs/THREAT-MODEL.md) for the full model and [docs/OSPS-BASELINE.md](./docs/OSPS-BASELINE.md) for evidence mapping against the OpenSSF Open Source Project Security Baseline.

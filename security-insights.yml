@@ -1,0 +1,74 @@
+header:
+  schema-version: 2.2.0
+  last-updated: '2026-08-25'
+  last-reviewed: '2026-08-25'
+  url: https://raw.githubusercontent.com/khaledaltheeb/rawafid-arabic-rtl-a11y-toolkit/main/security-insights.yml
+  comment: |
+    Machine-readable security posture for the single-repository Rawafid
+    Arabic/RTL Accessibility & Localization Toolkit. Account-bound controls
+    are intentionally not represented as verified merely because repository
+    documentation recommends them.
+
+project:
+  name: Rawafid Arabic/RTL Accessibility & Localization Toolkit
+  administrators:
+    - name: khaledaltheeb
+      social: https://github.com/khaledaltheeb
+      primary: true
+  repositories:
+    - name: rawafid-arabic-rtl-a11y-toolkit
+      url: https://github.com/khaledaltheeb/rawafid-arabic-rtl-a11y-toolkit
+      comment: |
+        Canonical public source repository for the reusable toolkit.
+  vulnerability-reporting:
+    reports-accepted: true
+    bug-bounty-available: false
+    contact:
+      name: khaledaltheeb
+      social: https://github.com/khaledaltheeb
+      primary: true
+    policy: https://github.com/khaledaltheeb/rawafid-arabic-rtl-a11y-toolkit/blob/main/SECURITY.md
+    comment: |
+      Sensitive exploit details must not be filed publicly. GitHub private
+      vulnerability reporting is the preferred private channel when that
+      account-bound feature is enabled; its enablement is verified separately.
+  homepage: https://healthrenewal.org/
+  roadmap: https://github.com/khaledaltheeb/rawafid-arabic-rtl-a11y-toolkit/blob/main/ROADMAP.md
+  documentation:
+    code-of-conduct: https://github.com/khaledaltheeb/rawafid-arabic-rtl-a11y-toolkit/blob/main/CODE_OF_CONDUCT.md
+    design: https://github.com/khaledaltheeb/rawafid-arabic-rtl-a11y-toolkit/blob/main/docs/ARCHITECTURE.md
+    detailed-guide: https://github.com/khaledaltheeb/rawafid-arabic-rtl-a11y-toolkit/blob/main/README.md
+    quickstart-guide: https://github.com/khaledaltheeb/rawafid-arabic-rtl-a11y-toolkit/blob/main/README.md
+    release-process: https://github.com/khaledaltheeb/rawafid-arabic-rtl-a11y-toolkit/blob/main/docs/FIRST-PUBLICATION.md
+    support-policy: https://github.com/khaledaltheeb/rawafid-arabic-rtl-a11y-toolkit/blob/main/SECURITY.md
+
+repository:
+  url: https://github.com/khaledaltheeb/rawafid-arabic-rtl-a11y-toolkit
+  status: active
+  accepts-change-request: true
+  accepts-automated-change-request: true
+  core-team:
+    - name: khaledaltheeb
+      social: https://github.com/khaledaltheeb
+      primary: true
+  license:
+    url: https://github.com/khaledaltheeb/rawafid-arabic-rtl-a11y-toolkit/blob/main/LICENSE
+    expression: Apache-2.0
+  documentation:
+    contributing-guide: https://github.com/khaledaltheeb/rawafid-arabic-rtl-a11y-toolkit/blob/main/CONTRIBUTING.md
+    dependency-management-policy: https://github.com/khaledaltheeb/rawafid-arabic-rtl-a11y-toolkit/blob/main/docs/DEPENDENCY-BOOTSTRAP.md
+    governance: https://github.com/khaledaltheeb/rawafid-arabic-rtl-a11y-toolkit/blob/main/GOVERNANCE.md
+    review-policy: https://github.com/khaledaltheeb/rawafid-arabic-rtl-a11y-toolkit/blob/main/.github/pull_request_template.md
+    security-policy: https://github.com/khaledaltheeb/rawafid-arabic-rtl-a11y-toolkit/blob/main/SECURITY.md
+  security:
+    assessments:
+      self:
+        name: Rawafid repository security posture self-assessment
+        date: '2026-08-25'
+        evidence: https://github.com/khaledaltheeb/rawafid-arabic-rtl-a11y-toolkit/blob/main/docs/OSPS-BASELINE.md
+        comment: |
+          Repository-maintained evidence includes a threat model, CodeQL,
+          Dependency Review, OpenSSF Scorecard, deterministic package gates,
+          SHA-pinned GitHub Actions, public-scope checks, and machine-readable
+          standards evidence. This is a self-assessment, not an independent
+          audit, certification, or claim that account-bound controls are enabled.
