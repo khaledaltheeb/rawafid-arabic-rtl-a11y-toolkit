@@ -7,6 +7,7 @@ import { fileURLToPath } from 'node:url';
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const DEFAULT_OUTPUT = path.join(ROOT, 'review-site');
 const outputDir = path.resolve(process.argv[2] ?? DEFAULT_OUTPUT);
+const MANIFEST_SCHEMA = 'https://raw.githubusercontent.com/khaledaltheeb/rawafid-arabic-rtl-a11y-toolkit/main/schemas/review-site-artifact.schema.json';
 
 const packageJson = JSON.parse(await readFile(path.join(ROOT, 'package.json'), 'utf8'));
 
@@ -115,6 +116,7 @@ const buildInputs = [
 ].sort((a, b) => a.destination.localeCompare(b.destination, 'en'));
 
 const manifest = {
+  $schema: MANIFEST_SCHEMA,
   schemaVersion: 1,
   artifact: 'rawafid-public-review-lab',
   package: {
