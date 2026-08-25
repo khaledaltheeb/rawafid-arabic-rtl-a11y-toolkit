@@ -24,6 +24,21 @@ describe('localized decimal input', () => {
     });
   });
 
+  it('parses runtime-formatted Arabic negatives including derived bidi literals', () => {
+    const formatted = new Intl.NumberFormat('ar-JO', {
+      numberingSystem: 'arab',
+      useGrouping: true,
+      minimumFractionDigits: 1,
+      maximumFractionDigits: 1,
+    }).format(-12345.6);
+
+    expect(parseLocalizedDecimal(formatted, 'ar-JO', { numberingSystem: 'arab' })).toMatchObject({
+      ok: true,
+      value: -12345.6,
+      normalized: '-12345.6',
+    });
+  });
+
   it('strictly parses Extended Arabic-Indic input for Persian', () => {
     expect(parseLocalizedDecimal('-۱۲٬۳۴۵٫۶', 'fa-IR', { numberingSystem: 'arabext' })).toMatchObject({
       ok: true,
@@ -89,6 +104,14 @@ describe('localized decimal input', () => {
     expect(parseLocalizedDecimal('1-2', 'en-US')).toMatchObject({ ok: false, reason: 'misplaced-sign' });
     expect(parseLocalizedDecimal('1e3', 'en-US')).toMatchObject({ ok: false, reason: 'invalid-character' });
     expect(parseLocalizedDecimal('12.', 'en-US')).toMatchObject({ ok: false, reason: 'missing-fraction-digits' });
+  });
+
+  it('reports invalid-character indices against the original input after trimming edges', () => {
+    expect(parseLocalizedDecimal('  12x ', 'en-US')).toMatchObject({
+      ok: false,
+      reason: 'invalid-character',
+      index: 4,
+    });
   });
 
   it('accepts a leading decimal and returns a canonical lexical form', () => {
