@@ -20,4 +20,9 @@ describe('Arabic text utilities', () => {
   it('creates a stable search key', () => {
     expect(createArabicSearchKey('  إِلَى   المدرسة  ')).toBe('الي المدرسة');
   });
+
+  it('normalizes Arabic and Persian decimal digits in search keys only', () => {
+    expect(createArabicSearchKey('  الإصدار ٢٥  ')).toBe('الاصدار 25');
+    expect(createArabicSearchKey('  الإصدار ۲۵  ')).toBe('الاصدار 25');
+  });
 });
