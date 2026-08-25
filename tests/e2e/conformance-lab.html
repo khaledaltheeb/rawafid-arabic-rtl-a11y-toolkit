@@ -38,15 +38,11 @@
     .focus-content { padding: 12px; }
     .focus-spacer { block-size: 220px; }
     [data-focus-target] { scroll-margin-block-start: 60px; }
-    .spacing-sample {
-      max-inline-size: 36rem;
-      overflow-wrap: anywhere;
-    }
+    .spacing-sample { max-inline-size: 36rem; overflow-wrap: anywhere; }
     .spacing-sample p { margin-block: 0 1em; }
-    .spacing-probe {
-      inline-size: 100%;
-      min-inline-size: 0;
-    }
+    .spacing-probe { inline-size: 100%; min-inline-size: 0; }
+    .motion-probe { transition: transform 2s ease; animation: pulse 2s infinite alternate; }
+    @keyframes pulse { from { transform: translateX(0); } to { transform: translateX(8px); } }
     @media (max-width: 320px) {
       body { padding: 8px; }
       .card { padding: 12px; }
@@ -108,6 +104,12 @@
         <p data-spacing-paragraph>English text mixed with العربية and support@example.org must remain readable, wrap naturally, and keep the control below usable.</p>
         <button class="spacing-probe" type="button" data-spacing-control>Continue / متابعة</button>
       </div>
+    </section>
+
+    <section class="card" aria-labelledby="environment-title">
+      <h2 id="environment-title">Accessibility environment profiles</h2>
+      <button class="rawafid-focus-ring" type="button" data-forced-colors-focus>Focus / تركيز</button>
+      <div class="rawafid-respect-motion motion-probe" data-motion-probe>Motion / حركة</div>
     </section>
   </main>
 </body>
