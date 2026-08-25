@@ -30,5 +30,8 @@
     "name": "Rawafid contributors",
     "url": "https://healthrenewal.org/"
   }],
-  "citation": "https://github.com/khaledaltheeb/rawafid-arabic-rtl-a11y-toolkit/blob/main/CITATION.cff"
+  "citation": "https://github.com/khaledaltheeb/rawafid-arabic-rtl-a11y-toolkit/blob/main/CITATION.cff",
+  "continuousIntegration": "https://github.com/khaledaltheeb/rawafid-arabic-rtl-a11y-toolkit/actions/workflows/ci.yml",
+  "readme": "https://github.com/khaledaltheeb/rawafid-arabic-rtl-a11y-toolkit/blob/main/README.md",
+  "buildInstructions": "https://github.com/khaledaltheeb/rawafid-arabic-rtl-a11y-toolkit/blob/main/CONTRIBUTING.md"
 }
