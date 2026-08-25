@@ -1,0 +1,31 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://raw.githubusercontent.com/khaledaltheeb/rawafid-arabic-rtl-a11y-toolkit/main/schemas/conformance-manifest.schema.json",
+  "title": "Rawafid standards conformance evidence manifest",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schemaVersion", "project", "reviewedAt", "claims"],
+  "properties": {
+    "schemaVersion": {"const": 1},
+    "project": {"type": "string", "minLength": 1},
+    "reviewedAt": {"type": "string", "format": "date"},
+    "claims": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["id", "title", "source", "test", "fixture", "scope", "nonClaim"],
+        "properties": {
+          "id": {"type": "string", "pattern": "^[a-z0-9][a-z0-9-]+$"},
+          "title": {"type": "string", "minLength": 1},
+          "source": {"type": "string", "format": "uri"},
+          "test": {"type": "string", "pattern": "^tests/e2e/.+\\.spec\\.ts$"},
+          "fixture": {"type": "string", "pattern": "^tests/e2e/.+\\.html$"},
+          "scope": {"type": "string", "minLength": 1},
+          "nonClaim": {"type": "string", "minLength": 1}
+        }
+      }
+    }
+  }
+}
