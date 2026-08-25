@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
   "suite": "rawafid-partner-interoperability-v1",
-  "purpose": "Vendor-neutral browser, accessibility-environment, Arabic/RTL, bidi, localized-input, reflow, visual-reference, Unicode-risk, text-segmentation, and localization-analysis evidence for external testing and research integrations.",
+  "purpose": "Vendor-neutral browser, deployable-artifact, accessibility-environment, Arabic/RTL, bidi, localized-input, reflow, visual-reference, Unicode-risk, text-segmentation, and localization-analysis evidence for external testing and research integrations.",
   "runner": "Playwright Test",
   "projects": [
     "chromium-desktop",
@@ -33,6 +33,10 @@
     {
       "path": "tests/e2e/digits.spec.ts",
       "domains": ["digit-systems", "arabic-indic", "extended-arabic-indic", "search-interoperability"]
+    },
+    {
+      "path": "tests/e2e/review-artifact.spec.ts",
+      "domains": ["deployable-artifact", "static-hosting", "subpath", "rtl", "accessibility", "reflow", "integrity"]
     }
   ],
   "assets": [
@@ -61,6 +65,7 @@
     "The Unicode risk corpus does not claim UAX #9 or UTS #39 conformance and is not a maliciousness-verdict dataset.",
     "The grapheme corpus does not claim complete UAX #29 conformance; runtime Intl.Segmenter supplies segmentation behavior.",
     "Localization SARIF is an interchange transport for existing QA findings, not a security or linguistic certification.",
+    "Exact static-artifact browser tests validate the generated payload under the declared matrix, not every possible hosting stack or CDN configuration.",
     "Provider-specific execution is not claimed until a provider integration is configured and observed."
   ]
 }
