@@ -19,13 +19,16 @@ All notable changes to this project are documented here. The project follows Sem
 - Locale-aware typeahead matching with `Intl.Collator` search semantics, grapheme-safe prefixes, deterministic multi-character buffer state, and Arabic/Latin-script tests.
 - Composite selection primitives that keep active/focus state independent from selected state, including single, multiple, non-empty, disabled-item, and inclusive-range behavior.
 - Direction-aware rectangular grid navigation with RTL physical horizontal arrows, vertical movement, row Home/End, grid Control+Home/End, caller-defined paging, conservative non-wrapping data-grid defaults, and opt-in layout-grid wrapping.
-- Built-package contract gate that imports the real `dist/index.js`, validates export/subpath integrity and SSR-safe import behavior, and executes direction, typeahead, selection, and RTL-grid runtime invariants.
+- Conservative decimal digit-system detection, explicit conversion, and search-key normalization for `latn`, `arab`, and `arabext`, including mixed-system diagnostics without altering separators or identifiers.
+- Digit-system-equivalent Arabic search keys and typeahead matching so Latin, Arabic-Indic, and Extended Arabic-Indic decimal digits can match without changing display labels.
+- Built-package contract gate that imports the real `dist/index.js`, validates export/subpath integrity and SSR-safe import behavior, and executes direction, digit, typeahead, selection, and RTL-grid runtime invariants.
 - `docs/GLOBAL-PLATFORM.md` defining the integrated global engineering layer, standards posture, and non-claims.
 - `docs/INTEROPERABILITY.md` defining framework-neutral integration boundaries, localization workflow, Unicode policy signals, and browser evidence.
 - `docs/SELECTION-MODELS.md` defining active-versus-selected state semantics and selection boundaries.
 - `docs/GRID-NAVIGATION.md` defining rectangular grid index, RTL movement, wrapping, paging, and host-semantics boundaries.
 - `docs/COMPOSITE-INTERACTIONS.md` defining the integrated movement/typeahead/selection/grid architecture and its source/package/browser verification layers.
-- Cross-module unit coverage for global platform capabilities, including Arabic plural categories, locale-sensitive segmentation/formatting, typeahead, selection, and RTL/LTR grid behavior.
+- `docs/DIGIT-SYSTEMS.md` defining text-level digit interoperability, formatting boundaries, and claim limits.
+- Cross-module unit coverage for global platform capabilities, including Arabic plural categories, locale-sensitive segmentation/formatting, digit systems, typeahead, selection, and RTL/LTR grid behavior.
 - Expanded built-package browser fixture covering mixed-direction forms, breadcrumbs, tabular identifiers/numbers, RTL composite tabs, locale-aware typeahead, a semantic 2×3 RTL grid, pseudo-localization, grapheme-safe truncation, and Unicode display-risk output.
 - Browser assertions for RTL roving focus, disabled-item skipping, typeahead, modifier/composition boundaries, physical RTL grid movement, vertical movement, Home/End, single grid tab stop, and horizontal-overflow prevention across Chromium, Firefox, WebKit, and mobile Chromium.
 
@@ -39,7 +42,7 @@ All notable changes to this project are documented here. The project follows Sem
 - Added repository ownership metadata and clarified first-publication readiness requirements.
 - Defined the canonical project identity: the platform name is Rawafid (روافد), the official production website is `https://healthrenewal.org/`, and this GitHub repository is the separate open-source source-code home for the toolkit.
 - Pointed npm package homepage metadata to the official Rawafid website while preserving GitHub as the canonical repository and issue tracker.
-- Expanded the public API surface with reusable Unicode, localization QA, locale metadata, segmentation, pluralization, structured formatting, display-name, grapheme, typeahead, selection, and grid-interaction primitives while retaining zero runtime dependencies.
+- Expanded the public API surface with reusable Unicode, localization QA, locale metadata, segmentation, pluralization, structured formatting, display-name, grapheme, digit, typeahead, selection, and grid-interaction primitives while retaining zero runtime dependencies.
 - Reworked the README into a capability map and integration guide for the broader global platform surface.
 - Advanced the roadmap to reflect completed grapheme, pseudo-localization, Unicode diagnostics, locale-capability, roving-focus, and mixed-direction fixture work instead of listing it as future scope.
 - Strengthened `docs/API-CONTRACT.md` with explicit host-ICU/CLDR variability contracts, typeahead/selection/grid boundaries, and built-package verification semantics.
