@@ -17,6 +17,40 @@ test('deployable artifact executes the packaged toolkit from relative resources'
   expect(resources.some((url) => url.endsWith('/artifact/styles/a11y.css'))).toBe(true);
 });
 
+test('deployable artifact enforces a self-contained strict CSP', async ({ page }) => {
+  const policy = await page.locator('meta[http-equiv="Content-Security-Policy"]').getAttribute('content');
+  expect(policy).toContain("default-src 'none'");
+  expect(policy).toContain("script-src 'self'");
+  expect(policy).toContain("style-src 'self'");
+  expect(policy).toContain("connect-src 'none'");
+  expect(policy).toContain("object-src 'none'");
+  expect(policy).toContain("base-uri 'none'");
+  expect(policy).toContain("form-action 'none'");
+  expect(policy).not.toContain("'unsafe-inline'");
+  expect(policy).not.toContain("'unsafe-eval'");
+  await expect(page.locator('meta[name="referrer"]')).toHaveAttribute('content', 'no-referrer');
+
+  const inlineResult = await page.evaluate(async () => {
+    const violation = new Promise<string>((resolve) => {
+      document.addEventListener('securitypolicyviolation', (event) => resolve(event.violatedDirective), { once: true });
+    });
+    const script = document.createElement('script');
+    script.textContent = "document.documentElement.dataset.cspInlineExecuted = 'true';";
+    document.head.append(script);
+    const directive = await Promise.race([
+      violation,
+      new Promise<string>((resolve) => setTimeout(() => resolve('timeout'), 1000)),
+    ]);
+    return {
+      directive,
+      executed: document.documentElement.dataset.cspInlineExecuted === 'true',
+    };
+  });
+
+  expect(inlineResult.executed).toBe(false);
+  expect(inlineResult.directive).toContain('script-src');
+});
+
 test('deployable artifact preserves explicit script direction semantics', async ({ page }) => {
   await page.locator('#locale').selectOption('az-Latn');
   await expect(page.locator('#locale-direction')).toHaveText('ltr');
