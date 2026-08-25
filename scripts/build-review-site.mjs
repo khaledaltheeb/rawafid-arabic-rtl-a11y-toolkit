@@ -11,9 +11,7 @@ const outputDir = path.resolve(process.argv[2] ?? DEFAULT_OUTPUT);
 const packageJson = JSON.parse(await readFile(path.join(ROOT, 'package.json'), 'utf8'));
 
 const COPY_PLAN = [
-  ['site/index.html', 'review-lab/index.html'],
   ['site/site.css', 'review-lab/site.css'],
-  ['site/site.js', 'review-lab/site.js'],
   ['dist/index.js', 'dist/index.js'],
   ['styles/a11y.css', 'styles/a11y.css'],
   ['styles/logical.css', 'styles/logical.css'],
@@ -21,11 +19,38 @@ const COPY_PLAN = [
   ['NOTICE', 'NOTICE'],
 ];
 
+const TRANSFORM_PLAN = [
+  ['site/index.html', 'review-lab/index.html'],
+  ['site/site.js', 'review-lab/site.js'],
+];
+
+const HTML_REWRITES = new Map([
+  ['/styles/a11y.css', '../styles/a11y.css'],
+  ['/styles/logical.css', '../styles/logical.css'],
+  ['/review-lab/site.css', './site.css'],
+  ['/review-lab/site.js', './site.js'],
+]);
+
+const SCRIPT_REWRITES = new Map([
+  ["from '/dist/index.js'", "from '../dist/index.js'"],
+]);
+
 function assertSafeOutput(target) {
   const relative = path.relative(ROOT, target);
   if (!relative || relative.startsWith('..') || path.isAbsolute(relative)) {
     throw new Error(`Review-site output must be a child of the repository root: ${target}`);
   }
+}
+
+function rewriteRequired(content, rewrites, sourceRelative) {
+  let result = content;
+  for (const [from, to] of rewrites) {
+    if (!result.includes(from)) {
+      throw new Error(`Required review-site rewrite input is missing in ${sourceRelative}: ${from}`);
+    }
+    result = result.replaceAll(from, to);
+  }
+  return result;
 }
 
 async function hashFile(filePath) {
@@ -44,8 +69,16 @@ async function listFiles(directory, prefix = '') {
     const absolute = path.join(directory, entry.name);
     if (entry.isDirectory()) files.push(...await listFiles(absolute, relative));
     else if (entry.isFile()) files.push(relative);
+    else throw new Error(`Unsupported review-site artifact entry: ${relative}`);
   }
   return files;
+}
+
+async function requireSourceFile(sourceRelative) {
+  const source = path.join(ROOT, sourceRelative);
+  const sourceStat = await stat(source).catch(() => null);
+  if (!sourceStat?.isFile()) throw new Error(`Required review-site input is missing: ${sourceRelative}`);
+  return source;
 }
 
 assertSafeOutput(outputDir);
@@ -53,12 +86,20 @@ await rm(outputDir, { recursive: true, force: true });
 await mkdir(outputDir, { recursive: true });
 
 for (const [sourceRelative, destinationRelative] of COPY_PLAN) {
-  const source = path.join(ROOT, sourceRelative);
+  const source = await requireSourceFile(sourceRelative);
   const destination = path.join(outputDir, destinationRelative);
-  const sourceStat = await stat(source).catch(() => null);
-  if (!sourceStat?.isFile()) throw new Error(`Required review-site input is missing: ${sourceRelative}`);
   await mkdir(path.dirname(destination), { recursive: true });
-  await cp(source, destination, { force: true, preserveTimestamps: false });
+  await cp(source, destination, { force: true, preserveTimestamps: false, dereference: true });
+}
+
+for (const [sourceRelative, destinationRelative] of TRANSFORM_PLAN) {
+  const source = await requireSourceFile(sourceRelative);
+  const destination = path.join(outputDir, destinationRelative);
+  const original = await readFile(source, 'utf8');
+  const rewrites = sourceRelative.endsWith('.html') ? HTML_REWRITES : SCRIPT_REWRITES;
+  const transformed = rewriteRequired(original, rewrites, sourceRelative);
+  await mkdir(path.dirname(destination), { recursive: true });
+  await writeFile(destination, transformed, 'utf8');
 }
 
 const artifactFiles = await listFiles(outputDir);
@@ -68,6 +109,11 @@ for (const relative of artifactFiles) {
   files.push({ path: relative, ...integrity });
 }
 
+const buildInputs = [
+  ...COPY_PLAN.map(([source, destination]) => ({ source, destination, mode: 'copy' })),
+  ...TRANSFORM_PLAN.map(([source, destination]) => ({ source, destination, mode: 'relative-path-rewrite' })),
+].sort((a, b) => a.destination.localeCompare(b.destination, 'en'));
+
 const manifest = {
   schemaVersion: 1,
   artifact: 'rawafid-public-review-lab',
@@ -76,8 +122,8 @@ const manifest = {
     version: packageJson.version,
   },
   entrypoint: 'review-lab/index.html',
-  deploymentModel: 'static-files-only',
-  buildInputs: COPY_PLAN.map(([source, destination]) => ({ source, destination })),
+  deploymentModel: 'static-files-subpath-safe',
+  buildInputs,
   files,
 };
 
