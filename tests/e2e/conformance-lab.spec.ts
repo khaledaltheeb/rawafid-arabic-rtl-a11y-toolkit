@@ -31,6 +31,34 @@ test('dir=auto traversal ignores isolated or explicitly directed descendants and
   ]);
 });
 
+test('dir=auto input types recompute direction when values change dynamically', async ({ page }) => {
+  await page.goto('/conformance-lab');
+
+  const controls = page.locator('[data-dir-auto-input]');
+  await expect(controls).toHaveCount(5);
+
+  const assertMatrixDirection = async (value: string, expected: 'ltr' | 'rtl') => {
+    for (const control of await controls.all()) await control.fill(value);
+    const directions = await controls.evaluateAll((elements) =>
+      elements.map((element) => ({
+        type: (element as HTMLInputElement).type,
+        direction: getComputedStyle(element).direction,
+      })),
+    );
+    expect(directions).toEqual([
+      { type: 'text', direction: expected },
+      { type: 'search', direction: expected },
+      { type: 'tel', direction: expected },
+      { type: 'url', direction: expected },
+      { type: 'email', direction: expected },
+    ]);
+  };
+
+  await assertMatrixDirection('123 — ( ) Alpha', 'ltr');
+  await assertMatrixDirection('123 — ( ) مرحبا', 'rtl');
+  await assertMatrixDirection('123 — ( )', 'ltr');
+});
+
 test('dirname submits the user-entered field direction', async ({ page }) => {
   await page.goto('/conformance-lab');
 
