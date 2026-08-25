@@ -75,6 +75,9 @@ jobs:
             conformance/manifest.json
             conformance/partner-suite.json
             qa/localization-contract.json
+            research/assets.json
+            codemeta.json
+            CITATION.cff
             schemas/
             tests/fixtures/unicode-display-risk-corpus.json
             tests/fixtures/grapheme-interoperability-corpus.json
