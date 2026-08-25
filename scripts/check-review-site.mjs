@@ -7,6 +7,7 @@ import { fileURLToPath } from 'node:url';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const builder = path.join(ROOT, 'scripts', 'build-review-site.mjs');
+const schemaPath = path.join(ROOT, 'schemas', 'review-site-artifact.schema.json');
 const tempRoot = await mkdtemp(path.join(ROOT, '.review-site-check-'));
 const first = path.join(tempRoot, 'first');
 const second = path.join(tempRoot, 'second');
@@ -59,6 +60,22 @@ try {
 
   const manifestPath = path.join(first, 'artifact-manifest.json');
   const manifest = JSON.parse(await readFile(manifestPath, 'utf8'));
+  const schema = JSON.parse(await readFile(schemaPath, 'utf8'));
+  if (schema.$schema !== 'https://json-schema.org/draft/2020-12/schema') {
+    throw new Error('Review-site manifest schema must use JSON Schema Draft 2020-12.');
+  }
+  if (manifest.$schema !== schema.$id) {
+    throw new Error('Review-site manifest does not reference its canonical public schema.');
+  }
+  if (manifest.schemaVersion !== schema.properties?.schemaVersion?.const) {
+    throw new Error('Review-site manifest schemaVersion is not aligned with its schema.');
+  }
+  for (const field of ['$schema', 'schemaVersion', 'artifact', 'package', 'entrypoint', 'deploymentModel', 'buildInputs', 'files']) {
+    if (!schema.required?.includes(field) || !(field in manifest)) {
+      throw new Error(`Review-site schema/manifest binding is missing required field: ${field}`);
+    }
+  }
+
   const expectedPayload = firstFiles.filter((file) => file !== 'artifact-manifest.json');
   const declaredPayload = manifest.files.map((entry) => entry.path);
   if (JSON.stringify(declaredPayload) !== JSON.stringify(expectedPayload)) {
@@ -113,7 +130,7 @@ try {
   }
 
   const manifestHash = await sha256(manifestPath);
-  console.log(`Review-site reproducibility gate passed for ${expectedPayload.length} payload files. Manifest SHA-256: ${manifestHash}`);
+  console.log(`Review-site reproducibility gate passed for ${expectedPayload.length} payload files with Draft 2020-12 schema binding. Manifest SHA-256: ${manifestHash}`);
 } finally {
   await rm(tempRoot, { recursive: true, force: true });
 }
