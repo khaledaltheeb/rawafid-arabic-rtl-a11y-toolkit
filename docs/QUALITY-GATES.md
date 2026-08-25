@@ -33,12 +33,16 @@ Vitest unit tests exercise normal, edge, counterexample, and failure behavior. L
 
 The current interaction layer includes unit evidence for RTL/LTR keyboard movement, roving focus, locale-aware typeahead, disabled-state handling, active-vs-selected independence, single/multiple/range selection, rectangular grid coordinates, RTL physical arrows, row wrapping policy, paging, and grid boundary errors.
 
-## Gate 6: package shape
+## Gate 6: package shape and artifact boundary
 
 - tsdown builds an ESM distribution and TypeScript declarations.
 - publint validates package metadata/exports.
 - Are The Types Wrong validates declaration/runtime resolution.
 - the committed lockfile is the deterministic CI dependency input.
+- `npm run package:artifact` validates the actual npm dry-run inventory against an exact ten-file allowlist.
+- the npm artifact must remain below 100,000 packed bytes and 300,000 unpacked bytes unless the budgets are deliberately reviewed and changed.
+
+The artifact gate is intended to prevent accidental publication of source, tests, configuration, sensitive material, or uncontrolled package growth.
 
 ## Gate 7: built package behavior
 
@@ -57,15 +61,17 @@ The gate imports the actual built `dist/index.js` in a non-DOM Node process and 
 
 This is deliberately separate from source unit tests: source can be correct while generated declarations, bundling, or export maps are wrong.
 
-## Gate 8: public API compatibility
+## Gate 8: public API and TypeScript compatibility
 
 `npm run public-api:check`
 
-The gate imports the real built package and exact-compares its runtime root exports with the reviewed `api/public-api.json` snapshot. It fails closed on both removal of a reviewed export and addition of an unreviewed export.
+The runtime gate imports the real built package and exact-compares its root exports with the reviewed `api/public-api.json` snapshot. It fails closed on both removal of a reviewed export and addition of an unreviewed export.
 
-A snapshot update is therefore an explicit compatibility decision, not an automatic regeneration step. The review must classify the change under the project's Semantic Versioning policy and provide migration/deprecation guidance when an incompatible change is intentional.
+`npm run public-types:check`
 
-This runtime-name gate complements, but does not replace, TypeScript declaration validation and behavioral contract tests.
+The declaration gate normalizes generated `dist/index.d.ts`, computes SHA-256, and compares it with `api/public-types.sha256`. It detects declaration drift even when runtime export names remain unchanged.
+
+Baseline updates are explicit compatibility decisions, not automatic regeneration steps. Review must inspect the generated declaration change, classify compatibility under Semantic Versioning, and provide deprecation/migration guidance where appropriate. The fingerprint is a change tripwire, not a semantic compatibility oracle.
 
 ## Gate 9: browser/accessibility
 
