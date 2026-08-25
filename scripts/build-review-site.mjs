@@ -9,12 +9,14 @@ const DEFAULT_OUTPUT = path.join(ROOT, 'review-site');
 const outputDir = path.resolve(process.argv[2] ?? DEFAULT_OUTPUT);
 
 const packageJson = JSON.parse(await readFile(path.join(ROOT, 'package.json'), 'utf8'));
+const ARTIFACT_SCHEMA_PATH = 'schemas/review-site-artifact.schema.json';
 
 const COPY_PLAN = [
   ['site/site.css', 'review-lab/site.css'],
   ['dist/index.js', 'dist/index.js'],
   ['styles/a11y.css', 'styles/a11y.css'],
   ['styles/logical.css', 'styles/logical.css'],
+  [ARTIFACT_SCHEMA_PATH, ARTIFACT_SCHEMA_PATH],
   ['LICENSE', 'LICENSE'],
   ['NOTICE', 'NOTICE'],
 ];
@@ -116,6 +118,7 @@ const buildInputs = [
 
 const manifest = {
   schemaVersion: 1,
+  schema: ARTIFACT_SCHEMA_PATH,
   artifact: 'rawafid-public-review-lab',
   package: {
     name: packageJson.name,
