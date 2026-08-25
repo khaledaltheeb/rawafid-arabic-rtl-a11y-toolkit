@@ -13,6 +13,24 @@ test('dir=auto and bdi preserve mixed-direction semantics', async ({ page }) => 
   await expect(page.locator('[data-bdi]')).not.toHaveAttribute('dir');
 });
 
+test('dir=auto traversal ignores isolated or explicitly directed descendants and skips weak prefixes', async ({ page }) => {
+  await page.goto('/conformance-lab');
+
+  const cases = await page.locator('[data-dir-auto-traversal]').evaluateAll((elements) =>
+    elements.map((element) => ({
+      id: element.getAttribute('data-dir-auto-traversal'),
+      direction: getComputedStyle(element).direction,
+    })),
+  );
+
+  expect(cases).toEqual([
+    { id: 'ignore-bdi', direction: 'ltr' },
+    { id: 'ignore-explicit-dir', direction: 'ltr' },
+    { id: 'skip-weak-neutral', direction: 'rtl' },
+    { id: 'no-strong-default', direction: 'ltr' },
+  ]);
+});
+
 test('dirname submits the user-entered field direction', async ({ page }) => {
   await page.goto('/conformance-lab');
 

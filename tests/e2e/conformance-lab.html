@@ -58,6 +58,10 @@
       <p id="auto-ar" dir="auto" data-dir-auto>مرحبا Rawafid</p>
       <p id="auto-en" dir="auto" data-dir-auto>Hello روافد</p>
       <p class="mixed"><bdi data-bdi>support@example.org — إصدار 3</bdi></p>
+      <div data-dir-auto-traversal="ignore-bdi" dir="auto"><bdi>مرحبا</bdi> Alpha</div>
+      <div data-dir-auto-traversal="ignore-explicit-dir" dir="auto"><span dir="rtl">مرحبا</span> Beta</div>
+      <div data-dir-auto-traversal="skip-weak-neutral" dir="auto">123 — ( ) مرحبا</div>
+      <div data-dir-auto-traversal="no-strong-default" dir="auto">123 — ( )</div>
     </section>
 
     <section class="card" aria-labelledby="form-title">
