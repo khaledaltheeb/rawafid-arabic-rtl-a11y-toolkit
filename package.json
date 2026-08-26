@@ -7,9 +7,9 @@
   "author": {
     "name": "Khaled Altheeb",
     "email": "khaledaltheeb@gmail.com",
-    "url": "https://healthrenewal.org/"
+    "url": "https://healthrenewal.org/open-source/arabic-rtl-a11y-toolkit"
   },
-  "homepage": "https://healthrenewal.org/",
+  "homepage": "https://healthrenewal.org/open-source/arabic-rtl-a11y-toolkit",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/khaledaltheeb/rawafid-arabic-rtl-a11y-toolkit.git"
