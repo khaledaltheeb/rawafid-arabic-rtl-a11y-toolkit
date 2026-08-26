@@ -1,0 +1,26 @@
+version: 2.1
+
+jobs:
+  verify:
+    docker:
+      - image: cimg/node:lts
+    resource_class: small
+    steps:
+      - checkout
+      - run:
+          name: Pin npm toolchain
+          command: npm install --global npm@11.17.0 --no-audit --no-fund
+      - run:
+          name: Install dependencies deterministically
+          command: npm ci --no-audit --no-fund
+      - run:
+          name: Run core verification
+          command: npm run check:core
+      - run:
+          name: Verify package contract
+          command: npm run package:contract
+
+workflows:
+  public-oss-ci:
+    jobs:
+      - verify
