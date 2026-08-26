@@ -11,6 +11,8 @@
     [hidden] { display: none !important; }
     [role="menu"] { border: 1px solid currentColor; padding: .5rem; inline-size: max-content; }
     [role="menuitem"] { display: block; inline-size: 100%; text-align: start; }
+    [role="tablist"] { display: flex; gap: .5rem; border-block-end: 1px solid currentColor; }
+    [role="tabpanel"] { padding-block: 1rem; }
     .backdrop { position: fixed; inset: 0; display: grid; place-items: center; background: rgb(0 0 0 / .35); }
     .dialog { background: Canvas; color: CanvasText; padding: 1.5rem; max-inline-size: 32rem; border: 2px solid currentColor; }
   </style>
@@ -33,6 +35,18 @@
         <button role="menuitem" tabindex="-1">إعادة تسمية</button>
         <button role="menuitem" tabindex="-1">حذف</button>
       </div>
+    </section>
+
+    <section aria-labelledby="tabs-heading">
+      <h2 id="tabs-heading">Tabs</h2>
+      <div id="tabs" role="tablist" aria-label="أقسام الحساب">
+        <button id="tab-profile" role="tab" aria-controls="panel-profile">الملف</button>
+        <button id="tab-security" role="tab" aria-controls="panel-security">الأمان</button>
+        <button id="tab-notifications" role="tab" aria-controls="panel-notifications">الإشعارات</button>
+      </div>
+      <div id="panel-profile" role="tabpanel" aria-labelledby="tab-profile">محتوى الملف</div>
+      <div id="panel-security" role="tabpanel" aria-labelledby="tab-security" hidden>محتوى الأمان</div>
+      <div id="panel-notifications" role="tabpanel" aria-labelledby="tab-notifications" hidden>محتوى الإشعارات</div>
     </section>
 
     <section aria-labelledby="dialog-heading">
@@ -58,7 +72,9 @@
       menuOpenTargetFromKey,
       modalDialogAttributes,
       nextContainedTabIndex,
+      nextRovingFocusIndex,
       rememberFocus,
+      rovingTabIndexes,
     } from '/dist/index.js';
 
     function applyAttributes(element, attributes) {
@@ -117,6 +133,46 @@
       }
     });
     renderMenu();
+
+    const tablist = document.querySelector('#tabs');
+    const tabs = [...tablist.querySelectorAll('[role="tab"]')];
+    const tabPanels = tabs.map((tab) => document.getElementById(tab.getAttribute('aria-controls')));
+    let activeTab = 0;
+
+    const renderTabs = () => {
+      const tabIndexes = rovingTabIndexes(activeTab, tabs.length);
+      tabs.forEach((tab, index) => {
+        const selected = index === activeTab;
+        tab.tabIndex = tabIndexes[index];
+        tab.setAttribute('aria-selected', String(selected));
+        tabPanels[index].hidden = !selected;
+      });
+    };
+
+    const activateTab = (index, moveFocus = true) => {
+      activeTab = index;
+      renderTabs();
+      if (moveFocus) tabs[index]?.focus();
+    };
+
+    tablist.addEventListener('click', (event) => {
+      const index = tabs.indexOf(event.target.closest?.('[role="tab"]'));
+      if (index >= 0) activateTab(index, false);
+    });
+
+    tablist.addEventListener('keydown', (event) => {
+      const currentIndex = tabs.indexOf(document.activeElement);
+      if (currentIndex < 0) return;
+      const nextIndex = nextRovingFocusIndex(currentIndex, tabs.length, event.key, {
+        direction: 'rtl',
+        orientation: 'horizontal',
+        loop: true,
+      });
+      if (nextIndex === currentIndex) return;
+      event.preventDefault();
+      activateTab(nextIndex);
+    });
+    renderTabs();
 
     const pageContent = document.querySelector('#page-content');
     const openDialogButton = document.querySelector('#open-dialog');

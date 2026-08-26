@@ -12,6 +12,8 @@ The helpers deliberately model only reusable state and semantic attributes. They
 - `modalDialogAttributes` — builds modal-dialog semantics while enforcing an accessible-name source.
 - `nextContainedTabIndex` — resolves circular Tab/Shift+Tab movement inside a contained sequence.
 
+The tabs reference does not add another public helper. It composes the existing `rovingTabIndexes` and `nextRovingFocusIndex` primitives so the core API remains conservative.
+
 ## Disclosure
 
 `disclosureButtonAttributes(expanded, controlsId?)` returns the semantic state for a native disclosure button:
@@ -38,6 +40,23 @@ The consumer owns the click handler, the controlled region, visibility, labels, 
 - ArrowUp -> last item when arrow-key opening is enabled
 
 It does not implement menu-item navigation, typeahead, disabled-item policy, Escape handling, or DOM focus. Existing roving-focus and typeahead primitives can be composed by the consuming component where appropriate.
+
+## Tabs
+
+The `/patterns` fixture includes a horizontal Arabic/RTL tablist built from native buttons and the existing roving-focus primitives. It demonstrates one automatic-activation composition:
+
+- `role="tablist"` on the group;
+- `role="tab"` plus `aria-controls` on each tab;
+- exactly one tab with `tabindex="0"`, with the rest at `-1`;
+- `aria-selected="true"` only on the active tab;
+- `role="tabpanel"` plus `aria-labelledby` for each associated panel;
+- only the active panel exposed;
+- Home/End and direction-aware horizontal arrow movement through `nextRovingFocusIndex`;
+- immediate panel activation because the fixture has no network or expensive-render latency.
+
+The reference intentionally keeps DOM event handling and panel lifecycle outside the core package. Applications with expensive or asynchronous panel activation should consider manual activation rather than moving selection automatically with focus.
+
+The WAI-ARIA Authoring Practices tabs pattern remains the semantic reference; this fixture is interoperability evidence for the toolkit's reusable navigation state, not a claim that every tab implementation composed from these helpers is conforming.
 
 ## Modal dialog
 
@@ -69,6 +88,7 @@ The browser fixture composes `rememberFocus()`, `getFocusableElements()`, and `n
 
 - disclosure state/visibility synchronization;
 - menu keyboard opening and Escape focus restoration;
+- RTL tabs semantics, single roving tab stop, automatic activation, Home/End, and direction-aware horizontal movement;
 - modal semantics, initial focus, forward/reverse Tab containment, Escape close, and trigger focus restoration;
 - axe-core automated accessibility checks.
 
