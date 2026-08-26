@@ -1,0 +1,162 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Rawafid accessible patterns fixture</title>
+  <link rel="stylesheet" href="/styles/a11y.css">
+  <style>
+    body { font-family: system-ui, sans-serif; margin: 2rem; line-height: 1.6; }
+    section { margin-block: 2rem; }
+    [hidden] { display: none !important; }
+    [role="menu"] { border: 1px solid currentColor; padding: .5rem; inline-size: max-content; }
+    [role="menuitem"] { display: block; inline-size: 100%; text-align: start; }
+    .backdrop { position: fixed; inset: 0; display: grid; place-items: center; background: rgb(0 0 0 / .35); }
+    .dialog { background: Canvas; color: CanvasText; padding: 1.5rem; max-inline-size: 32rem; border: 2px solid currentColor; }
+  </style>
+</head>
+<body>
+  <main id="page-content">
+    <h1>أنماط وصول مرجعية</h1>
+
+    <section aria-labelledby="disclosure-heading">
+      <h2 id="disclosure-heading">Disclosure</h2>
+      <button id="disclosure-button">عرض التفاصيل</button>
+      <div id="disclosure-panel" hidden>تفاصيل عربية / English details / 123</div>
+    </section>
+
+    <section aria-labelledby="menu-heading">
+      <h2 id="menu-heading">Menu button</h2>
+      <button id="menu-button">الإجراءات</button>
+      <div id="menu" role="menu" hidden>
+        <button role="menuitem" tabindex="-1">فتح</button>
+        <button role="menuitem" tabindex="-1">إعادة تسمية</button>
+        <button role="menuitem" tabindex="-1">حذف</button>
+      </div>
+    </section>
+
+    <section aria-labelledby="dialog-heading">
+      <h2 id="dialog-heading">Modal dialog</h2>
+      <button id="open-dialog">فتح النافذة</button>
+    </section>
+  </main>
+
+  <div id="dialog-backdrop" class="backdrop" hidden>
+    <div id="dialog" class="dialog">
+      <h2 id="modal-title">تأكيد الإجراء</h2>
+      <p id="modal-description">مثال محايد لا يفرض منطق التطبيق.</p>
+      <button id="dialog-first">الإجراء الأول</button>
+      <button id="dialog-last">إغلاق</button>
+    </div>
+  </div>
+
+  <script type="module">
+    import {
+      disclosureButtonAttributes,
+      getFocusableElements,
+      menuButtonAttributes,
+      menuOpenTargetFromKey,
+      modalDialogAttributes,
+      nextContainedTabIndex,
+      rememberFocus,
+    } from '/dist/index.js';
+
+    function applyAttributes(element, attributes) {
+      for (const [name, value] of Object.entries(attributes)) {
+        if (name === 'type') {
+          element.type = value;
+        } else {
+          element.setAttribute(name, String(value));
+        }
+      }
+    }
+
+    const disclosureButton = document.querySelector('#disclosure-button');
+    const disclosurePanel = document.querySelector('#disclosure-panel');
+    let disclosureExpanded = false;
+    const renderDisclosure = () => {
+      applyAttributes(disclosureButton, disclosureButtonAttributes(disclosureExpanded, 'disclosure-panel'));
+      disclosurePanel.hidden = !disclosureExpanded;
+    };
+    disclosureButton.addEventListener('click', () => {
+      disclosureExpanded = !disclosureExpanded;
+      renderDisclosure();
+    });
+    renderDisclosure();
+
+    const menuButton = document.querySelector('#menu-button');
+    const menu = document.querySelector('#menu');
+    const menuItems = [...menu.querySelectorAll('[role="menuitem"]')];
+    let menuExpanded = false;
+    const renderMenu = () => {
+      applyAttributes(menuButton, menuButtonAttributes(menuExpanded, 'menu'));
+      menu.hidden = !menuExpanded;
+    };
+    const openMenu = (target = 'first') => {
+      menuExpanded = true;
+      renderMenu();
+      const item = target === 'last' ? menuItems.at(-1) : menuItems[0];
+      item?.focus();
+    };
+    const closeMenu = () => {
+      menuExpanded = false;
+      renderMenu();
+      menuButton.focus();
+    };
+    menuButton.addEventListener('click', () => menuExpanded ? closeMenu() : openMenu('first'));
+    menuButton.addEventListener('keydown', (event) => {
+      const target = menuOpenTargetFromKey(event.key);
+      if (!target) return;
+      event.preventDefault();
+      openMenu(target);
+    });
+    menu.addEventListener('keydown', (event) => {
+      if (event.key === 'Escape') {
+        event.preventDefault();
+        closeMenu();
+      }
+    });
+    renderMenu();
+
+    const pageContent = document.querySelector('#page-content');
+    const openDialogButton = document.querySelector('#open-dialog');
+    const backdrop = document.querySelector('#dialog-backdrop');
+    const dialog = document.querySelector('#dialog');
+    const closeDialogButton = document.querySelector('#dialog-last');
+    let restoreDialogFocus = () => undefined;
+
+    applyAttributes(dialog, modalDialogAttributes({
+      labelledBy: 'modal-title',
+      describedBy: 'modal-description',
+    }));
+
+    const closeDialog = () => {
+      backdrop.hidden = true;
+      pageContent.removeAttribute('inert');
+      restoreDialogFocus();
+    };
+
+    openDialogButton.addEventListener('click', () => {
+      restoreDialogFocus = rememberFocus(document);
+      pageContent.setAttribute('inert', '');
+      backdrop.hidden = false;
+      getFocusableElements(dialog)[0]?.focus();
+    });
+    closeDialogButton.addEventListener('click', closeDialog);
+    dialog.addEventListener('keydown', (event) => {
+      if (event.key === 'Escape') {
+        event.preventDefault();
+        closeDialog();
+        return;
+      }
+      if (event.key !== 'Tab') return;
+      const items = getFocusableElements(dialog);
+      const current = items.indexOf(document.activeElement);
+      if (current < 0) return;
+      event.preventDefault();
+      const next = nextContainedTabIndex(current, items.length, event.shiftKey);
+      if (next >= 0) items[next]?.focus();
+    });
+  </script>
+</body>
+</html>
