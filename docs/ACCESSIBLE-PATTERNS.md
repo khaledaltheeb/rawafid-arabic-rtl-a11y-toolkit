@@ -4,6 +4,14 @@ This document describes the framework-neutral accessibility helpers in `src/a11y
 
 The helpers deliberately model only reusable state and semantic attributes. They do not claim to turn arbitrary markup into a conforming widget, and they do not own application lifecycle behavior.
 
+## Public helpers
+
+- `disclosureButtonAttributes` — builds semantic state for a native disclosure button.
+- `menuButtonAttributes` — builds semantic state for a button that opens an ARIA menu.
+- `menuOpenTargetFromKey` — resolves supported menu-button opening keys to first/last focus targets.
+- `modalDialogAttributes` — builds modal-dialog semantics while enforcing an accessible-name source.
+- `nextContainedTabIndex` — resolves circular Tab/Shift+Tab movement inside a contained sequence.
+
 ## Disclosure
 
 `disclosureButtonAttributes(expanded, controlsId?)` returns the semantic state for a native disclosure button:
