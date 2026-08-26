@@ -13,6 +13,9 @@
     [role="menuitem"] { display: block; inline-size: 100%; text-align: start; }
     [role="tablist"] { display: flex; gap: .5rem; border-block-end: 1px solid currentColor; }
     [role="tabpanel"] { padding-block: 1rem; }
+    .pagination-list { display: flex; flex-wrap: wrap; gap: .5rem; list-style: none; padding: 0; }
+    .pagination-list a { display: inline-block; min-inline-size: 2rem; text-align: center; }
+    .pagination-gap { padding-inline: .25rem; }
     .backdrop { position: fixed; inset: 0; display: grid; place-items: center; background: rgb(0 0 0 / .35); }
     .dialog { background: Canvas; color: CanvasText; padding: 1.5rem; max-inline-size: 32rem; border: 2px solid currentColor; }
   </style>
@@ -49,6 +52,13 @@
       <div id="panel-notifications" role="tabpanel" aria-labelledby="tab-notifications" hidden>محتوى الإشعارات</div>
     </section>
 
+    <section aria-labelledby="pagination-heading">
+      <h2 id="pagination-heading">Pagination</h2>
+      <nav id="pagination" aria-label="صفحات النتائج">
+        <ul id="pagination-list" class="pagination-list"></ul>
+      </nav>
+    </section>
+
     <section aria-labelledby="dialog-heading">
       <h2 id="dialog-heading">Modal dialog</h2>
       <button id="open-dialog">فتح النافذة</button>
@@ -68,6 +78,7 @@
     import {
       disclosureButtonAttributes,
       getFocusableElements,
+      getPaginationModel,
       menuButtonAttributes,
       menuOpenTargetFromKey,
       modalDialogAttributes,
@@ -173,6 +184,39 @@
       activateTab(nextIndex);
     });
     renderTabs();
+
+    const paginationList = document.querySelector('#pagination-list');
+    const paginationModel = getPaginationModel(7, 20, 2);
+    const paginationEntries = [
+      { page: paginationModel.previousPage, label: 'السابق', rel: 'prev' },
+      ...paginationModel.items.map((item) => item === 'gap' ? { gap: true } : { page: item, label: String(item) }),
+      { page: paginationModel.nextPage, label: 'التالي', rel: 'next' },
+    ];
+
+    for (const entry of paginationEntries) {
+      const listItem = document.createElement('li');
+      if ('gap' in entry) {
+        const gap = document.createElement('span');
+        gap.className = 'pagination-gap';
+        gap.setAttribute('aria-hidden', 'true');
+        gap.textContent = '…';
+        listItem.append(gap);
+      } else if (entry.page !== undefined) {
+        const link = document.createElement('a');
+        link.href = `#page-${entry.page}`;
+        link.dataset.page = String(entry.page);
+        link.textContent = entry.label;
+        if (entry.rel) link.rel = entry.rel;
+        if (entry.page === paginationModel.currentPage) {
+          link.setAttribute('aria-current', 'page');
+          link.setAttribute('aria-label', `الصفحة ${entry.page}، الصفحة الحالية`);
+        } else if (/^\d+$/u.test(entry.label)) {
+          link.setAttribute('aria-label', `الصفحة ${entry.page}`);
+        }
+        listItem.append(link);
+      }
+      paginationList.append(listItem);
+    }
 
     const pageContent = document.querySelector('#page-content');
     const openDialogButton = document.querySelector('#open-dialog');
