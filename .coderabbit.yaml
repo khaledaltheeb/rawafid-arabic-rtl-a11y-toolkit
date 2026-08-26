@@ -1,0 +1,37 @@
+# yaml-language-server: $schema=https://coderabbit.ai/integrations/schema.v2.json
+language: "en-US"
+early_access: false
+
+reviews:
+  profile: "assertive"
+  request_changes_workflow: false
+  high_level_summary: true
+  review_status: true
+  auto_review:
+    enabled: false
+    drafts: false
+  path_instructions:
+    - path: "src/**"
+      instructions: >-
+        Review for strict TypeScript correctness, framework-agnostic API stability,
+        Unicode/bidi safety, Arabic and RTL correctness, accessibility regressions,
+        and accidental coupling to Rawafid editorial or scientific content.
+    - path: "styles/**"
+      instructions: >-
+        Check logical CSS properties, RTL/LTR symmetry, focus visibility,
+        reduced-motion safety, contrast-related regressions, and direction-aware layout behavior.
+    - path: "locales/**"
+      instructions: >-
+        Check Arabic/English catalog key parity, clear Arabic wording, placeholder safety,
+        bidi-isolation risks, and localization correctness without inventing translations.
+    - path: "tests/**"
+      instructions: >-
+        Check whether tests cover RTL, bidi edge cases, Arabic text behavior,
+        accessibility, Unicode grapheme handling, and public API regressions.
+    - path: "scripts/**"
+      instructions: >-
+        Review supply-chain safety, deterministic behavior, path handling,
+        failure modes, and whether scripts can mutate or publish anything unexpectedly.
+
+chat:
+  auto_reply: false
