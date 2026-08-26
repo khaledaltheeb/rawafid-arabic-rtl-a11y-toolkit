@@ -32,6 +32,7 @@ Completed or in active verification:
 - Integration contract for framework-neutral consumption.
 - Framework-neutral disclosure, menu-button, and modal-dialog reference primitives with browser fixtures covering semantic state, keyboard opening, contained focus, focus restoration, and axe regression checks.
 - RTL tabs reference composition using the existing roving-focus primitives, with browser coverage for semantic selection, one-tab-stop state, automatic activation, Home/End, direction-aware arrows, panel ownership, and axe regression checks.
+- Accessible pagination reference composition using the existing pagination model, with a named navigation landmark, native links, unique `aria-current="page"`, prev/next relationships, non-interactive gaps, and browser/axe evidence.
 
 Remaining in this phase:
 
@@ -60,9 +61,15 @@ Remaining:
 
 ## 0.5 - Optional adapters and reference packages
 
+Completed or in active verification:
+
+- Accessible reference compositions for pagination, roving tabindex, disclosure, tabs, modal dialog, menu button, and direction-aware navigation while reusing existing core primitives wherever possible.
+- Framework dependencies remain outside the core package.
+
+Remaining:
+
 - Thin optional framework adapters only when they reduce repeated integration code materially.
 - Keep React/Next.js/Vue/Svelte/etc. dependencies out of the core package.
-- Accessible reference patterns for pagination, roving tabindex, disclosure, tabs, and direction-aware navigation.
 - Consider separate packages rather than widening the core API when framework lifecycle behavior is required.
 
 ## 0.6 - Ecosystem and institutional maturity
