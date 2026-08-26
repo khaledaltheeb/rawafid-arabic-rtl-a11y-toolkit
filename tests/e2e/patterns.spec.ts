@@ -64,6 +64,24 @@ test.describe('accessible reference patterns', () => {
     await expect(profile).toHaveAttribute('aria-selected', 'true');
   });
 
+  test('pagination exposes one current page and keeps gaps non-interactive', async ({ page }) => {
+    const pagination = page.locator('#pagination');
+    const current = pagination.locator('a[aria-current="page"]');
+    const gaps = pagination.locator('.pagination-gap');
+
+    await expect(pagination).toHaveAttribute('aria-label', 'صفحات النتائج');
+    await expect(current).toHaveCount(1);
+    await expect(current).toHaveAttribute('data-page', '7');
+    await expect(current).toHaveAttribute('href', '#page-7');
+    await expect(current).toHaveAttribute('aria-label', 'الصفحة 7، الصفحة الحالية');
+
+    await expect(pagination.locator('a[rel="prev"]')).toHaveAttribute('data-page', '6');
+    await expect(pagination.locator('a[rel="next"]')).toHaveAttribute('data-page', '8');
+    await expect(gaps).toHaveCount(2);
+    await expect(gaps.first()).toHaveAttribute('aria-hidden', 'true');
+    await expect(pagination.locator('.pagination-gap a')).toHaveCount(0);
+  });
+
   test('modal dialog contains Tab focus and restores focus after Escape', async ({ page }) => {
     const trigger = page.locator('#open-dialog');
     const dialog = page.locator('#dialog');
