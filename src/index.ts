@@ -9,6 +9,7 @@ export * from './i18n/pseudo';
 export * from './i18n/plural';
 export * from './i18n/display';
 export * from './i18n/number-input';
+export * from './i18n/terminology';
 export * from './text/arabic';
 export * from './text/highlight';
 export * from './text/grapheme';

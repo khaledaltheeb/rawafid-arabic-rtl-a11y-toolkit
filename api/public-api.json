@@ -4,6 +4,8 @@
   "exports": [
     "BIDI",
     "announce",
+    "auditCatalogTerminology",
+    "auditTranslationTerminology",
     "autoBidiIsolate",
     "bidiIsolate",
     "compareArabic",
@@ -78,11 +80,13 @@
     "stripArabicDiacritics",
     "stripBidiControls",
     "stripUnsafeBidiOverrides",
+    "summarizeTerminologyFindings",
     "supportedIntlValues",
     "supportsLocale",
     "toggleMultiple",
     "truncateGraphemes",
     "updateTypeaheadBuffer",
+    "validateTerminologyProfile",
     "words"
   ]
 }
