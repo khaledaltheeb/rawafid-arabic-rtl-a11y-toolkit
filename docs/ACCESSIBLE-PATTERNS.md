@@ -12,7 +12,7 @@ The helpers deliberately model only reusable state and semantic attributes. They
 - `modalDialogAttributes` — builds modal-dialog semantics while enforcing an accessible-name source.
 - `nextContainedTabIndex` — resolves circular Tab/Shift+Tab movement inside a contained sequence.
 
-The tabs reference does not add another public helper. It composes the existing `rovingTabIndexes` and `nextRovingFocusIndex` primitives so the core API remains conservative.
+The tabs and pagination references do not add pattern-specific public helpers. Tabs compose `rovingTabIndexes` and `nextRovingFocusIndex`; pagination composes the existing `getPaginationModel` state helper. This keeps the core API conservative.
 
 ## Disclosure
 
@@ -58,6 +58,20 @@ The reference intentionally keeps DOM event handling and panel lifecycle outside
 
 The WAI-ARIA Authoring Practices tabs pattern remains the semantic reference; this fixture is interoperability evidence for the toolkit's reusable navigation state, not a claim that every tab implementation composed from these helpers is conforming.
 
+## Pagination
+
+The `/patterns` fixture also composes `getPaginationModel` into a native page-navigation structure:
+
+- a named `<nav>` landmark identifies the page-navigation region;
+- page destinations are real links rather than buttons with simulated navigation;
+- exactly one link uses `aria-current="page"` for the currently displayed page;
+- previous and next destinations use `rel="prev"` and `rel="next"`;
+- numeric links receive explicit Arabic accessible names while their visible labels stay compact;
+- ellipsis gaps are non-interactive and hidden from the accessibility tree;
+- DOM page order remains logical and is not reversed to imitate RTL visually.
+
+WAI-ARIA explicitly defines the `page` token of `aria-current` for pagination links and recommends marking only one element in a related set as current. The native `<nav>` element supplies the navigation landmark. The toolkit model owns pagination state only; URL construction, routing, server fetching, and focus policy remain application responsibilities.
+
 ## Modal dialog
 
 `modalDialogAttributes(options)` returns modal dialog semantics and requires an accessible-name source:
@@ -89,6 +103,7 @@ The browser fixture composes `rememberFocus()`, `getFocusableElements()`, and `n
 - disclosure state/visibility synchronization;
 - menu keyboard opening and Escape focus restoration;
 - RTL tabs semantics, single roving tab stop, automatic activation, Home/End, and direction-aware horizontal movement;
+- pagination landmark naming, unique current-page state, previous/next relationships, and non-interactive gaps;
 - modal semantics, initial focus, forward/reverse Tab containment, Escape close, and trigger focus restoration;
 - axe-core automated accessibility checks.
 
