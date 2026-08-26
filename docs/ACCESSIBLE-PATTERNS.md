@@ -1,0 +1,71 @@
+# Accessible reference patterns
+
+This document describes the framework-neutral accessibility helpers in `src/a11y/patterns.ts` and the browser fixture at `/patterns`.
+
+The helpers deliberately model only reusable state and semantic attributes. They do not claim to turn arbitrary markup into a conforming widget, and they do not own application lifecycle behavior.
+
+## Disclosure
+
+`disclosureButtonAttributes(expanded, controlsId?)` returns the semantic state for a native disclosure button:
+
+- `type="button"`
+- `aria-expanded`
+- optional `aria-controls` when a non-empty controlled element ID is supplied
+
+The consumer owns the click handler, the controlled region, visibility, labels, and application state. Native button keyboard activation should not be replaced with a custom key emulation layer.
+
+## Menu button
+
+`menuButtonAttributes(expanded, menuId?)` returns:
+
+- `type="button"`
+- `aria-haspopup="menu"`
+- `aria-expanded`
+- optional `aria-controls`
+
+`menuOpenTargetFromKey(key, includeArrowKeys?)` maps supported opening keys to a focus target:
+
+- Enter or Space -> first item
+- ArrowDown -> first item when arrow-key opening is enabled
+- ArrowUp -> last item when arrow-key opening is enabled
+
+It does not implement menu-item navigation, typeahead, disabled-item policy, Escape handling, or DOM focus. Existing roving-focus and typeahead primitives can be composed by the consuming component where appropriate.
+
+## Modal dialog
+
+`modalDialogAttributes(options)` returns modal dialog semantics and requires an accessible-name source:
+
+- `role="dialog"`
+- `aria-modal="true"`
+- either `aria-labelledby` or `aria-label`
+- optional `aria-describedby`
+
+`nextContainedTabIndex(currentIndex, itemCount, shiftKey?)` calculates circular Tab/Shift+Tab movement inside an ordered set of tabbable elements. It is a state helper, not a DOM focus trap.
+
+A complete modal implementation still owns:
+
+1. making outside content unavailable to interaction while the modal is active;
+2. choosing and moving initial focus;
+3. discovering the actual tabbable sequence after DOM changes;
+4. intercepting Tab/Shift+Tab only while the modal is active;
+5. Escape/close policy;
+6. restoring focus to an appropriate element when the modal closes;
+7. labeling and descriptive-content decisions;
+8. nested-dialog policy and application-specific state.
+
+The browser fixture composes `rememberFocus()`, `getFocusableElements()`, and `nextContainedTabIndex()` to exercise one conservative implementation. It is evidence for the toolkit primitives, not a universal application component.
+
+## Verification surface
+
+`tests/e2e/patterns.html` and `tests/e2e/patterns.spec.ts` verify the reference composition in the repository's Playwright matrix:
+
+- disclosure state/visibility synchronization;
+- menu keyboard opening and Escape focus restoration;
+- modal semantics, initial focus, forward/reverse Tab containment, Escape close, and trigger focus restoration;
+- axe-core automated accessibility checks.
+
+Automated checks cannot establish complete accessibility conformance. Product semantics, assistive-technology behavior, content quality, and user testing remain separate responsibilities.
+
+## Design boundary
+
+These helpers remain in the core package because they are small, deterministic, framework-independent calculations or attribute builders. If future patterns require component lifecycle, portal ownership, framework context, or application state orchestration, they should be implemented as optional adapters or separate packages instead of widening the core runtime contract.
