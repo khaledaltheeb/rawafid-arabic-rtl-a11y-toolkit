@@ -1,0 +1,9 @@
+steps:
+  - label: ":nodejs: core verification"
+    command:
+      - "npm install --global npm@11.17.0 --no-audit --no-fund"
+      - "npm ci --no-audit --no-fund"
+      - "npm run check:core"
+      - "npm run package:contract"
+    agents:
+      queue: "default"
