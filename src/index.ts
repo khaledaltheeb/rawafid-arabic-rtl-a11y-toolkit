@@ -22,4 +22,5 @@ export * from './a11y/selection';
 export * from './a11y/grid';
 export * from './a11y/focus';
 export * from './a11y/live-region';
+export * from './a11y/patterns';
 export * from './ui/pagination';
