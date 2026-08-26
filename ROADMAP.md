@@ -48,11 +48,12 @@ Completed:
 - Decimal digit-system interoperability for Latin, Arabic-Indic, and Extended Arabic-Indic digits without destructive punctuation normalization.
 - Cross-module tests spanning Arabic plural behavior, segmentation, locale capabilities, digit systems, localized-number roundtrips, and script-safe locale behavior.
 - Locale-extension and fallback invariant tests covering Unicode locale extensions, extension stripping for compatible translations, explicit-script boundaries, configured defaults, and deterministic final fallback behavior.
+- Mixed-script identifier direction conformance cases spanning Arabic, Hebrew, Latin, digits, punctuation, and date/version-like prefixes under first-strong direction rules.
 
 Remaining:
 
 - Additional property-style locale fallback cases where behavior can be specified independently of ICU/CLDR version details.
-- Additional script-direction conformance fixtures, including mixed-script identifiers and newly standardized scripts as platform support evolves.
+- Additional script-direction conformance as newly standardized scripts gain stable platform/runtime support.
 - Optional Unicode security data integration only if licensing, update automation, package size, and conformance claims can be handled correctly.
 
 ## 0.5 - Optional adapters and reference packages
