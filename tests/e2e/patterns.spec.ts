@@ -36,6 +36,36 @@ test.describe('accessible reference patterns', () => {
     await expect(items.last()).toBeFocused();
   });
 
+  test('RTL tabs use one tab stop, expose selection, and activate with direction-aware arrows', async ({ page }) => {
+    const tabs = page.locator('[role="tab"]');
+    const profile = page.locator('#tab-profile');
+    const security = page.locator('#tab-security');
+    const notifications = page.locator('#tab-notifications');
+
+    await expect(profile).toHaveAttribute('aria-selected', 'true');
+    await expect(profile).toHaveAttribute('tabindex', '0');
+    await expect(security).toHaveAttribute('tabindex', '-1');
+    await expect(page.locator('#panel-profile')).toBeVisible();
+    await expect(page.locator('#panel-security')).toBeHidden();
+
+    await profile.focus();
+    await page.keyboard.press('ArrowLeft');
+    await expect(security).toBeFocused();
+    await expect(security).toHaveAttribute('aria-selected', 'true');
+    await expect(profile).toHaveAttribute('aria-selected', 'false');
+    await expect(page.locator('#panel-security')).toBeVisible();
+
+    await page.keyboard.press('End');
+    await expect(notifications).toBeFocused();
+    await expect(notifications).toHaveAttribute('aria-selected', 'true');
+    await expect(tabs.filter({ has: page.locator('[tabindex="0"]') })).toHaveCount(0);
+    await expect(page.locator('[role="tab"][tabindex="0"]')).toHaveCount(1);
+
+    await page.keyboard.press('ArrowLeft');
+    await expect(profile).toBeFocused();
+    await expect(profile).toHaveAttribute('aria-selected', 'true');
+  });
+
   test('modal dialog contains Tab focus and restores focus after Escape', async ({ page }) => {
     const trigger = page.locator('#open-dialog');
     const dialog = page.locator('#dialog');
