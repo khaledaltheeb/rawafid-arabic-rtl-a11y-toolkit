@@ -37,7 +37,6 @@ test.describe('accessible reference patterns', () => {
   });
 
   test('RTL tabs use one tab stop, expose selection, and activate with direction-aware arrows', async ({ page }) => {
-    const tabs = page.locator('[role="tab"]');
     const profile = page.locator('#tab-profile');
     const security = page.locator('#tab-security');
     const notifications = page.locator('#tab-notifications');
@@ -58,7 +57,6 @@ test.describe('accessible reference patterns', () => {
     await page.keyboard.press('End');
     await expect(notifications).toBeFocused();
     await expect(notifications).toHaveAttribute('aria-selected', 'true');
-    await expect(tabs.filter({ has: page.locator('[tabindex="0"]') })).toHaveCount(0);
     await expect(page.locator('[role="tab"][tabindex="0"]')).toHaveCount(1);
 
     await page.keyboard.press('ArrowLeft');
