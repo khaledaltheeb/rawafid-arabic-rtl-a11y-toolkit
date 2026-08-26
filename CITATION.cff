@@ -2,15 +2,15 @@ cff-version: 1.2.0
 message: >-
   If this toolkit supports your research, testing, localization, accessibility,
   or software engineering work, please cite the project using this metadata.
-title: Rawafid Arabic/RTL Accessibility & Localization Toolkit
+title: Health Renewal Arabic/RTL Accessibility & Localization Toolkit
 type: software
 authors:
   - family-names: Altheeb
     given-names: Khaled
     email: khaledaltheeb@gmail.com
-    website: https://healthrenewal.org/
+    website: https://healthrenewal.org/open-source/arabic-rtl-a11y-toolkit
 repository-code: https://github.com/khaledaltheeb/rawafid-arabic-rtl-a11y-toolkit
-url: https://healthrenewal.org/
+url: https://healthrenewal.org/open-source/arabic-rtl-a11y-toolkit
 license: Apache-2.0
 abstract: >-
   A framework-agnostic TypeScript toolkit for Arabic and bidirectional web

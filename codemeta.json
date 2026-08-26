@@ -1,11 +1,12 @@
 {
   "@context": "https://w3id.org/codemeta/3.1",
   "@type": "SoftwareSourceCode",
-  "name": "Rawafid Arabic/RTL Accessibility & Localization Toolkit",
+  "name": "Health Renewal Arabic/RTL Accessibility & Localization Toolkit",
+  "alternateName": "Rawafid Arabic/RTL Accessibility & Localization Toolkit",
   "description": "Framework-agnostic TypeScript toolkit and interoperability evidence suite for Arabic/RTL web interfaces, localization, accessibility, Unicode-safe text, direction-aware UI behavior, and real-browser verification.",
   "codeRepository": "https://github.com/khaledaltheeb/rawafid-arabic-rtl-a11y-toolkit",
   "issueTracker": "https://github.com/khaledaltheeb/rawafid-arabic-rtl-a11y-toolkit/issues",
-  "url": "https://healthrenewal.org/",
+  "url": "https://healthrenewal.org/open-source/arabic-rtl-a11y-toolkit",
   "license": "https://spdx.org/licenses/Apache-2.0",
   "version": "0.2.0",
   "programmingLanguage": ["TypeScript", "JavaScript", "CSS", "HTML"],
@@ -36,7 +37,7 @@
     "name": "Khaled Altheeb",
     "email": "mailto:contact@healthrenewal.org",
     "telephone": "+962795945817",
-    "url": "https://healthrenewal.org/"
+    "url": "https://healthrenewal.org/open-source/arabic-rtl-a11y-toolkit"
   }],
   "citation": "https://github.com/khaledaltheeb/rawafid-arabic-rtl-a11y-toolkit/blob/main/CITATION.cff",
   "continuousIntegration": "https://github.com/khaledaltheeb/rawafid-arabic-rtl-a11y-toolkit/actions/workflows/ci.yml",
