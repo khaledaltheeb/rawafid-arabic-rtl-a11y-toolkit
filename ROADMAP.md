@@ -31,6 +31,7 @@ Completed or in active verification:
 - Stable paired RTL/LTR comparison fixture with logical-edge and narrow-viewport invariants, suitable as a deterministic surface for future visual-regression providers.
 - Integration contract for framework-neutral consumption.
 - Framework-neutral disclosure, menu-button, and modal-dialog reference primitives with browser fixtures covering semantic state, keyboard opening, contained focus, focus restoration, and axe regression checks.
+- RTL tabs reference composition using the existing roving-focus primitives, with browser coverage for semantic selection, one-tab-stop state, automatic activation, Home/End, direction-aware arrows, panel ownership, and axe regression checks.
 
 Remaining in this phase:
 
@@ -47,12 +48,13 @@ Completed:
 - Runtime-derived localized decimal-input parsing, including locale digits, separators, signs, grouping validation, and bidi literals.
 - Decimal digit-system interoperability for Latin, Arabic-Indic, and Extended Arabic-Indic digits without destructive punctuation normalization.
 - Cross-module tests spanning Arabic plural behavior, segmentation, locale capabilities, digit systems, localized-number roundtrips, and script-safe locale behavior.
-- Locale-extension and fallback invariant tests covering Unicode locale extensions, extension stripping for compatible translations, explicit-script boundaries, configured defaults, and deterministic final fallback behavior.
+- Locale-extension and fallback invariant tests covering Unicode locale extensions, extension stripping for compatible translations, explicit-script boundaries, configured defaults, request/default priority, same-region stability, and deterministic final fallback behavior.
+- Explicit-script fallback chains no longer invent language-region candidates that silently drop a caller-supplied script constraint.
 - Mixed-script identifier direction conformance cases spanning Arabic, Hebrew, Latin, digits, punctuation, and date/version-like prefixes under first-strong direction rules.
 
 Remaining:
 
-- Additional property-style locale fallback cases where behavior can be specified independently of ICU/CLDR version details.
+- Additional locale fallback properties only where behavior can be specified independently of ICU/CLDR version details and they add materially new guarantees beyond the current invariant matrix.
 - Additional script-direction conformance as newly standardized scripts gain stable platform/runtime support.
 - Optional Unicode security data integration only if licensing, update automation, package size, and conformance claims can be handled correctly.
 
