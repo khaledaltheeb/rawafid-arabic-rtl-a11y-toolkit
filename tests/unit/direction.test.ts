@@ -14,6 +14,21 @@ describe('direction utilities', () => {
     expect(getTextDirection('\u200Eمرحبا')).toBe('ltr');
   });
 
+  it('keeps mixed-script identifiers first-strong and neutral-safe', () => {
+    const cases = [
+      ['user_123-مرحبا', 'ltr'],
+      ['مرحبا-user_123', 'rtl'],
+      ['v2.4/שלום', 'ltr'],
+      ['שלום/v2.4', 'rtl'],
+      ['2026-08-26:abc_مرحبا', 'ltr'],
+      ['2026-08-26:مرحبا_abc', 'rtl'],
+    ] as const;
+
+    for (const [value, expected] of cases) {
+      expect(getTextDirection(value), value).toBe(expected);
+    }
+  });
+
   it('recognizes all supported modern RTL script families', () => {
     for (const script of RTL_SCRIPT_TAGS) {
       expect(getLocaleDirection(`und-${script}`), script).toBe('rtl');

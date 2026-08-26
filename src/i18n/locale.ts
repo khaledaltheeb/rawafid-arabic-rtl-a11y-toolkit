@@ -79,10 +79,13 @@ export function selectBestLocale(
     const exactDefault = byKey.get(defaultInfo.key);
     if (exactDefault) return exactDefault.canonical;
 
-    const compatibleDefault = availableInfo.find(
+    const compatibleDefaults = availableInfo.filter(
       (item) => item.language === defaultInfo.language && item.script === defaultInfo.script,
     );
-    if (compatibleDefault) return compatibleDefault.canonical;
+    if (compatibleDefaults.length > 0) {
+      const sameRegion = compatibleDefaults.find((item) => item.region === defaultInfo.region);
+      return (sameRegion ?? compatibleDefaults[0])?.canonical;
+    }
   }
 
   return availableInfo[0]?.canonical;

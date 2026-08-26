@@ -8,6 +8,7 @@ const routes = new Map([
   ['/', ['tests/e2e/fixture.html', 'text/html; charset=utf-8']],
   ['/visual-reference', ['tests/e2e/visual-reference.html', 'text/html; charset=utf-8']],
   ['/conformance-lab', ['tests/e2e/conformance-lab.html', 'text/html; charset=utf-8']],
+  ['/patterns', ['tests/e2e/patterns.html', 'text/html; charset=utf-8']],
   ['/review-lab', ['site/index.html', 'text/html; charset=utf-8']],
   ['/review-lab/site.css', ['site/site.css', 'text/css; charset=utf-8']],
   ['/review-lab/site.js', ['site/site.js', 'text/javascript; charset=utf-8']],
