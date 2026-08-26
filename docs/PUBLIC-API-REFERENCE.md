@@ -46,6 +46,15 @@ This index covers every reviewed runtime export from the package root. It is int
 - `interpolateMessage` — interpolate catalog placeholders under the toolkit contract.
 - `pseudoLocalize` — deterministic pseudo-localization for layout and localization QA.
 
+## Terminology QA
+
+- `auditTranslationTerminology` — deterministically evaluate one source/target translation unit against an explicit terminology profile.
+- `auditCatalogTerminology` — apply the same terminology contract to matching keys across source and target message catalogs.
+- `validateTerminologyProfile` — validate structural rule/profile defects without claiming semantic or linguistic correctness.
+- `summarizeTerminologyFindings` — aggregate findings by severity and rule for CI/reporting surfaces.
+
+The terminology engine deliberately does not infer semantic equivalence, diagnose translation quality in general, or ship organization-specific safeguarding/health/legal vocabularies. Profiles must explicitly state source triggers and target constraints. See [Terminology QA](./TERMINOLOGY-QA.md).
+
 ## Localized decimal input
 
 - `getLocaleNumberSymbols` — derive decimal digits, separators, signs, bidi literals, and grouping sizes from the host `Intl.NumberFormat` runtime.
