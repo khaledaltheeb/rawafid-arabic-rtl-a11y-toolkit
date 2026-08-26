@@ -3,7 +3,7 @@ version: 2.1
 jobs:
   verify:
     docker:
-      - image: cimg/node:lts
+      - image: cimg/node:24.0
     resource_class: small
     steps:
       - checkout
