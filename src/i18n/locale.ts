@@ -24,16 +24,20 @@ function localeInfo(locale: string): LocaleInfo {
   return result;
 }
 
+/**
+ * Build deterministic fallback candidates while preserving an explicitly
+ * supplied script boundary. If a caller requests language + script + region,
+ * the region may be broadened before the script, but the chain never invents
+ * language + region with the script removed because that can resolve to a
+ * different likely script for multi-script languages.
+ */
 export function localeFallbackChain(locale: string, defaultLocale?: string): string[] {
   const canonical = normalizeLocaleTag(locale);
   const parsed = new Intl.Locale(canonical);
   const candidates = new Set<string>();
 
   candidates.add(canonical);
-  if (parsed.language && parsed.script && parsed.region) {
-    candidates.add(`${parsed.language}-${parsed.script}`);
-    candidates.add(`${parsed.language}-${parsed.region}`);
-  } else if (parsed.language && parsed.script) {
+  if (parsed.language && parsed.script) {
     candidates.add(`${parsed.language}-${parsed.script}`);
   } else if (parsed.language && parsed.region) {
     candidates.add(`${parsed.language}-${parsed.region}`);
