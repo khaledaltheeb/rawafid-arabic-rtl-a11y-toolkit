@@ -1,0 +1,11 @@
+pull_request_rules:
+  - name: dependency-update visibility
+    description: Conservative starter rule kept disabled until explicitly enabled after Mergify installation and validation.
+    disabled:
+      reason: no automated pull-request mutations until the maintainer explicitly enables this rule
+    conditions:
+      - "author = dependabot[bot]"
+    actions:
+      label:
+        add:
+          - dependencies
