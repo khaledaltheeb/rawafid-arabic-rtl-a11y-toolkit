@@ -15,6 +15,19 @@ Do not submit:
 
 Run `npm run scope:check` before opening a pull request.
 
+## Start with a bounded contribution
+
+New contributors should begin with a task that has an explicit acceptance boundary rather than trying to redesign the toolkit broadly.
+
+- [Good first issues](https://github.com/khaledaltheeb/rawafid-arabic-rtl-a11y-toolkit/issues?q=is%3Aissue%20state%3Aopen%20label%3A%22good%20first%20issue%22) are intended to be independently verifiable without requiring private Rawafid context.
+- [Help wanted issues](https://github.com/khaledaltheeb/rawafid-arabic-rtl-a11y-toolkit/issues?q=is%3Aissue%20state%3Aopen%20label%3A%22help%20wanted%22) include work where outside browser, accessibility, i18n, standards, or interoperability evidence is especially valuable.
+- If an issue already has an assignee or an active pull request, comment before duplicating the work.
+- A small contribution with reproducible evidence is preferable to a large speculative patch.
+
+Useful first contributions include clean-clone setup validation, documentation/example verification, keyboard-only fixture review, citation/research-metadata validation, and genuinely new mixed-direction conformance counterexamples.
+
+If you discover a problem that is not already tracked, open an issue first when the expected behavior or standards basis is uncertain. Include exact reproduction steps, locale/direction, browser/runtime version where relevant, expected behavior, actual behavior, and the standard or project contract you believe applies.
+
 ## Engineering expectations
 
 - Prefer standards/platform primitives over custom protocol inventions.
