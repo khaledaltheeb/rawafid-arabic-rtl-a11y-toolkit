@@ -3,6 +3,9 @@
 [![License: Apache-2.0](https://img.shields.io/badge/License-Apache--2.0-blue.svg)](LICENSE)
 [![CI](https://github.com/khaledaltheeb/rawafid-arabic-rtl-a11y-toolkit/actions/workflows/ci.yml/badge.svg)](https://github.com/khaledaltheeb/rawafid-arabic-rtl-a11y-toolkit/actions/workflows/ci.yml)
 [![OpenSSF Scorecard](https://api.scorecard.dev/projects/github.com/khaledaltheeb/rawafid-arabic-rtl-a11y-toolkit/badge)](https://scorecard.dev/viewer/?uri=github.com/khaledaltheeb/rawafid-arabic-rtl-a11y-toolkit)
+[![OSS hosting by Cloudsmith](https://img.shields.io/badge/OSS%20hosting%20by-cloudsmith-blue?logo=cloudsmith&style=flat-square)](https://cloudsmith.com)
+
+Package repository hosting is graciously provided by [Cloudsmith](https://cloudsmith.com) under its open-source hosting policy.
 
 A framework-agnostic, zero-runtime-dependency TypeScript engineering toolkit for Arabic and bidirectional web applications: script-aware direction, Unicode bidi safety, locale negotiation, pluralization, structured formatting, locale-sensitive segmentation, display names, grapheme-safe text, pseudo-localization, locale capability inspection, locale-aware typeahead, composite selection state, direction-aware grid navigation, logical CSS, Unicode display-risk diagnostics, and real-browser RTL verification.
 
