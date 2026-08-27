@@ -28,6 +28,20 @@ Useful first contributions include clean-clone setup validation, documentation/e
 
 If you discover a problem that is not already tracked, open an issue first when the expected behavior or standards basis is uncertain. Include exact reproduction steps, locale/direction, browser/runtime version where relevant, expected behavior, actual behavior, and the standard or project contract you believe applies.
 
+## Contribution process
+
+The project uses public GitHub issues and pull requests for normal changes.
+
+1. Check existing issues and pull requests before starting work; open or comment on an issue when the expected behavior needs agreement.
+2. Make the change in a branch or fork without adding private Rawafid material or unrelated refactors.
+3. Add or update tests and documentation that demonstrate the intended behavior and relevant edge cases.
+4. Run the local validation commands below and resolve failures or warnings before requesting review.
+5. Open a pull request that explains the problem, standards/compatibility basis, test evidence, and security/accessibility impact.
+6. A maintainer reviews the public diff and discussion. Requested changes should be resolved in the pull request rather than bypassed through an unrelated direct commit.
+7. Accepted changes are merged by a maintainer after the applicable automated checks pass. A submitted pull request is a proposal; submission does not guarantee acceptance.
+
+Security-sensitive reports are an exception: do not open a public issue or pull request containing exploit details before following [SECURITY.md](./SECURITY.md).
+
 ## Engineering expectations
 
 - Prefer standards/platform primitives over custom protocol inventions.
