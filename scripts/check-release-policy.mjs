@@ -56,7 +56,7 @@ requireText(prepareJob, 'release.yml prepare', 'npm run check', 'full quality ga
 requireText(prepareJob, 'release.yml prepare', 'npm pack --dry-run', 'package content inspection');
 requireText(prepareJob, 'release.yml prepare', 'npm pack --json --ignore-scripts > npm-pack.json', 'exact tarball build');
 requireText(prepareJob, 'release.yml prepare', 'integrity="sha512-', 'local SHA-512 integrity calculation');
-requireText(prepareJob, 'release.yml prepare', 'npm view "$package_name@$package_version" version', 'registry existence check');
+requireText(prepareJob, 'release.yml prepare', 'npm view "$package_name@$package_version" version --json --registry=https://registry.npmjs.org/ --userconfig=/dev/null', 'credential-independent public registry existence check');
 if (/secrets\.|NODE_AUTH_TOKEN|id-token:\s*write/u.test(prepareJob)) {
   errors.push('release.yml prepare: preparation must run without publication secrets or OIDC write permission.');
 }
@@ -66,6 +66,7 @@ requireText(oidcJob, 'release.yml publish-oidc', 'environment: npm', 'protected 
 requireText(oidcJob, 'release.yml publish-oidc', 'id-token: write', 'Trusted Publishing OIDC permission');
 requireText(oidcJob, 'release.yml publish-oidc', 'npm publish "./evidence/${{ needs.prepare.outputs.tarball }}" --access public --provenance', 'explicit local-tarball OIDC publish');
 requireText(oidcJob, 'release.yml publish-oidc', 'Verify npm registry artifact identity after OIDC publish', 'post-publish integrity verification');
+requireText(oidcJob, 'release.yml publish-oidc', 'dist.integrity --registry=https://registry.npmjs.org/ --userconfig=/dev/null', 'credential-independent OIDC registry verification');
 if (/secrets\.rawafid1|NODE_AUTH_TOKEN/u.test(oidcJob)) {
   errors.push('release.yml publish-oidc: routine Trusted Publishing must never use the bootstrap token.');
 }
@@ -78,6 +79,7 @@ requireText(bootstrapJob, 'release.yml bootstrap-initial-package', 'npm whoami -
 requireText(bootstrapJob, 'release.yml bootstrap-initial-package', 'npm org ls rawafid "$identity" --json', 'best-effort rawafid organization membership check');
 requireText(bootstrapJob, 'release.yml bootstrap-initial-package', 'npm publish "./evidence/${{ needs.prepare.outputs.tarball }}" --access public --provenance=false', 'explicit local initial-tarball token publish without OIDC');
 requireText(bootstrapJob, 'release.yml bootstrap-initial-package', 'Verify npm registry artifact identity after bootstrap', 'post-bootstrap registry identity gate');
+requireText(bootstrapJob, 'release.yml bootstrap-initial-package', 'dist.integrity --registry=https://registry.npmjs.org/ --userconfig=/dev/null', 'credential-independent bootstrap registry verification');
 if (/id-token:\s*write|attestations:\s*write/u.test(bootstrapJob)) {
   errors.push('release.yml bootstrap-initial-package: token publication job must not receive OIDC or attestation write permission, so npm cannot prefer Trusted Publishing over the bootstrap token.');
 }
@@ -85,6 +87,10 @@ const secretUses = bootstrapJob.match(/secrets\.rawafid1/gmu) ?? [];
 if (secretUses.length !== 2) errors.push(`release.yml bootstrap-initial-package: expected exactly two bootstrap-secret references, found ${secretUses.length}.`);
 if (/npm publish\s+"evidence\//u.test(releaseSource)) {
   errors.push('release.yml: downloaded tarballs must be published with an explicit ./ local path; a bare evidence/... spec can be interpreted by npm as a GitHub repository shorthand.');
+}
+const publicRegistryReads = releaseSource.match(/--registry=https:\/\/registry\.npmjs\.org\/ --userconfig=\/dev\/null/gmu) ?? [];
+if (publicRegistryReads.length !== 3) {
+  errors.push(`release.yml: expected exactly three credential-independent public registry reads (existence + two integrity checks), found ${publicRegistryReads.length}.`);
 }
 
 requireText(routineAttestJob, 'release.yml attest-routine-release', 'id-token: write', 'routine attestation OIDC permission');
@@ -150,5 +156,5 @@ if (errors.length > 0) {
   console.error(errors.join('\n'));
   process.exitCode = 1;
 } else {
-  console.log('Release policy contract passed: release evidence is prepared without credentials; routine releases use tokenless OIDC; first package creation is an exact-version, push-only token bootstrap without OIDC, followed by registry integrity verification, separate GitHub attestations, release binding, and explicit local tarball package specs.');
+  console.log('Release policy contract passed: release evidence is prepared without credentials; registry reads bypass publication auth configuration; routine releases use tokenless OIDC; first package creation is an exact-version, push-only token bootstrap without OIDC, followed by registry integrity verification, separate GitHub attestations, release binding, and explicit local tarball package specs.');
 }
