@@ -18,11 +18,12 @@ A brand-new npm package may need a traditional registry credential before the pa
 2. The workflow is limited to the canonical repository and a single exact bootstrap version.
 3. It triggers only from the version-changing push to `main`, never from `pull_request` or untrusted code.
 4. Deterministic install and the complete `npm run check` quality gate execute before the credentialed publish step.
-5. The exact tarball is built once, its SHA-512 integrity is computed locally, and an SPDX SBOM is retained.
+5. The exact tarball is built once, its SHA-512 integrity is computed locally, an SPDX SBOM is generated, and the public review surface is rebuilt.
 6. Publication uses the exact tarball with `--access public --provenance` from a GitHub-hosted runner with `id-token: write`.
-7. Registry `dist.integrity` must match the locally computed tarball integrity before a GitHub Release is created.
-8. The temporary bootstrap workflow is removed after successful package creation.
-9. npm Trusted Publishing is configured for `.github/workflows/release.yml` immediately after bootstrap, and the bootstrap token is revoked when no longer required.
+7. Registry `dist.integrity` must match the locally computed tarball integrity before attestations or a GitHub Release are created.
+8. The bootstrap itself creates release attestations for the tarball, SBOM, and public review surface; it does not depend on a second workflow being triggered by the GitHub Release it creates.
+9. The temporary bootstrap workflow is removed after successful package creation.
+10. npm Trusted Publishing is configured for `.github/workflows/release.yml` immediately after bootstrap, and the bootstrap token is revoked when no longer required.
 
 See `docs/FIRST-PUBLICATION.md` for the operational checklist.
 
@@ -53,7 +54,7 @@ Reference: https://docs.npmjs.com/trusted-publishers/
 
 Public packages published from the public GitHub repository through Trusted Publishing receive npm provenance. The release workflow invokes `npm publish --provenance` explicitly for clarity and defense in depth.
 
-The one-time token-authenticated bootstrap also runs from GitHub Actions with `id-token: write` and explicitly requests provenance. Authentication and provenance are verified separately from artifact identity: the workflow still compares registry `dist.integrity` to the exact local tarball.
+The one-time token-authenticated bootstrap also runs from GitHub Actions with `id-token: write` and explicitly requests provenance. Authentication and provenance are verified separately from artifact identity: the workflow still compares registry `dist.integrity` to the exact local tarball and then creates GitHub attestations for the retained release evidence.
 
 ## Routine release sequence after bootstrap
 
@@ -61,7 +62,7 @@ The one-time token-authenticated bootstrap also runs from GitHub Actions with `i
 2. Run required CI/security checks and browser tests.
 3. Merge to `main` only when required checks pass.
 4. Confirm the release commit is the intended `main` head.
-5. Create the matching Git tag and GitHub Release.
+5. Create the matching Git tag and GitHub Release through a maintainer-controlled action that can legitimately emit the `release` event.
 6. GitHub invokes `release.yml` from the reviewed repository state.
 7. The workflow installs from the committed lockfile with `npm ci`.
 8. It runs the complete package quality gate and inspects package contents.
@@ -70,13 +71,16 @@ The one-time token-authenticated bootstrap also runs from GitHub Actions with `i
 11. The workflow verifies npm registry integrity against the exact local tarball.
 12. Verify exported entry points and installation from a clean consumer project.
 
+GitHub suppresses most new workflow runs caused by events created with the repository `GITHUB_TOKEN`. Therefore the one-time bootstrap does not assume that its programmatically created GitHub Release will trigger `release.yml`; bootstrap evidence and attestations are completed in the same run.
+
 ## Bootstrap cleanup requirement
 
 The first publication is not complete merely because npm accepted the package. Completion requires all of the following:
 
 - registry artifact identity verified;
+- release tarball, SBOM, and public review surface attestations completed by the bootstrap run;
 - matching GitHub Release/tag bound to the release commit;
-- permanent release workflow completes its idempotent validation path;
+- release assets attached;
 - temporary bootstrap workflow removed;
 - documentation updated to record that bootstrap is complete;
 - npm Trusted Publisher mapping created for `release.yml`;
@@ -92,4 +96,4 @@ Do not silently replace an already published version. npm versions are immutable
 
 ## Supply-chain evidence
 
-Every automated release candidate is built from reviewed public source. Release evidence includes deterministic installation, the complete repository quality gate, package-content inspection, an exact tarball, SHA-512 identity verification, SPDX SBOM, and retained GitHub Actions artifacts. Routine releases add OIDC Trusted Publishing and the repository's release attestations.
+Every automated release candidate is built from reviewed public source. Release evidence includes deterministic installation, the complete repository quality gate, package-content inspection, an exact tarball, SHA-512 identity verification, SPDX SBOM, retained GitHub Actions artifacts, and GitHub attestations. Routine releases additionally use OIDC Trusted Publishing through the permanent `release.yml` path.
