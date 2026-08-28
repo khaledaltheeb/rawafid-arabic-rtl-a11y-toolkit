@@ -7,11 +7,16 @@ const root = process.cwd();
 const packageJson = JSON.parse(await readFile(resolve(root, 'package.json'), 'utf8'));
 const entryPath = resolve(root, 'dist/index.js');
 const typesPath = resolve(root, 'dist/index.d.ts');
+const auditPath = resolve(root, 'audit/rules.mjs');
+const auditCliPath = resolve(root, 'bin/rawafid-rtl-audit.mjs');
 
 await access(entryPath, constants.R_OK);
 await access(typesPath, constants.R_OK);
 await access(resolve(root, 'styles/logical.css'), constants.R_OK);
 await access(resolve(root, 'styles/a11y.css'), constants.R_OK);
+await access(auditPath, constants.R_OK);
+await access(auditCliPath, constants.R_OK);
+await access(resolve(root, 'docs/SOURCE-AUDIT.md'), constants.R_OK);
 
 const expectedRootExport = packageJson.exports?.['.'];
 if (expectedRootExport?.import !== './dist/index.js' || expectedRootExport?.types !== './dist/index.d.ts') {
@@ -21,6 +26,22 @@ if (expectedRootExport?.import !== './dist/index.js' || expectedRootExport?.type
 const requiredSubpaths = ['./styles/logical.css', './styles/a11y.css', './package.json'];
 for (const subpath of requiredSubpaths) {
   if (!(subpath in packageJson.exports)) throw new Error(`Missing required package export: ${subpath}`);
+}
+
+if (packageJson.bin?.['rawafid-rtl-audit'] !== './bin/rawafid-rtl-audit.mjs') {
+  throw new Error('Package bin contract must expose rawafid-rtl-audit at ./bin/rawafid-rtl-audit.mjs.');
+}
+
+const audit = await import(`${pathToFileURL(auditPath).href}?contract=${Date.now()}`);
+if (typeof audit.auditSource !== 'function' || typeof audit.RULES !== 'object') {
+  throw new Error('Packaged RTL audit engine must expose its internal auditSource function and rule metadata to the package CLI.');
+}
+const auditFixture = audit.auditSource('<html lang="ar"><body><bdo>abc</bdo></body></html>', 'fixture.html', '.html');
+if (!auditFixture.some((finding) => finding.ruleId === 'RAWAFID-HTML-002')) {
+  throw new Error('Packaged RTL audit engine direction contract failed.');
+}
+if (!auditFixture.some((finding) => finding.ruleId === 'RAWAFID-HTML-005')) {
+  throw new Error('Packaged RTL audit engine bidi markup contract failed.');
 }
 
 // Import the real built output in a Node environment with no DOM globals. This
@@ -106,4 +127,4 @@ if (built.nextGridIndex(5, 3, 3, 'Home') !== 3) {
   throw new Error('Built package grid row Home contract failed.');
 }
 
-console.log(`Built package contract passed with ${Object.keys(built).length} public exports.`);
+console.log(`Built package contract passed with ${Object.keys(built).length} public exports and the packaged RTL audit engine.`);
