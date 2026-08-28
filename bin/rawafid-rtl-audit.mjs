@@ -70,7 +70,7 @@ async function loadConfig(path) {
   try {
     value = JSON.parse(await readFile(file, 'utf8'));
   } catch (error) {
-    throw new Error(`Cannot read configuration ${path}: ${error.message}`);
+    throw new Error(`Cannot read configuration ${path}: ${error.message}`, { cause: error });
   }
   if (!value || typeof value !== 'object' || Array.isArray(value)) throw new Error('Configuration root must be a JSON object.');
   const unknownKeys = Object.keys(value).filter((key) => !CONFIG_KEYS.has(key));
