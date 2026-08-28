@@ -57,14 +57,21 @@ const forbiddenClaims = [
   /(?:implements?|provides?|offers?|delivers?|is)\s+(?:a\s+)?complete\s+UTS\s*#?39/iu,
 ];
 const corpus = `${JSON.stringify(plan)}\n${docs}`;
+const lowerCorpus = corpus.toLowerCase();
 for (const pattern of forbiddenClaims) if (pattern.test(corpus)) throw new Error(`Enterprise evaluation language violates non-claim policy: ${pattern}`);
 
 for (const phrase of ['reversible technical evaluation', 'false positives', 'reporting-only', 'does not execute the audited project code']) {
   if (!docs.toLowerCase().includes(phrase.toLowerCase())) throw new Error(`Enterprise evaluation documentation is missing required adoption boundary: ${phrase}`);
 }
 
-for (const phrase of ['does not claim complete UTS #39', 'not a WCAG', 'linguistic quality']) {
-  if (!corpus.toLowerCase().includes(phrase.toLowerCase())) throw new Error(`Enterprise evaluation corpus must preserve explicit non-claim language: ${phrase}`);
+for (const phrase of ['UTS #39', 'WCAG', 'linguistic quality']) {
+  if (!lowerCorpus.includes(phrase.toLowerCase())) throw new Error(`Enterprise evaluation corpus must preserve explicit boundary coverage for: ${phrase}`);
+}
+if (!/(?:does\s+not|do\s+not|not\s+a|without\s+claiming|deliberately\s+narrower)[^\n.]{0,120}UTS\s*#?39/iu.test(corpus)) {
+  throw new Error('Enterprise evaluation corpus must explicitly limit UTS #39 claims.');
+}
+if (!/(?:not\s+a|does\s+not|do\s+not|without\s+claiming)[^\n.]{0,120}WCAG/iu.test(corpus)) {
+  throw new Error('Enterprise evaluation corpus must explicitly limit WCAG certification claims.');
 }
 
 console.log(`Enterprise evaluation contract passed for ${plan.profiles.length} pilot profiles and ${metricIds.size} decision metrics.`);
