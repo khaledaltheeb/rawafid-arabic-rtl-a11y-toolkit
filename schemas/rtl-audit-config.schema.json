@@ -1,0 +1,56 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://healthrenewal.org/open-source/arabic-rtl-a11y-toolkit/schemas/rtl-audit-config.schema.json",
+  "title": "Rawafid Arabic/RTL Audit Configuration",
+  "description": "Policy configuration for the rawafid-rtl-audit CLI.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schemaVersion"],
+  "properties": {
+    "schemaVersion": { "const": 1 },
+    "paths": {
+      "type": "array",
+      "items": { "type": "string", "minLength": 1 },
+      "minItems": 1,
+      "uniqueItems": true
+    },
+    "strict": { "type": "boolean" },
+    "failOn": { "enum": ["error", "warning", "none"] },
+    "exclude": {
+      "type": "array",
+      "items": { "type": "string", "minLength": 1 },
+      "uniqueItems": true
+    },
+    "baseline": { "type": "string", "minLength": 1 },
+    "maxFiles": { "type": "integer", "minimum": 1 },
+    "rules": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "RAWAFID-BIDI-001": { "$ref": "#/$defs/ruleLevel" },
+        "RAWAFID-BIDI-002": { "$ref": "#/$defs/ruleLevel" },
+        "RAWAFID-BIDI-003": { "$ref": "#/$defs/ruleLevel" },
+        "RAWAFID-BIDI-004": { "$ref": "#/$defs/ruleLevel" },
+        "RAWAFID-HTML-001": { "$ref": "#/$defs/ruleLevel" },
+        "RAWAFID-HTML-002": { "$ref": "#/$defs/ruleLevel" },
+        "RAWAFID-HTML-003": { "$ref": "#/$defs/ruleLevel" },
+        "RAWAFID-HTML-004": { "$ref": "#/$defs/ruleLevel" },
+        "RAWAFID-HTML-005": { "$ref": "#/$defs/ruleLevel" },
+        "RAWAFID-HTML-006": { "$ref": "#/$defs/ruleLevel" },
+        "RAWAFID-CSS-001": { "$ref": "#/$defs/ruleLevel" },
+        "RAWAFID-CSS-002": { "$ref": "#/$defs/ruleLevel" },
+        "RAWAFID-CSS-003": { "$ref": "#/$defs/ruleLevel" },
+        "RAWAFID-CSS-004": { "$ref": "#/$defs/ruleLevel" },
+        "RAWAFID-CSS-005": { "$ref": "#/$defs/ruleLevel" },
+        "RAWAFID-CSS-006": { "$ref": "#/$defs/ruleLevel" },
+        "RAWAFID-CSS-007": { "$ref": "#/$defs/ruleLevel" },
+        "RAWAFID-UTILITY-001": { "$ref": "#/$defs/ruleLevel" }
+      }
+    }
+  },
+  "$defs": {
+    "ruleLevel": {
+      "enum": ["off", "note", "warning", "error"]
+    }
+  }
+}
