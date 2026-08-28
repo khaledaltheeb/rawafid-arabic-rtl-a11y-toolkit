@@ -1,118 +1,74 @@
-# First npm publication checklist
+# First npm publication — completed record
 
-This document covers the one-time creation of `@rawafid/arabic-rtl-a11y-toolkit` before routine npm Trusted Publishing can become the only publication mechanism.
+The first public npm publication of `@rawafid/arabic-rtl-a11y-toolkit` is complete. This document is retained as an audit record of the one-time bootstrap; it is no longer an operational instruction for routine releases.
 
-## Package identity
+## Outcome
 
-```text
-@rawafid/arabic-rtl-a11y-toolkit
-```
+- Package: `@rawafid/arabic-rtl-a11y-toolkit`
+- First npm version: `0.3.0`
+- First publication date: 2026-08-28
+- Registry access: public
+- GitHub Release: `v0.3.0`
+- Release assets: exact tarball, SPDX SBOM, release notes
+- Post-publication evidence: registry SHA-512 identity verification plus GitHub attestations for the tarball, SBOM, and public review surface
 
-The scope is part of the package identity. The initial publishing user must either own the npm user scope `rawafid` or have authority to create public packages in the npm organization `rawafid`. A token cannot create rights that its npm user does not possess.
+The one-time publication used an npm Granular Access Token stored as the GitHub `npm` Environment secret `rawafid1`. The workflow verified the authenticated npm identity and `rawafid` organization authorization before publication.
 
-## Why a token is required once
+## Why a bootstrap was needed
 
-npm Trusted Publisher relationships are configured on an existing package. The package must already exist on the npm registry before its Trusted Publisher can be created. The first OIDC attempt therefore cannot bootstrap a brand-new scoped package by itself.
+The package did not yet exist on npm. The initial package creation therefore used traditional token authentication once, isolated from the permanent Trusted Publishing path.
 
-The one-time bootstrap uses the GitHub Environment secret `rawafid1` solely to create version `0.3.0`. Routine releases must not depend on this credential.
+The bootstrap job deliberately had no `id-token: write` and no `attestations: write`, ensuring npm could not silently switch the first-package creation attempt to OIDC. It published only the exact prebuilt `0.3.0` tarball and explicitly disabled npm provenance for that token-authenticated publish.
 
-## Credential constraints
+## Controls that were exercised
 
-`rawafid1` must be an npm Granular Access Token with the least privilege necessary for the `@rawafid` package/scope and direct publishing. If the npm 2FA policy requires it, the token must be configured with Bypass 2FA for automated package publication.
+Before any publication credential was available, the workflow:
 
-The secret must remain only in the GitHub Environment named `npm`. Never commit it, copy it into documentation, echo it, expose it to pull-request jobs, or reuse it as an application credential.
+1. verified canonical repository, package identity, exact version, and release identity;
+2. required synchronized `package.json` and `package-lock.json` versions;
+3. ran deterministic `npm ci`;
+4. ran the complete `npm run check` quality/security/package gate;
+5. inspected package contents with `npm pack --dry-run`;
+6. built exactly one release tarball;
+7. computed its local SHA-512 integrity;
+8. generated an SPDX SBOM;
+9. built the reproducible public review surface;
+10. retained the tarball, pack manifest, SBOM, review surface, and release notes as workflow evidence.
 
-## Security isolation
+The token-authenticated bootstrap then:
 
-The bootstrap is split deliberately:
+1. authenticated successfully with npm;
+2. confirmed the publishing identity was an authorized member of the npm `rawafid` organization;
+3. published only `@rawafid/arabic-rtl-a11y-toolkit@0.3.0`;
+4. published with public access and `--provenance=false`;
+5. stopped before attestations until registry identity could be independently checked.
 
-### 1. Prepare release evidence without credentials
+A corrected credential-independent registry check subsequently confirmed that npm `dist.integrity` matched the locally computed SHA-512 for the exact tarball. The publication step was skipped on that verification run because `0.3.0` already existed, preventing a duplicate publish attempt.
 
-Before any npm credential is available, the workflow must:
-
-1. verify canonical repository, package identity, exact version `0.3.0`, and release tag identity;
-2. require synchronized `package.json` and `package-lock.json` versions;
-3. run deterministic `npm ci`;
-4. run the complete `npm run check` quality/security/package gate;
-5. run `npm pack --dry-run`;
-6. build exactly one release tarball;
-7. compute its local SHA-512 integrity;
-8. generate an SPDX SBOM;
-9. build the reproducible public review surface;
-10. query whether the exact npm version already exists;
-11. retain the tarball, pack manifest, SBOM, review surface, and release notes as workflow evidence.
-
-### 2. Create the package with token auth only
-
-The `bootstrap-initial-package` job must have no `id-token: write` and no `attestations: write`. This is intentional: npm CLI automatically prefers OIDC when a supported OIDC identity is available, but a brand-new package does not yet have a package-level Trusted Publisher.
-
-The job:
-
-1. receives `rawafid1` only from the protected `npm` Environment;
-2. requires `npm whoami` to authenticate successfully;
-3. confirms direct ownership when the npm username itself is `rawafid`, otherwise performs a best-effort membership check for the `rawafid` organization when the token can read that metadata;
-4. publishes only the exact prebuilt `0.3.0` tarball with `--access public --provenance=false`;
-5. retries the public registry lookup and requires `dist.integrity` to equal the exact local SHA-512 value.
-
-If token authentication, scope authorization, 2FA policy, or registry integrity fails, the workflow stops. It must not change package name/scope merely to bypass registry authorization.
-
-### 3. Attest only after registry identity is proven
-
-A separate job, which does not receive `rawafid1`, runs only after successful registry verification. It receives GitHub OIDC/attestation permissions and creates GitHub attestations for:
-
-- the exact npm tarball;
-- the SPDX SBOM bound to that tarball;
-- the reproducible public review surface.
-
-Only after those attestations does it create or verify GitHub Release `v0.3.0` on the exact bootstrap commit and attach the tarball, SBOM, and release notes.
+Only after registry identity was proven did a separate GitHub OIDC job create attestations and GitHub Release `v0.3.0`.
 
 ## Provenance boundary
 
-Version `0.3.0` must not be advertised as having npm Trusted Publishing provenance if it was created through the bootstrap token path. npm provenance is explicitly disabled for that one-time publish so OIDC cannot intercept the authentication path.
+Do **not** advertise npm package version `0.3.0` as having been published through npm Trusted Publishing. Its first registry creation used the one-time token bootstrap with npm provenance disabled.
 
-The separate GitHub attestations remain verifiable supply-chain evidence, but they are not the same claim as npm registry Trusted Publishing provenance.
+The GitHub attestations created after registry verification are valid separate supply-chain evidence, but they are not an npm Trusted Publishing provenance statement for the `0.3.0` registry publication.
 
-The first routine OIDC release after Trusted Publisher setup is the release that should prove npm Trusted Publishing provenance end-to-end.
+Routine versions after bootstrap use the permanent OIDC-only release workflow and should be evaluated for npm provenance independently.
 
-## Configure the package Trusted Publisher after creation
+## Bootstrap retirement
 
-Immediately after `0.3.0` is visible and registry integrity is verified, configure the package on npmjs.com:
+The repository cleanup after first publication removes:
 
-- Provider: GitHub Actions
-- GitHub owner/user: `khaledaltheeb`
-- Repository: `rawafid-arabic-rtl-a11y-toolkit`
-- Workflow filename: `release.yml`
-- Environment: `npm` if an environment restriction is used
-- Allowed action: `npm publish` (or deliberately adopt staged publishing later)
+- the push-triggered bootstrap publication path;
+- `bootstrap-initial-package`;
+- `attest-bootstrap-package`;
+- every `rawafid1` / `NODE_AUTH_TOKEN` reference from the permanent release workflow;
+- the duplicate retired bootstrap workflow, which remains forbidden by policy tests.
 
-The workflow filename must be exactly the configured filename, not a full `.github/workflows/...` path.
+The permanent workflow is `release: published` only and uses npm Trusted Publishing/OIDC for future new versions.
 
-## Bootstrap cleanup
-
-After package creation and Trusted Publisher configuration:
-
-1. remove the temporary `push` trigger from `release.yml`;
-2. remove all `rawafid1` references from repository workflows;
-3. restore routine publication to `release: published` only;
-4. retain OIDC `id-token: write` only in routine publish/attestation jobs that need it;
-5. revoke/remove `rawafid1` when it has no legitimate remaining use;
-6. keep account-level 2FA enabled;
-7. prove the next release publishes without any npm publication token;
-8. verify npm provenance, registry integrity, GitHub attestations, and clean-consumer installation.
-
-## Abort conditions
-
-Do not publish when any of these is unresolved:
-
-- `rawafid` scope ownership/authorization is uncertain;
-- the token does not authenticate with `npm whoami`;
-- the token lacks write permission for the intended package/scope;
-- automated direct publishing conflicts with the npm 2FA policy;
-- package identity/version differs from the locked `@rawafid/arabic-rtl-a11y-toolkit@0.3.0` target;
-- CI, security, package-contract, or browser evidence is red;
-- the tarball contains credentials, `.env` material, private data, or excluded Rawafid content;
-- registry `dist.integrity` does not match the exact locally built tarball.
+The temporary npm token should be revoked or removed from GitHub once it has no remaining legitimate use. Do not reuse it as a routine publication or application credential.
 
 ## Known repository hardening gap
 
-GitHub `main` branch protection/ruleset enforcement is still owner-controlled and not enabled. The reviewed-PR and green-check process is a compensating control for this bootstrap, not evidence that branch-protection requirements are satisfied.
+GitHub `main` branch protection/ruleset enforcement remains owner-controlled and was not enabled at the time of this first publication. Reviewed PRs and green checks were compensating controls for the bootstrap; they are not evidence that branch-protection requirements are satisfied.
