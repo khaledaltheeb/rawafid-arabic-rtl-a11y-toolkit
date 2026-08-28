@@ -31,7 +31,10 @@ try {
   <style>.card { margin-inline-start: 1rem; text-align: start; }</style>
 </body>
 </html>\n`, 'utf8');
+  await writeFile(join(cleanDir, 'fragment.html'), '<div dir="rtl"><bdi>API / مثال</bdi></div>\n', 'utf8');
 
+  const badCss = '.panel { right: 0; direction: rtl; unicode-bidi: bidi-override; }\n';
+  const badCssPath = join(badDir, 'app.css');
   await writeFile(join(badDir, 'index.html'), `<!doctype html>
 <html lang="ar">
 <body>
@@ -40,11 +43,11 @@ try {
   <style>.card { margin-left: 1rem; text-align: left; }</style>
 </body>
 </html>\n`, 'utf8');
-  await writeFile(join(badDir, 'app.css'), '.panel { right: 0; direction: rtl; unicode-bidi: bidi-override; }\n', 'utf8');
+  await writeFile(badCssPath, badCss, 'utf8');
   await writeFile(join(badDir, 'app.js'), 'const suspicious = "\\u202Eexample";\n', 'utf8');
 
   const clean = JSON.parse(run([cleanDir, '--strict', '--format', 'json', '--fail-on', 'warning']));
-  if (clean.summary.findings !== 0) throw new Error(`Expected clean fixture to have zero findings, received ${clean.summary.findings}.`);
+  if (clean.summary.findings !== 0) throw new Error(`Expected full-document and fragment clean fixtures to have zero findings, received ${clean.summary.findings}.`);
 
   const bad = JSON.parse(run([badDir, '--strict', '--format', 'json', '--fail-on', 'none']));
   const ids = new Set(bad.diagnostics.map((finding) => finding.ruleId));
@@ -64,10 +67,23 @@ try {
 
   const baselinePath = join(temp, 'baseline.json');
   run([badDir, '--strict', '--write-baseline', baselinePath, '--fail-on', 'none']);
+  const baselineDocument = JSON.parse(await readFile(baselinePath, 'utf8'));
+  if (baselineDocument.hashAlgorithm !== 'sha256') throw new Error('Baseline must declare SHA-256 fingerprints.');
+  if (baselineDocument.findings.some((finding) => 'evidence' in finding)) {
+    throw new Error('Baseline must not persist source evidence lines.');
+  }
+
   const suppressed = JSON.parse(run([badDir, '--strict', '--baseline', baselinePath, '--format', 'json', '--fail-on', 'error']));
   if (suppressed.summary.findings !== 0 || suppressed.summary.suppressed !== bad.summary.findings) {
     throw new Error('Baseline must suppress the reviewed legacy fixture while preserving its suppressed count.');
   }
+
+  await writeFile(badCssPath, `${badCss}${badCss}`, 'utf8');
+  const duplicate = JSON.parse(run([badDir, '--strict', '--baseline', baselinePath, '--format', 'json', '--fail-on', 'none']));
+  if (duplicate.summary.findings !== 3 || duplicate.summary.suppressed !== bad.summary.findings) {
+    throw new Error('A newly introduced duplicate CSS defect must remain active after the historical baseline count is consumed.');
+  }
+  await writeFile(badCssPath, badCss, 'utf8');
 
   const sarifPath = join(temp, 'rawafid-rtl.sarif');
   run([badDir, '--strict', '--format', 'sarif', '--out', sarifPath, '--fail-on', 'none']);
@@ -79,7 +95,7 @@ try {
     throw new Error('SARIF result count must match active JSON findings for the same fixture.');
   }
 
-  console.log(`RTL audit contract passed: ${bad.summary.findings} flawed-fixture findings, baseline migration, threshold exit semantics, and SARIF 2.1.0 output verified.`);
+  console.log(`RTL audit contract passed: clean document/fragment handling, ${bad.summary.findings} flawed-fixture findings, private hashed baseline migration, duplicate-defect detection, threshold exit semantics, and SARIF 2.1.0 output verified.`);
 } finally {
   await rm(temp, { recursive: true, force: true });
 }
