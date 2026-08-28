@@ -11,6 +11,7 @@ const schemaFiles = [
   'schemas/evidence-summary.schema.json',
   'schemas/research-assets.schema.json',
   'schemas/review-site-artifact.schema.json',
+  'schemas/rtl-audit-config.schema.json',
 ];
 
 const ids = new Set();
@@ -44,4 +45,14 @@ for (const [instancePath, schemaPath, expectedFields] of bindings) {
   }
 }
 
-console.log(`Machine-readable contract metadata passed for ${schemaFiles.length} Draft 2020-12 schemas and ${bindings.length} committed contract bindings.`);
+const auditSchema = JSON.parse(await readFile(resolve(root, 'schemas/rtl-audit-config.schema.json'), 'utf8'));
+const auditRuleProperties = new Set(Object.keys(auditSchema.properties?.rules?.properties ?? {}));
+const auditModule = await import(`../audit/rules.mjs?schema=${Date.now()}`);
+const runtimeRules = new Set(Object.keys(auditModule.RULES ?? {}));
+const missingAuditRules = [...runtimeRules].filter((rule) => !auditRuleProperties.has(rule));
+const staleAuditRules = [...auditRuleProperties].filter((rule) => !runtimeRules.has(rule));
+if (missingAuditRules.length || staleAuditRules.length) {
+  throw new Error(`RTL audit schema/rule registry mismatch. Missing in schema: ${missingAuditRules.join(', ') || 'none'}. Stale in schema: ${staleAuditRules.join(', ') || 'none'}.`);
+}
+
+console.log(`Machine-readable contract metadata passed for ${schemaFiles.length} Draft 2020-12 schemas, ${bindings.length} committed contract bindings, and ${runtimeRules.size} RTL audit policy rules.`);
