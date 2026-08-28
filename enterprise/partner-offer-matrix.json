@@ -1,0 +1,147 @@
+{
+  "schemaVersion": 1,
+  "project": {
+    "name": "Rawafid Arabic/RTL Accessibility & Localization Toolkit",
+    "repository": "https://github.com/khaledaltheeb/rawafid-arabic-rtl-a11y-toolkit",
+    "license": "Apache-2.0"
+  },
+  "principles": [
+    "Lead with the counterparty's engineering problem rather than Rawafid's need for a partnership.",
+    "Offer a reversible technical pilot before asking for strategic commitment.",
+    "Keep the counterparty's private source and credentials in its own environment unless it explicitly chooses otherwise.",
+    "Measure unique actionable value and false positives beside the counterparty's existing tools.",
+    "Prefer upstreamable tests, fixtures, rules, and documentation over vendor lock-in.",
+    "Never describe an organization as a partner, sponsor, reviewer, or endorser without written evidence.",
+    "Keep standards and compliance claims narrower than the evidence produced by the pilot."
+  ],
+  "offers": [
+    {
+      "id": "design-system-maintainer",
+      "audience": ["Design systems", "Component libraries", "Frontend platform teams"],
+      "problem": "Reusable components often pass LTR testing while retaining physical-edge assumptions, direction-inappropriate keyboard behavior, mixed-direction text defects, or visual/source-order risks.",
+      "offer": "A focused Arabic/RTL interoperability pass on representative public or supplied fixtures, producing reproducible issues and upstream-ready regression cases rather than a generic localization review.",
+      "rawafidContributes": ["Direction-aware browser fixtures and keyboard interaction cases.", "Source-audit rules and logical-CSS diagnostics with SARIF/JSON evidence.", "Arabic/Latin mixed-direction, localized-number, and bidi-isolation test cases."],
+      "counterpartyContribution": ["A representative component scope and maintainers who can classify intended behavior versus defects."],
+      "pilot": {
+        "scope": "Select a small critical component family such as tabs, menu/dialog, grid/table, pagination, form inputs, or navigation and evaluate it in paired LTR/RTL conditions.",
+        "evidence": ["Browser/keyboard results across the agreed matrix.", "Finding disposition table and minimal reproducible cases."],
+        "success": ["At least one useful regression case, defect, or confirmed invariant not already encoded by the existing suite.", "Review burden is acceptable enough to upstream the useful cases or keep Rawafid as a CI layer."],
+        "exit": "The maintainer may decline integration after reviewing the evidence; no framework migration or long-term commitment is required."
+      },
+      "publicEvidence": ["docs/TEST-MATRIX.md", "docs/PARTNER-INTEROPERABILITY.md", "docs/ENTERPRISE-EVALUATION.md"],
+      "nonClaims": ["A successful component pilot is not complete accessibility certification for the design system."]
+    },
+    {
+      "id": "accessibility-platform",
+      "audience": ["Accessibility testing vendors", "Accessibility engineering teams", "Automated a11y tool maintainers"],
+      "problem": "Generic accessibility automation can identify many semantic failures but does not by itself encode all Arabic/RTL, bidi, logical-layout, locale, or direction-aware interaction defects.",
+      "offer": "Use Rawafid as a specialist complementary signal source and test corpus for Arabic/RTL cases that can be reproduced beside the platform's existing accessibility checks.",
+      "rawafidContributes": ["Conservative source rules with documented standards rationale and non-claims.", "Controlled RTL/LTR browser fixtures and axe regression evidence.", "A machine-readable evaluation plan that measures incremental coverage rather than raw finding volume."],
+      "counterpartyContribution": ["Run or review selected cases against the platform's current engine and identify overlap, gaps, and false positives."],
+      "pilot": {
+        "scope": "Compare Rawafid findings and browser invariants against the platform's current automated output on a representative Arabic/RTL fixture set.",
+        "evidence": ["Overlap/unique finding matrix.", "False-positive disposition and candidate upstream test cases."],
+        "success": ["Rawafid contributes useful Arabic/RTL evidence not already represented, or independently confirms that the selected scope is already covered.", "Any proposed integration has clear ownership and does not misrepresent Rawafid as a compliance certifier."],
+        "exit": "No integration is required if the platform already covers the evaluated cases or the added signal is too noisy."
+      },
+      "publicEvidence": ["docs/SOURCE-AUDIT.md", "docs/TEST-MATRIX.md", "docs/STANDARDS.md"],
+      "nonClaims": ["Rawafid complements general accessibility automation and does not claim complete WCAG, EN 301 549, EAA, or assistive-technology conformance testing."]
+    },
+    {
+      "id": "localization-platform",
+      "audience": ["Localization platforms", "Translation engineering", "Internationalization infrastructure teams"],
+      "problem": "Translation workflows can preserve linguistic text while missing structural catalog errors, script-sensitive locale fallback, bidi isolation, localized numeric input, or layout stress caused by translated content.",
+      "offer": "A provider-neutral Arabic/RTL localization QA layer that separates structural/runtime checks from human linguistic review and can feed existing CI rather than replacing the translation system.",
+      "rawafidContributes": ["Catalog and terminology QA primitives plus pseudo-localization.", "Script-safe locale fallback and Intl/runtime evidence.", "Localized number parsing and mixed-direction fixtures."],
+      "counterpartyContribution": ["A representative catalog/workflow fixture and target locale constraints, without provider credentials unless an official integration is later approved."],
+      "pilot": {
+        "scope": "Evaluate one representative catalog and a small set of runtime formatting/input cases for Arabic and any relevant script-specific locales.",
+        "evidence": ["Structural finding report and locale-boundary tests.", "Reviewed separation of machine-checkable defects from linguistic judgments."],
+        "success": ["Useful structural/runtime defects are caught before release without pretending to score translation quality.", "The workflow can be integrated without forcing migration away from the existing localization provider."],
+        "exit": "The provider or customer can keep only the fixtures/rules that add value; no platform replacement is implied."
+      },
+      "publicEvidence": ["docs/INTEROPERABILITY.md", "docs/ENTERPRISE-EVALUATION.md", "qa/localization-contract.json"],
+      "nonClaims": ["Machine localization QA does not establish native-language quality, terminology correctness, or cultural appropriateness by itself."]
+    },
+    {
+      "id": "browser-testing-provider",
+      "audience": ["Cross-browser testing providers", "Visual regression platforms", "Device/browser labs"],
+      "problem": "RTL regressions may be browser-, viewport-, writing-direction-, or rendering-specific, while a project without provider infrastructure cannot independently demonstrate broad environment coverage.",
+      "offer": "A deterministic public RTL/LTR fixture suite suitable for provider-backed execution, with no embedded credentials and clear before/after evidence for browser and visual regressions.",
+      "rawafidContributes": ["Stable browser fixtures across forms, tables, navigation, composites, bidi content, reflow, forced colors, and reduced motion.", "Existing Playwright evidence and machine-readable partner-suite contracts."],
+      "counterpartyContribution": ["Provider-backed execution or OSS infrastructure only after legitimate program acceptance or explicit authorization."],
+      "pilot": {
+        "scope": "Run the public suite on an agreed provider/browser/device matrix without modifying Rawafid's conformance claims beyond the observed evidence.",
+        "evidence": ["Provider-generated execution results linked to immutable Rawafid refs.", "Any newly reproduced browser-specific defects with minimal cases."],
+        "success": ["The provider materially expands reproducible environment evidence or identifies a platform-specific defect.", "No credentials or provider endorsement claims are committed to the public repository without authorization."],
+        "exit": "If program eligibility or provider fit is absent, Rawafid continues using its public self-hosted browser matrix without implying a relationship."
+      },
+      "publicEvidence": ["conformance/partner-suite.json", "docs/PARTNER-INTEROPERABILITY.md", "docs/TEST-MATRIX.md"],
+      "nonClaims": ["Provider execution would be interoperability evidence, not an endorsement unless the provider explicitly says so."]
+    },
+    {
+      "id": "ci-devsecops-platform",
+      "audience": ["CI platforms", "Code scanning", "DevSecOps", "Application security teams"],
+      "problem": "Organizations need specialist findings to fit existing pull-request and code-scanning workflows without uploading source to a new SaaS or introducing fragile glue code.",
+      "offer": "A zero-runtime-dependency offline scanner with JSON/SARIF, fail-closed versioned policy, counted baseline migration, and a first-party GitHub Action while remaining CLI-portable to other CI systems.",
+      "rawafidContributes": ["SARIF findings with stable partial fingerprints and remediation context.", "Policy schema with per-rule severity and brownfield baseline semantics.", "Source-audit and GitHub Action contract tests."],
+      "counterpartyContribution": ["Evaluate the scanner in an existing CI/code-scanning workflow and compare operational friction with current policy tooling."],
+      "pilot": {
+        "scope": "Run reporting-only on a representative repository, review findings, then test a policy gate on deliberately introduced high-confidence defects.",
+        "evidence": ["CI logs/SARIF and exit-code behavior.", "Policy/baseline diff demonstrating that new duplicate defects are not hidden by historical allowances."],
+        "success": ["The scanner adds useful specialist signal without requiring source exfiltration or code execution.", "The organization can express an enforceable policy with acceptable noise and predictable exits."],
+        "exit": "The scanner can remain reporting-only or be removed without changing application runtime behavior."
+      },
+      "publicEvidence": ["docs/SOURCE-AUDIT.md", "docs/GITHUB-ACTION.md", "schemas/rtl-audit-config.schema.json"],
+      "nonClaims": ["The source audit is not a complete Unicode security, SAST, or compliance scanner."]
+    },
+    {
+      "id": "global-product-mena-expansion",
+      "audience": ["Global SaaS products", "Consumer platforms", "Organizations expanding to Arabic-speaking markets"],
+      "problem": "Teams entering Arabic markets often rediscover RTL, bidi, locale, keyboard, number-input, and accessibility failures late in localization, increasing launch risk and rework.",
+      "offer": "A low-friction readiness pilot on a representative product slice that identifies engineering risks before a full Arabic rollout and leaves reusable tests/policy with the product team.",
+      "rawafidContributes": ["Arabic/RTL source and browser assurance patterns.", "A measurable evaluation method covering unique findings and false positives.", "Framework-neutral primitives that can be adopted selectively."],
+      "counterpartyContribution": ["Select a representative non-sensitive product flow or public component set and provide engineering review of intended behavior."],
+      "pilot": {
+        "scope": "Evaluate a critical user journey or component family in RTL, mixed-direction content, localized input, and keyboard/browser scenarios.",
+        "evidence": ["Prioritized defect/risk list with reproducible cases.", "Recommended CI invariants and an adopt/report-only/not-adopt decision packet."],
+        "success": ["The pilot reduces unknown Arabic/RTL engineering risk before broader rollout.", "The product team retains useful tests or policy even if it does not adopt the entire toolkit."],
+        "exit": "No market, sales, translation, or long-term services commitment is required to run the technical pilot."
+      },
+      "publicEvidence": ["docs/ENTERPRISE-EVALUATION.md", "docs/GLOBAL-PLATFORM.md", "docs/SOURCE-AUDIT.md"],
+      "nonClaims": ["Technical RTL readiness does not by itself establish market, legal, linguistic, cultural, or full accessibility readiness."]
+    },
+    {
+      "id": "standards-open-source-foundation",
+      "audience": ["Standards communities", "Open-source foundations", "Accessibility/i18n working groups", "Public-interest technology programs"],
+      "problem": "Standards guidance needs reproducible implementation evidence and edge cases, while projects seeking recognition can overstate conformance or institutional relationships.",
+      "offer": "Contribute public Arabic/RTL test cases, implementation findings, translations or issue reports under explicit evidence boundaries, while using foundation programs only when their published eligibility criteria are met.",
+      "rawafidContributes": ["Public standards map, conformance/non-claim documentation, browser fixtures, and issue-ready reproductions.", "OpenSSF OSPS evidence mapping and transparent owner-level gaps."],
+      "counterpartyContribution": ["Standards review, issue feedback, test-case discussion, or program evaluation according to the counterparty's normal public process."],
+      "pilot": {
+        "scope": "Select one standards-relevant behavior or public program criterion and submit a focused reproducible artifact through the organization's normal channel.",
+        "evidence": ["Public issue/review/test discussion or program decision.", "Rawafid documentation updated only to reflect verified outcomes."],
+        "success": ["A test, interpretation, translation, or process gap receives useful external review.", "Rawafid improves evidence without implying endorsement, certification, or membership that was not granted."],
+        "exit": "A declined contribution or program application is recorded as such and does not become a partnership claim."
+      },
+      "publicEvidence": ["docs/STANDARDS.md", "docs/OSPS-BASELINE.md", "CONTRIBUTING.md"],
+      "nonClaims": ["Standards citations, accepted issues, or program interactions are not endorsements unless the organization explicitly grants that status."]
+    },
+    {
+      "id": "oss-infrastructure-provider",
+      "audience": ["OSS infrastructure programs", "Security/review services", "Developer tooling providers"],
+      "problem": "Maintainers need reliable build, security, testing, localization, or observability infrastructure, while providers need credible evidence that free OSS resources support a real public project rather than a private product funnel.",
+      "offer": "A narrowly scoped OSS-program application backed by public repository, Apache-2.0 licensing, CI/security/release contracts, active external-consumer use, and explicit provider-specific evidence.",
+      "rawafidContributes": ["Public technical dossier and machine-verifiable quality/security evidence.", "A defined use case showing how the provider resource would strengthen a public Arabic/RTL OSS project."],
+      "counterpartyContribution": ["Program review and, only if accepted, provider-backed infrastructure under the provider's published terms."],
+      "pilot": {
+        "scope": "Apply only to programs whose current eligibility and requested capability match a documented Rawafid gap.",
+        "evidence": ["Provider eligibility/source links recorded before submission.", "Acceptance/rejection outcome and any resulting public integration evidence."],
+        "success": ["The resource strengthens reproducible public OSS evidence or maintainer operations.", "Provider naming on Rawafid remains exactly within the status the provider authorized."],
+        "exit": "A rejection or changed program criterion closes the application path without fabricating sponsorship or using unapproved branding."
+      },
+      "publicEvidence": ["docs/OSS-APPLICATION-DOSSIER.md", "docs/OSPS-BASELINE.md", "SECURITY.md"],
+      "nonClaims": ["Submitting an OSS application does not make the provider a sponsor, partner, or endorser before explicit acceptance."]
+    }
+  ]
+}
