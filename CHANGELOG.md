@@ -4,8 +4,18 @@ All notable changes to this project are documented here. The project follows Sem
 
 ## [Unreleased]
 
+No committed release changes after `v0.3.0` yet.
+
+## [0.3.0] - 2026-08-28
+
 ### Added
 
+- Source Audit CLI for HTML, JSX/TSX, CSS, and common utility-class patterns with human-readable, JSON, and SARIF output.
+- Enterprise policy files with rule severity overrides, path exclusions, fail thresholds, fail-closed rule validation, stable finding fingerprints, and brownfield baselines.
+- First-party GitHub Action with workspace containment, Step Summary, machine-readable outputs, configurable policy/baseline paths, and SARIF generation.
+- Enterprise Evaluation Kit with four reversible pilot profiles and measurable adoption decision gates.
+- Partner Offer Matrix with machine-readable offer profiles for design systems, accessibility platforms, localization/i18n, browser testing, DevSecOps/AppSec, global MENA expansion, standards/OSS foundations, and OSS infrastructure programs.
+- Real dogfooding integration against the Rawafid production-site repository, including a high-confidence `failOn=error` policy.
 - Grapheme-safe segmentation, length, slicing, and truncation helpers built on `Intl.Segmenter`.
 - Locale-aware word and sentence segmentation, including host-provided `isWordLike` metadata and a word-only convenience API.
 - Pseudo-localization utilities for localization/layout QA while preserving common interpolation and markup tokens.
@@ -36,6 +46,7 @@ All notable changes to this project are documented here. The project follows Sem
 
 ### Changed
 
+- Hardened source-audit precision after production dogfooding exposed an overly broad utility-class detector; application classes such as `primary-action` are no longer misread as physical-spacing utilities.
 - Hardened the repository's release and dependency-management posture after live GitHub Actions validation.
 - Added a committed npm lockfile and switched CI/Docker/GitLab verification paths to deterministic installs.
 - Standardized the CI npm toolchain across Node 22, 24, and 26.
@@ -50,10 +61,12 @@ All notable changes to this project are documented here. The project follows Sem
 - Strengthened `docs/API-CONTRACT.md` with explicit host-ICU/CLDR variability contracts, typeahead/selection/grid boundaries, and built-package verification semantics.
 - Expanded `docs/QUALITY-GATES.md` with an explicit built-package behavior gate and full composite-browser evidence model.
 - Expanded `docs/TEST-MATRIX.md` to cover locale intelligence, typeahead, selection, rectangular grid navigation, package-contract invariants, and the semantic browser grid.
-- Extended the main `npm run check` gate so package-contract, artifact-boundary, packed-consumer, reproducible-build, runtime API, and declaration-fingerprint verification are mandatory after source, lint, type, unit, publint, and declaration-resolution checks.
+- Extended the main `npm run check` gate so package-contract, artifact-boundary, packed-consumer, reproducible-build, runtime API, declaration-fingerprint, enterprise-evaluation, partner-offer, GitHub Action, and source-audit verification are mandatory.
+- Defined a one-time token-assisted npm bootstrap path for `v0.3.0` without weakening the permanent OIDC/Trusted Publishing workflow.
 
 ### Fixed
 
+- Removed 103 utility-class false positives found during real production-site dogfooding and added regression coverage for the detector boundary.
 - ESLint Node globals for `.mjs` tooling files.
 - Playwright configuration under `exactOptionalPropertyTypes`.
 - Package type-resolution validation so CSS export subpaths do not create false JavaScript resolution failures.
@@ -67,9 +80,9 @@ All notable changes to this project are documented here. The project follows Sem
 
 ### Remaining external setup
 
-- Enable GitHub Dependency Graph and the desired repository security features in repository settings.
-- Confirm ownership of the intended npm scope, perform the one-time 2FA-protected bootstrap publication, then configure npm Trusted Publishing for `release.yml` and the GitHub `npm` environment for subsequent releases.
-- Add repository topics and branch/ruleset protections in GitHub settings.
+- Enable the desired GitHub Dependency Graph/security settings that remain owner-controlled.
+- Configure npm Trusted Publishing for `release.yml` immediately after the first registry publication and remove/revoke the temporary bootstrap credential path when no longer required.
+- Add repository topics and branch/ruleset protections in GitHub settings; branch protection remains an explicitly documented gap until enabled.
 - Add provider-backed infrastructure only after legitimate acceptance into an applicable OSS program.
 
 ## [0.2.0] - 2026-08-24
