@@ -1,7 +1,7 @@
 {
   "name": "@rawafid/arabic-rtl-a11y-toolkit",
   "version": "0.3.0",
-  "description": "Framework-agnostic Arabic/RTL, localization, accessibility, bidi-safety, and direction-aware UI primitives for the web.",
+  "description": "Enterprise-ready Arabic/RTL accessibility, localization, bidi-safety, source auditing, SARIF, and direction-aware web tooling.",
   "type": "module",
   "license": "Apache-2.0",
   "author": {
@@ -17,7 +17,7 @@
   "bugs": {
     "url": "https://github.com/khaledaltheeb/rawafid-arabic-rtl-a11y-toolkit/issues"
   },
-  "keywords": ["arabic", "rtl", "bidi", "unicode", "i18n", "localization", "accessibility", "a11y", "internationalization", "logical-properties", "typescript", "web"],
+  "keywords": ["arabic", "rtl", "bidi", "unicode", "i18n", "localization", "accessibility", "a11y", "source-audit", "sarif", "github-actions", "devsecops", "design-system", "logical-properties", "typescript", "web"],
   "files": ["dist", "styles", "audit", "bin", "schemas/rtl-audit-config.schema.json", "docs/SOURCE-AUDIT.md", "README.md", "LICENSE", "NOTICE"],
   "bin": {
     "rawafid-rtl-audit": "./bin/rawafid-rtl-audit.mjs"
