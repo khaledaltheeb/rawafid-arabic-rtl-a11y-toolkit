@@ -23,6 +23,7 @@ const expectedFiles = [
   'dist/index.js.map',
   'docs/SOURCE-AUDIT.md',
   'package.json',
+  'schemas/rtl-audit-config.schema.json',
   'styles/a11y.css',
   'styles/logical.css',
 ].sort();
@@ -40,8 +41,8 @@ if (missing.length > 0 || unexpected.length > 0) {
   ].join('\n'));
 }
 
-const packedBudget = 100_000;
-const unpackedBudget = 300_000;
+const packedBudget = 110_000;
+const unpackedBudget = 325_000;
 if (typeof report.size !== 'number' || typeof report.unpackedSize !== 'number') {
   throw new Error('npm pack report is missing package size metadata.');
 }

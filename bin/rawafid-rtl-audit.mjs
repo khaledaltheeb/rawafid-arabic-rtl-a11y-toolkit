@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 import { createHash } from 'node:crypto';
 import { lstat, readFile, readdir, writeFile } from 'node:fs/promises';
-import { extname, join, relative, resolve } from 'node:path';
+import { dirname, extname, join, relative, resolve } from 'node:path';
 import process from 'node:process';
 import { auditSource, RULES } from '../audit/rules.mjs';
 
@@ -14,9 +14,11 @@ const HTML_DOCUMENT_SIGNAL = /<!doctype\s+html|<html\b|<head\b|<body\b/iu;
 const MAX_BYTES = 2_000_000;
 const DEFAULT_MAX_FILES = 10_000;
 const RANK = { note: 0, warning: 1, error: 2 };
+const RULE_LEVELS = new Set(['off', 'note', 'warning', 'error']);
+const CONFIG_KEYS = new Set(['schemaVersion', 'paths', 'strict', 'failOn', 'exclude', 'baseline', 'maxFiles', 'rules']);
 
 function usage() {
-  return `Rawafid Arabic/RTL source audit\n\nUsage:\n  rawafid-rtl-audit [paths...] [options]\n\nOptions:\n  --format <pretty|json|sarif>   Output format (default: pretty)\n  --out <file>                   Write output to a file\n  --fail-on <error|warning|none> CI failure threshold (default: error)\n  --strict                       Enable advisory input/utility checks\n  --exclude <path-fragment>      Exclude matching paths; repeatable\n  --baseline <file>              Suppress reviewed legacy findings\n  --write-baseline <file>        Write current findings as a baseline\n  --max-files <number>           File limit (default: ${DEFAULT_MAX_FILES})\n  --help                         Show help\n  --version                      Show package version\n\nExamples:\n  rawafid-rtl-audit src styles\n  rawafid-rtl-audit . --strict --fail-on warning\n  rawafid-rtl-audit . --write-baseline .rawafid-rtl-baseline.json --fail-on none\n  rawafid-rtl-audit . --baseline .rawafid-rtl-baseline.json --format sarif --out rawafid-rtl.sarif\n`;
+  return `Rawafid Arabic/RTL source audit\n\nUsage:\n  rawafid-rtl-audit [paths...] [options]\n\nOptions:\n  --config <file>                Load a versioned JSON policy file\n  --format <pretty|json|sarif>   Output format (default: pretty)\n  --out <file>                   Write output to a file\n  --fail-on <error|warning|none> CI failure threshold (default: error)\n  --strict                       Enable advisory input/utility checks\n  --exclude <path-fragment>      Exclude matching paths; repeatable\n  --baseline <file>              Suppress reviewed legacy findings\n  --write-baseline <file>        Write current findings as a baseline\n  --max-files <number>           File limit (default: ${DEFAULT_MAX_FILES})\n  --help                         Show help\n  --version                      Show package version\n\nExamples:\n  rawafid-rtl-audit src styles\n  rawafid-rtl-audit . --strict --fail-on warning\n  rawafid-rtl-audit --config rawafid-rtl-audit.json\n  rawafid-rtl-audit . --write-baseline .rawafid-rtl-baseline.json --fail-on none\n  rawafid-rtl-audit . --baseline .rawafid-rtl-baseline.json --format sarif --out rawafid-rtl.sarif\n`;
 }
 
 function required(argv, index, flag) {
@@ -27,15 +29,16 @@ function required(argv, index, flag) {
 
 function parse(argv) {
   const options = {
-    paths: [], format: 'pretty', out: undefined, failOn: 'error', strict: false,
-    excludes: [], baseline: undefined, writeBaseline: undefined,
-    maxFiles: DEFAULT_MAX_FILES, help: false, version: false,
+    paths: [], format: 'pretty', out: undefined, failOn: undefined, strict: undefined,
+    excludes: [], baseline: undefined, writeBaseline: undefined, config: undefined,
+    maxFiles: undefined, help: false, version: false,
   };
   for (let index = 0; index < argv.length; index += 1) {
     const arg = argv[index];
     if (arg === '--help' || arg === '-h') options.help = true;
     else if (arg === '--version' || arg === '-v') options.version = true;
     else if (arg === '--strict') options.strict = true;
+    else if (arg === '--config') options.config = required(argv, ++index, arg);
     else if (arg === '--format') options.format = required(argv, ++index, arg);
     else if (arg === '--out') options.out = required(argv, ++index, arg);
     else if (arg === '--fail-on') options.failOn = required(argv, ++index, arg);
@@ -49,9 +52,70 @@ function parse(argv) {
     else if (arg) options.paths.push(arg);
   }
   if (!['pretty', 'json', 'sarif'].includes(options.format)) throw new Error('--format must be pretty, json, or sarif.');
-  if (!['error', 'warning', 'none'].includes(options.failOn)) throw new Error('--fail-on must be error, warning, or none.');
-  if (!options.paths.length) options.paths.push('.');
+  if (options.failOn !== undefined && !['error', 'warning', 'none'].includes(options.failOn)) throw new Error('--fail-on must be error, warning, or none.');
   return options;
+}
+
+function assertStringArray(value, name, { required = false } = {}) {
+  if (value === undefined && !required) return;
+  if (!Array.isArray(value) || (required && value.length === 0) || value.some((item) => typeof item !== 'string' || item.trim() === '')) {
+    throw new Error(`Configuration ${name} must be ${required ? 'a non-empty' : 'an'} array of non-empty strings.`);
+  }
+}
+
+async function loadConfig(path) {
+  if (!path) return { value: {}, file: undefined, directory: process.cwd() };
+  const file = resolve(path);
+  let value;
+  try {
+    value = JSON.parse(await readFile(file, 'utf8'));
+  } catch (error) {
+    throw new Error(`Cannot read configuration ${path}: ${error.message}`, { cause: error });
+  }
+  if (!value || typeof value !== 'object' || Array.isArray(value)) throw new Error('Configuration root must be a JSON object.');
+  const unknownKeys = Object.keys(value).filter((key) => !CONFIG_KEYS.has(key));
+  if (unknownKeys.length) throw new Error(`Unknown configuration keys: ${unknownKeys.join(', ')}.`);
+  if (value.schemaVersion !== 1) throw new Error('Configuration schemaVersion must be 1.');
+  assertStringArray(value.paths, 'paths', { required: value.paths !== undefined });
+  assertStringArray(value.exclude, 'exclude');
+  if (value.strict !== undefined && typeof value.strict !== 'boolean') throw new Error('Configuration strict must be boolean.');
+  if (value.failOn !== undefined && !['error', 'warning', 'none'].includes(value.failOn)) throw new Error('Configuration failOn must be error, warning, or none.');
+  if (value.baseline !== undefined && (typeof value.baseline !== 'string' || !value.baseline.trim())) throw new Error('Configuration baseline must be a non-empty string.');
+  if (value.maxFiles !== undefined && (!Number.isInteger(value.maxFiles) || value.maxFiles < 1)) throw new Error('Configuration maxFiles must be a positive integer.');
+  if (value.rules !== undefined) {
+    if (!value.rules || typeof value.rules !== 'object' || Array.isArray(value.rules)) throw new Error('Configuration rules must be an object.');
+    for (const [ruleId, level] of Object.entries(value.rules)) {
+      if (!(ruleId in RULES)) throw new Error(`Unknown rule in configuration: ${ruleId}.`);
+      if (!RULE_LEVELS.has(level)) throw new Error(`Rule ${ruleId} must be off, note, warning, or error.`);
+    }
+  }
+  return { value, file, directory: dirname(file) };
+}
+
+function mergedOptions(cli, config) {
+  const policy = config.value;
+  const cliPaths = cli.paths.length > 0;
+  const targets = cliPaths
+    ? cli.paths.map((path) => resolve(path))
+    : Array.isArray(policy.paths)
+      ? policy.paths.map((path) => resolve(config.directory, path))
+      : [resolve('.')];
+  const baseline = cli.baseline !== undefined
+    ? resolve(cli.baseline)
+    : policy.baseline !== undefined
+      ? resolve(config.directory, policy.baseline)
+      : undefined;
+  return {
+    ...cli,
+    paths: targets,
+    failOn: cli.failOn ?? policy.failOn ?? 'error',
+    strict: cli.strict ?? policy.strict ?? false,
+    excludes: [...(policy.exclude ?? []), ...cli.excludes],
+    baseline,
+    maxFiles: cli.maxFiles ?? policy.maxFiles ?? DEFAULT_MAX_FILES,
+    rulePolicy: policy.rules ?? {},
+    configFile: config.file,
+  };
 }
 
 function excluded(path, root, fragments) {
@@ -77,11 +141,17 @@ async function files(targets, options) {
     if (!info.isFile() || info.size > MAX_BYTES || !SUPPORTED.has(extname(path).toLowerCase())) return;
     output.push(path);
   }
-  for (const target of targets) await visit(resolve(target));
+  for (const target of targets) await visit(target);
   return [...new Set(output)].sort();
 }
 
 function artifact(path) {
+  const rel = relative(process.cwd(), path).replaceAll('\\', '/');
+  return rel && !rel.startsWith('..') ? rel : path.replaceAll('\\', '/');
+}
+
+function artifactPath(path) {
+  if (!path) return undefined;
   const rel = relative(process.cwd(), path).replaceAll('\\', '/');
   return rel && !rel.startsWith('..') ? rel : path.replaceAll('\\', '/');
 }
@@ -91,16 +161,30 @@ function auditExtension(source, extension) {
   return extension;
 }
 
+function normalizedEvidence(diagnostic) {
+  return (diagnostic.evidence ?? '').trim().replace(/\s+/gu, ' ');
+}
+
 function fingerprint(diagnostic) {
-  return createHash('sha256').update(`${diagnostic.ruleId}\u0000${diagnostic.evidence ?? ''}`).digest('hex');
+  return createHash('sha256').update(`${diagnostic.ruleId}\u0000${normalizedEvidence(diagnostic)}`).digest('hex');
 }
 
 function key(diagnostic) {
   return `${diagnostic.file}\u0000${diagnostic.ruleId}\u0000${fingerprint(diagnostic)}`;
 }
 
+function applyRulePolicy(diagnostics, rulePolicy) {
+  const output = [];
+  for (const diagnostic of diagnostics) {
+    const configured = rulePolicy[diagnostic.ruleId];
+    if (configured === 'off') continue;
+    output.push(configured ? { ...diagnostic, severity: configured } : diagnostic);
+  }
+  return output;
+}
+
 async function loadBaseline(path) {
-  const document = JSON.parse(await readFile(resolve(path), 'utf8'));
+  const document = JSON.parse(await readFile(path, 'utf8'));
   if (document?.schemaVersion !== 1 || document?.tool !== TOOL || !Array.isArray(document.findings)) {
     throw new Error('Baseline must be a Rawafid schemaVersion 1 baseline.');
   }
@@ -154,6 +238,15 @@ function summary(diagnostics, filesScanned, suppressed = 0) {
   return { filesScanned, findings: diagnostics.length, suppressed, counts };
 }
 
+function policySummary(options) {
+  return {
+    config: artifactPath(options.configFile),
+    strict: options.strict,
+    failOn: options.failOn,
+    ruleOverrides: options.rulePolicy,
+  };
+}
+
 function pretty(diagnostics, result) {
   const lines = [];
   for (const diagnostic of diagnostics) {
@@ -184,11 +277,12 @@ function sarif(diagnostics) {
         ruleId: diagnostic.ruleId,
         level: diagnostic.severity === 'note' ? 'note' : diagnostic.severity,
         message: { text: `${diagnostic.message} ${diagnostic.remediation}` },
+        partialFingerprints: { rawafidFindingFingerprint: fingerprint(diagnostic) },
         locations: [{ physicalLocation: {
           artifactLocation: { uri: diagnostic.file },
           region: { startLine: diagnostic.line, startColumn: diagnostic.column },
         } }],
-        properties: { standard: diagnostic.standard },
+        properties: { standard: diagnostic.standard, configuredSeverity: diagnostic.severity },
       })),
     }],
   }, null, 2)}\n`;
@@ -199,25 +293,28 @@ function fails(diagnostics, threshold) {
 }
 
 async function main() {
-  let options;
+  let cli;
   try {
-    options = parse(process.argv.slice(2));
+    cli = parse(process.argv.slice(2));
   } catch (error) {
     console.error(`${TOOL}: ${error.message}\n\n${usage()}`);
     process.exitCode = 2;
     return;
   }
-  if (options.help) { process.stdout.write(usage()); return; }
-  if (options.version) { process.stdout.write(`${VERSION}\n`); return; }
+  if (cli.help) { process.stdout.write(usage()); return; }
+  if (cli.version) { process.stdout.write(`${VERSION}\n`); return; }
 
   try {
+    const config = await loadConfig(cli.config);
+    const options = mergedOptions(cli, config);
     const list = await files(options.paths, options);
-    const all = [];
+    const raw = [];
     for (const path of list) {
       const source = await readFile(path, 'utf8');
       const extension = extname(path).toLowerCase();
-      all.push(...auditSource(source, artifact(path), auditExtension(source, extension), { strict: options.strict }));
+      raw.push(...auditSource(source, artifact(path), auditExtension(source, extension), { strict: options.strict }));
     }
+    const all = applyRulePolicy(raw, options.rulePolicy);
     all.sort((a, b) => a.file.localeCompare(b.file) || a.line - b.line || a.column - b.column || a.ruleId.localeCompare(b.ruleId));
     if (options.writeBaseline) await saveBaseline(options.writeBaseline, all);
     const baseline = options.baseline ? await loadBaseline(options.baseline) : undefined;
@@ -227,7 +324,7 @@ async function main() {
     const output = options.format === 'sarif'
       ? sarif(active)
       : options.format === 'json'
-        ? `${JSON.stringify({ tool: TOOL, version: VERSION, summary: result, diagnostics: active }, null, 2)}\n`
+        ? `${JSON.stringify({ tool: TOOL, version: VERSION, policy: policySummary(options), summary: result, diagnostics: active }, null, 2)}\n`
         : pretty(active, result);
     if (options.out) await writeFile(resolve(options.out), output, 'utf8');
     else process.stdout.write(output);

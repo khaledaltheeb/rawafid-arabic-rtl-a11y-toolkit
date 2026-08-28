@@ -1,6 +1,6 @@
 # Rawafid Arabic/RTL Source Audit
 
-The Rawafid source audit is a zero-runtime-dependency command-line gate for defects that are easy to miss in generic accessibility and localization pipelines: bidirectional-control hazards, document-direction metadata, direction-physical CSS, and selected mixed-direction authoring risks.
+The Rawafid source audit is a zero-runtime-dependency command-line gate for defects that are easy to miss in generic accessibility and localization pipelines: bidirectional-control hazards, document-direction metadata, direction-physical CSS, selected source/visual-order risks, and mixed-direction authoring defects.
 
 It complements rather than replaces axe-core, browser testing, localization review, assistive-technology testing, or human Arabic-language review.
 
@@ -10,8 +10,10 @@ Arabic and other RTL-script products fail in ways that are not reducible to visu
 
 - a document declaring an Arabic locale without declaring its RTL base direction;
 - CSS tied to physical left/right edges that silently breaks when the same component is rendered in another writing direction;
+- four-value CSS shorthands whose different physical right/left values encode direction assumptions that are difficult to see in review;
 - `unicode-bidi` overrides or Unicode directional controls that change display order in surprising or security-sensitive ways;
 - free-form user content rendered without an isolation/direction strategy;
+- visual reordering through Flexbox that can diverge from reading/focus order;
 - application code that passes generic WCAG automation while still behaving incorrectly in mixed Arabic/Latin identifiers, forms, tables, breadcrumbs, or design-system primitives.
 
 The audit makes a conservative subset of these defects machine-detectable and CI-friendly.
@@ -33,6 +35,9 @@ rawafid-rtl-audit . --strict
 # Treat warnings as blocking for new code.
 rawafid-rtl-audit . --strict --fail-on warning
 
+# Use a reviewed organization/repository policy.
+rawafid-rtl-audit --config rawafid-rtl-audit.json
+
 # Machine-readable output.
 rawafid-rtl-audit . --format json --fail-on none
 
@@ -40,11 +45,42 @@ rawafid-rtl-audit . --format json --fail-on none
 rawafid-rtl-audit . --format sarif --out rawafid-rtl.sarif --fail-on none
 ```
 
-The scanner ignores common generated/dependency directories such as `.git`, `node_modules`, `dist`, `build`, `coverage`, and `.next`. Individual path fragments can be excluded explicitly with repeatable `--exclude` arguments. Files larger than 2 MB are skipped and the default traversal limit is 10,000 supported text files; the limit can be changed deliberately with `--max-files`.
+The scanner ignores common generated/dependency directories such as `.git`, `node_modules`, `dist`, `build`, `coverage`, and `.next`. Symbolic links are not followed. Individual path fragments can be excluded with repeatable `--exclude` arguments. Files larger than 2 MB are skipped and the default traversal limit is 10,000 supported text files; the limit can be changed deliberately with `--max-files`.
 
-## Brownfield adoption and baselines
+A `.html`/`.htm` file is treated as a full document only when it contains a document signal such as a doctype, `html`, `head`, or `body` element. HTML fragments therefore do not receive false document-root `lang`/`dir` requirements.
 
-An enterprise codebase should not have to fix every historical RTL defect before it can prevent new ones. Rawafid therefore supports a reviewed baseline:
+## Versioned enterprise policy
+
+Large organizations need a reviewable policy rather than CLI flags copied into many pipelines. `--config` accepts a schema-versioned JSON policy. The packaged JSON Schema is [`schemas/rtl-audit-config.schema.json`](../schemas/rtl-audit-config.schema.json).
+
+Example:
+
+```json
+{
+  "schemaVersion": 1,
+  "paths": ["src", "styles"],
+  "strict": true,
+  "failOn": "warning",
+  "exclude": ["fixtures/generated"],
+  "baseline": ".rawafid-rtl-baseline.json",
+  "maxFiles": 25000,
+  "rules": {
+    "RAWAFID-CSS-001": "warning",
+    "RAWAFID-CSS-007": "warning",
+    "RAWAFID-UTILITY-001": "off"
+  }
+}
+```
+
+Rule levels are `off`, `note`, `warning`, or `error`. Unknown rule IDs, unknown top-level policy keys, unsupported schema versions, and invalid values fail closed with tool exit status `2`; a misspelled rule therefore cannot silently weaken policy.
+
+Policy-relative `paths` and `baseline` values are resolved from the configuration file directory. Explicit CLI values override the corresponding scalar policy values. Explicit CLI paths replace policy paths; CLI exclusions are added to policy exclusions. JSON output reports the effective `config`, `strict`, `failOn`, and rule overrides for build evidence.
+
+This makes it possible to apply a stricter policy to critical products, retain advisory rules in legacy products, and change severity without maintaining a fork of the scanner.
+
+## Brownfield adoption and privacy-preserving baselines
+
+An enterprise codebase should not have to fix every historical RTL defect before it can prevent new ones. Rawafid supports a reviewed baseline:
 
 ```bash
 rawafid-rtl-audit . \
@@ -62,20 +98,21 @@ rawafid-rtl-audit . \
   --fail-on warning
 ```
 
-A baseline entry is keyed by file, rule, and evidence line. Existing findings remain measurable as `suppressed`; a newly introduced finding is active and can fail CI. Teams can shrink the baseline over time instead of normalizing permanent exceptions.
+A baseline stores `file`, `ruleId`, a SHA-256 fingerprint derived from normalized finding evidence, and an occurrence count. It does **not** persist source evidence lines. Existing occurrences remain measurable as `suppressed`; an additional duplicate occurrence consumes no extra baseline allowance and remains active. This prevents a historical exception from becoming an unlimited exemption for the same defect pattern.
 
-A baseline is not an approval certificate. It is migration state and should receive code review like any other policy file.
+A baseline is migration state, not an approval certificate. It should receive code review like any other policy file and should shrink over time.
 
 ## SARIF / GitHub Code Scanning example
 
-The CLI emits SARIF 2.1.0. A repository with GitHub code-scanning permissions can upload it using the standard SARIF upload action:
+The CLI emits SARIF 2.1.0. Each result carries a stable Rawafid partial fingerprint in addition to its rule and location so code-scanning systems can track findings more consistently across line movement.
+
+A repository with GitHub code-scanning permissions can upload it using the standard SARIF upload action:
 
 ```yaml
 - name: Rawafid Arabic/RTL audit
   run: >-
-    node ./bin/rawafid-rtl-audit.mjs .
-    --strict
-    --baseline .rawafid-rtl-baseline.json
+    rawafid-rtl-audit
+    --config rawafid-rtl-audit.json
     --format sarif
     --out rawafid-rtl.sarif
     --fail-on none
@@ -85,12 +122,8 @@ The CLI emits SARIF 2.1.0. A repository with GitHub code-scanning permissions ca
   with:
     sarif_file: rawafid-rtl.sarif
 
-- name: Enforce new RTL findings
-  run: >-
-    node ./bin/rawafid-rtl-audit.mjs .
-    --strict
-    --baseline .rawafid-rtl-baseline.json
-    --fail-on warning
+- name: Enforce Rawafid policy
+  run: rawafid-rtl-audit --config rawafid-rtl-audit.json
 ```
 
 The example intentionally does not publish a floating third-party Action tag. This repository's supply-chain policy requires reviewed full commit SHAs for Actions.
@@ -112,7 +145,7 @@ These are display/source-risk diagnostics, not a claim of complete Unicode secur
 
 | Rule | Default significance | Purpose |
 | --- | --- | --- |
-| `RAWAFID-HTML-001` | error | Requires primary language metadata for HTML documents. |
+| `RAWAFID-HTML-001` | error | Requires primary language metadata for full HTML documents. |
 | `RAWAFID-HTML-002` | warning | Detects an RTL-script document locale without an explicit RTL base direction. |
 | `RAWAFID-HTML-003` | error | Detects a static `lang`/`dir` script-direction contradiction. |
 | `RAWAFID-HTML-004` | error | Rejects invalid static `dir` values. |
@@ -130,15 +163,19 @@ The parser intentionally evaluates conservative static forms. It does not execut
 | `RAWAFID-CSS-003` | warning | Prompts review when CSS `direction` is used instead of semantic HTML direction. |
 | `RAWAFID-CSS-004` | error/warning | Flags `unicode-bidi` override/embed behavior for explicit review. |
 | `RAWAFID-CSS-005` | warning | Flags physical `float`/`clear` values. |
+| `RAWAFID-CSS-006` | warning | Finds four-value margin/padding/border shorthands whose physical right and left values differ. |
+| `RAWAFID-CSS-007` | note | Flags `row-reverse`/`column-reverse` and non-zero `order` for source/read/focus-order review. |
 | `RAWAFID-UTILITY-001` | note, strict mode | Finds selected physical left/right utility-class patterns where logical utilities may exist. |
 
-A physical property is not inherently wrong. Maps, media controls, charts, coordinate systems, and intentionally physical affordances can legitimately remain physical. Findings therefore include a remediation condition rather than blindly rewriting source.
+CSS rules are applied to stylesheet files, `<style>` blocks, and static `style="…"` attributes. Dynamic CSS-in-JS/template expressions are not executed.
+
+A physical property or visual reordering mechanism is not inherently wrong. Maps, media controls, charts, coordinate systems, and intentionally physical affordances can legitimately remain physical. Findings therefore include a remediation condition rather than blindly rewriting source.
 
 ## CI exit contract
 
 - `0`: no finding meets the configured failure threshold.
 - `1`: one or more active findings meet the configured failure threshold.
-- `2`: configuration, traversal, parsing of the baseline, or another tool execution error occurred.
+- `2`: policy/configuration, traversal, baseline parsing, or another tool execution error occurred.
 
 `--fail-on error` is the default. `--fail-on warning` is suitable for organizations that have established a clean or baselined codebase. `--fail-on none` is useful for reporting-only/SARIF-generation stages.
 
@@ -166,7 +203,8 @@ Rules are grounded narrowly in relevant platform behavior and guidance, includin
 - W3C Internationalization guidance for bidirectional content and user-generated text;
 - BCP 47 script-aware locale tags;
 - CSS Logical Properties and writing-mode-aware layout;
-- WCAG 2.2 language-of-page requirements where the rule directly maps to them.
+- CSS Flexbox ordering behavior;
+- WCAG 2.2 language-of-page, meaningful-sequence, and focus-order considerations where a rule directly maps to them.
 
 Each rule is intentionally smaller than the standard it references. Standards references explain the engineering rationale; they are not compliance certifications.
 
@@ -177,10 +215,12 @@ The audit follows the same boundaries as the core toolkit:
 - zero runtime dependencies;
 - no network calls during scanning;
 - no source mutation or auto-fix by default;
-- deterministic output for the same files/runtime;
+- deterministic output for the same files/runtime/policy;
 - conservative static detection instead of executing untrusted project code;
 - no collection or transmission of scanned source;
+- baselines that store fingerprints/counts rather than source evidence;
 - SARIF/JSON output suitable for existing enterprise systems;
+- reviewable policy with fail-closed rule identifiers;
 - brownfield migration without hiding the quantity of suppressed legacy findings.
 
-These constraints are deliberate: a source scanner intended for security-sensitive and enterprise repositories should be inspectable, offline-capable, predictable, and easy to remove or replace.
+These constraints are deliberate: a source scanner intended for security-sensitive and enterprise repositories should be inspectable, offline-capable, predictable, privacy-conscious, and easy to remove or replace.

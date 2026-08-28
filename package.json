@@ -18,7 +18,7 @@
     "url": "https://github.com/khaledaltheeb/rawafid-arabic-rtl-a11y-toolkit/issues"
   },
   "keywords": ["arabic", "rtl", "bidi", "unicode", "i18n", "localization", "accessibility", "a11y", "internationalization", "logical-properties", "typescript", "web"],
-  "files": ["dist", "styles", "audit", "bin", "docs/SOURCE-AUDIT.md", "README.md", "LICENSE", "NOTICE"],
+  "files": ["dist", "styles", "audit", "bin", "schemas/rtl-audit-config.schema.json", "docs/SOURCE-AUDIT.md", "README.md", "LICENSE", "NOTICE"],
   "bin": {
     "rawafid-rtl-audit": "./bin/rawafid-rtl-audit.mjs"
   },
