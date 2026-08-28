@@ -1,6 +1,6 @@
 {
   "name": "@rawafid/arabic-rtl-a11y-toolkit",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "description": "Framework-agnostic Arabic/RTL, localization, accessibility, bidi-safety, and direction-aware UI primitives for the web.",
   "type": "module",
   "license": "Apache-2.0",
