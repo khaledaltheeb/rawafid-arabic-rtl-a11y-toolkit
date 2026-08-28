@@ -1,0 +1,91 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://healthrenewal.org/open-source/arabic-rtl-a11y-toolkit/schemas/enterprise-evaluation.schema.json",
+  "title": "Rawafid Enterprise Evaluation Plan",
+  "description": "Machine-readable pilot profiles for evaluating Rawafid Arabic/RTL engineering value in a real product without requiring a partnership commitment.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schemaVersion", "project", "principles", "profiles"],
+  "properties": {
+    "schemaVersion": { "const": 1 },
+    "project": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["name", "repository", "license"],
+      "properties": {
+        "name": { "type": "string", "minLength": 1 },
+        "repository": { "type": "string", "format": "uri", "pattern": "^https://github\\.com/" },
+        "license": { "const": "Apache-2.0" }
+      }
+    },
+    "principles": {
+      "type": "array",
+      "minItems": 4,
+      "uniqueItems": true,
+      "items": { "type": "string", "minLength": 1 }
+    },
+    "profiles": {
+      "type": "array",
+      "minItems": 4,
+      "items": { "$ref": "#/$defs/profile" }
+    }
+  },
+  "$defs": {
+    "metric": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "description", "evidence"],
+      "properties": {
+        "id": { "type": "string", "pattern": "^[a-z0-9-]+$" },
+        "description": { "type": "string", "minLength": 1 },
+        "evidence": { "type": "string", "minLength": 1 },
+        "target": { "type": "string", "minLength": 1 }
+      }
+    },
+    "profile": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "title", "fit", "inputs", "commands", "outputs", "metrics", "decisionGate", "nonClaims"],
+      "properties": {
+        "id": { "type": "string", "pattern": "^[a-z0-9-]+$" },
+        "title": { "type": "string", "minLength": 1 },
+        "fit": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": { "type": "string", "minLength": 1 }
+        },
+        "inputs": {
+          "type": "array",
+          "minItems": 1,
+          "items": { "type": "string", "minLength": 1 }
+        },
+        "commands": {
+          "type": "array",
+          "minItems": 1,
+          "items": { "type": "string", "minLength": 1 }
+        },
+        "outputs": {
+          "type": "array",
+          "minItems": 1,
+          "items": { "type": "string", "minLength": 1 }
+        },
+        "metrics": {
+          "type": "array",
+          "minItems": 2,
+          "items": { "$ref": "#/$defs/metric" }
+        },
+        "decisionGate": {
+          "type": "array",
+          "minItems": 2,
+          "items": { "type": "string", "minLength": 1 }
+        },
+        "nonClaims": {
+          "type": "array",
+          "minItems": 1,
+          "items": { "type": "string", "minLength": 1 }
+        }
+      }
+    }
+  }
+}

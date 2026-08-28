@@ -1,0 +1,195 @@
+{
+  "schemaVersion": 1,
+  "project": {
+    "name": "Rawafid Arabic/RTL Accessibility & Localization Toolkit",
+    "repository": "https://github.com/khaledaltheeb/rawafid-arabic-rtl-a11y-toolkit",
+    "license": "Apache-2.0"
+  },
+  "principles": [
+    "Evaluate on the adopter's real product or a representative public fixture rather than on marketing claims.",
+    "Start reporting-only; enforcement is a separate decision after findings and false positives are reviewed.",
+    "Keep source in the adopter environment; the source audit requires no network service and executes no audited project code.",
+    "Measure incremental value beside existing accessibility, localization, browser, and security tooling rather than claiming to replace it.",
+    "Record both useful findings and false positives so adoption decisions are evidence-led.",
+    "Keep standards references narrower than certification claims."
+  ],
+  "profiles": [
+    {
+      "id": "source-audit-ci",
+      "title": "Arabic/RTL source assurance in CI",
+      "fit": ["Platform engineering", "DevSecOps", "Accessibility engineering", "Frontend infrastructure"],
+      "inputs": [
+        "A representative web repository or selected source directories.",
+        "Optional existing accessibility/lint results for comparison.",
+        "A reviewer who can classify whether physical layout choices are intentional."
+      ],
+      "commands": [
+        "rawafid-rtl-audit . --strict --format json --fail-on none",
+        "rawafid-rtl-audit . --strict --format sarif --out rawafid-rtl.sarif --fail-on none"
+      ],
+      "outputs": [
+        "Structured JSON findings with rule, severity, location, remediation, and standard rationale.",
+        "SARIF 2.1.0 suitable for existing code-scanning workflows.",
+        "Optional counted SHA-256 baseline for reviewed historical debt.",
+        "A candidate repository policy defining rule severity and enforcement threshold."
+      ],
+      "metrics": [
+        {
+          "id": "unique-actionable-findings",
+          "description": "Findings accepted by the adopter as real defects or engineering risks that were not already blocked by its current pipeline.",
+          "evidence": "Reviewed finding disposition table grouped by Rawafid rule ID.",
+          "target": "At least one materially useful unique finding or a defensible zero-findings result on a demonstrably clean scope."
+        },
+        {
+          "id": "false-positive-rate",
+          "description": "Share of reviewed findings classified as not applicable or intentionally physical after technical review.",
+          "evidence": "Disposition counts with reasons; do not infer correctness from unreviewed findings.",
+          "target": "Low enough for the adopter's intended severity threshold; advisory rules may remain non-blocking."
+        },
+        {
+          "id": "brownfield-gate",
+          "description": "Ability to baseline reviewed legacy occurrences while leaving an additional matching defect active.",
+          "evidence": "Before/after CI run using a committed baseline and a deliberately introduced duplicate fixture.",
+          "target": "Historical occurrences suppressed; additional occurrence remains active."
+        }
+      ],
+      "decisionGate": [
+        "Adopt reporting-only if the results add review value with acceptable noise.",
+        "Adopt warning/error enforcement only after the rule policy and baseline are code-reviewed.",
+        "Do not adopt a blocking gate when the evaluated scope is not representative of the product."
+      ],
+      "nonClaims": ["Passing the source audit is not WCAG, ISO/IEC 40500, EN 301 549, EAA, or Unicode-security certification."]
+    },
+    {
+      "id": "design-system-rtl",
+      "title": "RTL design-system interoperability",
+      "fit": ["Design systems", "Component libraries", "Frontend platform teams", "Browser-testing providers"],
+      "inputs": [
+        "A representative set of navigation, form, menu, dialog, tabs, grid/table, pagination, and mixed-direction components.",
+        "LTR and RTL locales or deterministic fixtures.",
+        "Keyboard interaction requirements and supported browser targets."
+      ],
+      "commands": [
+        "npm run test:partner",
+        "npm run test:e2e"
+      ],
+      "outputs": [
+        "Cross-browser RTL/LTR behavior evidence.",
+        "Keyboard/focus results for direction-aware composite interactions.",
+        "axe-core regression evidence on controlled fixtures.",
+        "Logical-edge and narrow-viewport invariants suitable for visual regression integration."
+      ],
+      "metrics": [
+        {
+          "id": "browser-parity",
+          "description": "Required RTL interaction invariants that behave consistently across supported browser projects.",
+          "evidence": "Playwright results for Chromium, Firefox, WebKit, and mobile Chromium or adopter-equivalent browser matrix.",
+          "target": "No unexplained direction-specific failure in the evaluated critical component set."
+        },
+        {
+          "id": "keyboard-parity",
+          "description": "Direction-aware keyboard behavior remains coherent without changing semantic source order merely for visual mirroring.",
+          "evidence": "Recorded arrow/Home/End/tab/focus assertions for evaluated composites.",
+          "target": "Reviewed interaction contract passes in both LTR and RTL for critical components."
+        },
+        {
+          "id": "layout-regression-surface",
+          "description": "Paired LTR/RTL fixtures expose stable logical-edge and overflow invariants that the adopter can connect to its visual toolchain.",
+          "evidence": "Deterministic fixture URLs/results and any adopter-owned screenshot diff.",
+          "target": "At least one reusable paired fixture for each critical component family selected for the pilot."
+        }
+      ],
+      "decisionGate": [
+        "Adopt primitives/tests that remove repeated RTL-specific integration code or expose regressions not covered by the current system.",
+        "Keep framework lifecycle behavior in adopter/framework adapters rather than widening the core without evidence.",
+        "Do not equate an axe-clean fixture with complete assistive-technology conformance."
+      ],
+      "nonClaims": ["The browser suite does not prove usability with every assistive technology or linguistic correctness for every Arabic locale."]
+    },
+    {
+      "id": "localization-qa",
+      "title": "Arabic localization and locale-boundary QA",
+      "fit": ["Localization platforms", "Internationalization teams", "Translation engineering", "Global product teams"],
+      "inputs": [
+        "A representative source/target message catalog or public fixture.",
+        "Target locales and explicit script requirements where applicable.",
+        "Formatting/input requirements for numbers, dates, pluralization, and mixed-script labels."
+      ],
+      "commands": [
+        "npm run localization:evidence",
+        "npm run catalogs:check"
+      ],
+      "outputs": [
+        "Catalog parity and structural QA evidence.",
+        "Bidi-control/isolate and contextual zero-width findings where applicable.",
+        "Locale/script fallback evidence.",
+        "Localized number/formatting interoperability evidence using host Intl behavior."
+      ],
+      "metrics": [
+        {
+          "id": "structural-defects",
+          "description": "Placeholder, key, markup-token, or bidi-structure defects identified before human linguistic review or release.",
+          "evidence": "Machine-readable localization QA result plus reviewer disposition.",
+          "target": "Structural defects are reproducible and can be blocked without judging linguistic style."
+        },
+        {
+          "id": "script-boundary-safety",
+          "description": "Explicit script requirements are not silently discarded by locale fallback.",
+          "evidence": "Locale fallback/property tests using adopter-relevant BCP 47 tags.",
+          "target": "No silent cross-script fallback in the evaluated explicit-script cases."
+        },
+        {
+          "id": "localized-number-roundtrip",
+          "description": "Required localized numeric forms can be formatted and parsed under the declared runtime contract without destructive punctuation normalization.",
+          "evidence": "Roundtrip fixtures for adopter-selected locales/numbering systems.",
+          "target": "All agreed representative valid inputs roundtrip; invalid grouping remains rejectable."
+        }
+      ],
+      "decisionGate": [
+        "Integrate machine checks when they catch structural/localization-engineering defects without replacing translator review.",
+        "Document ICU/CLDR/runtime-dependent behavior rather than freezing unstable locale details into a false universal contract.",
+        "Do not claim native-language quality from machine validation alone."
+      ],
+      "nonClaims": ["Localization QA verifies documented structural and runtime invariants, not translation quality or cultural appropriateness by itself."]
+    },
+    {
+      "id": "unicode-bidi-risk",
+      "title": "Unicode bidi and display-risk review",
+      "fit": ["Application security", "Identity/identifier teams", "Messaging products", "Developer tooling", "Trust and safety"],
+      "inputs": [
+        "Representative untrusted labels, identifiers, usernames, filenames, messages, or generated display strings.",
+        "The product context defining which mixed-script and zero-width behavior is legitimate.",
+        "Existing source-security or identifier policies for comparison."
+      ],
+      "commands": [
+        "npm test -- tests/unit/unicode-security-corpus.test.ts",
+        "rawafid-rtl-audit . --format sarif --fail-on none"
+      ],
+      "outputs": [
+        "Display-risk diagnostics for bidi controls/overrides, unbalanced isolates, zero-width characters, and represented scripts.",
+        "Source-level bidi findings suitable for code review/code scanning.",
+        "A documented boundary between display-risk signals and full confusable/source-security analysis."
+      ],
+      "metrics": [
+        {
+          "id": "risk-signal-reproducibility",
+          "description": "Selected suspicious strings produce stable, explainable diagnostics without destructive source normalization.",
+          "evidence": "Versioned corpus and expected diagnostic results.",
+          "target": "All agreed pilot vectors reproduce deterministically under the declared runtime."
+        },
+        {
+          "id": "policy-fit",
+          "description": "The adopter can distinguish legitimate multilingual/mixed-script content from contexts that require stronger restrictions.",
+          "evidence": "Reviewed context-specific policy notes tied to diagnostic classes.",
+          "target": "No generic rule is represented as universally unsafe when product context is required."
+        }
+      ],
+      "decisionGate": [
+        "Use Rawafid signals as defense-in-depth where they add display/bidi context to existing security controls.",
+        "Escalate to a dedicated Unicode security policy/data implementation when confusable restriction levels or identifier security profiles are required.",
+        "Do not market the current diagnostics as a complete UTS #39 or Trojan Source analyzer."
+      ],
+      "nonClaims": ["Rawafid display-risk diagnostics do not claim complete UTS #39 conformance, complete confusable detection, identifier restriction profiles, or full Trojan Source analysis."]
+    }
+  ]
+}
