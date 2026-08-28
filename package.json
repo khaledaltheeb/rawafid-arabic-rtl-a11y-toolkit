@@ -18,7 +18,10 @@
     "url": "https://github.com/khaledaltheeb/rawafid-arabic-rtl-a11y-toolkit/issues"
   },
   "keywords": ["arabic", "rtl", "bidi", "unicode", "i18n", "localization", "accessibility", "a11y", "internationalization", "logical-properties", "typescript", "web"],
-  "files": ["dist", "styles", "README.md", "LICENSE", "NOTICE"],
+  "files": ["dist", "styles", "audit", "bin", "docs/SOURCE-AUDIT.md", "README.md", "LICENSE", "NOTICE"],
+  "bin": {
+    "rawafid-rtl-audit": "./bin/rawafid-rtl-audit.mjs"
+  },
   "sideEffects": ["**/*.css"],
   "exports": {
     ".": {"types": "./dist/index.d.ts", "import": "./dist/index.js", "default": "./dist/index.js"},
@@ -43,13 +46,14 @@
     "catalogs:check": "node scripts/validate-catalogs.mjs",
     "localization:evidence": "node scripts/localization-evidence.mjs",
     "localization:sarif-check": "node scripts/validate-localization-sarif.mjs",
+    "rtl-audit:check": "node scripts/check-rtl-audit.mjs",
     "docs:check": "node scripts/check-documentation-contract.mjs",
     "conformance:check": "node scripts/check-conformance-manifest.mjs",
     "partner:check": "node scripts/check-partner-suite.mjs",
     "contracts:check": "node scripts/check-machine-contract-schemas.mjs",
     "research:check": "node scripts/check-research-metadata.mjs",
     "security:sca": "npm audit --audit-level=moderate",
-    "check:core": "npm run scope:check && npm run supply-chain:check && npm run security:sca && npm run catalogs:check && npm run localization:evidence && npm run localization:sarif-check && npm run docs:check && npm run conformance:check && npm run partner:check && npm run contracts:check && npm run research:check && npm run partner:runner-check && npm run lint && npm run typecheck && npm run test",
+    "check:core": "npm run scope:check && npm run supply-chain:check && npm run security:sca && npm run catalogs:check && npm run localization:evidence && npm run localization:sarif-check && npm run rtl-audit:check && npm run docs:check && npm run conformance:check && npm run partner:check && npm run contracts:check && npm run research:check && npm run partner:runner-check && npm run lint && npm run typecheck && npm run test",
     "package:lint": "npm run build && publint",
     "package:types": "npm run build && attw --pack . --profile esm-only --entrypoints .",
     "package:contract": "npm run build && node scripts/check-package-contract.mjs",
