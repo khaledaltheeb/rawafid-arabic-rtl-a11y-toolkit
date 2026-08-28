@@ -24,11 +24,13 @@ if (!Array.isArray(plan.profiles) || plan.profiles.length < 4) throw new Error('
 
 const expectedProfiles = new Set(['source-audit-ci', 'design-system-rtl', 'localization-qa', 'unicode-bidi-risk']);
 const profileIds = new Set();
+const profilesById = new Map();
 const metricIds = new Set();
 for (const profile of plan.profiles) {
   if (!expectedProfiles.has(profile.id)) throw new Error(`Unexpected enterprise evaluation profile: ${profile.id}`);
   if (profileIds.has(profile.id)) throw new Error(`Duplicate enterprise evaluation profile: ${profile.id}`);
   profileIds.add(profile.id);
+  profilesById.set(profile.id, profile);
   for (const field of ['fit', 'inputs', 'commands', 'outputs', 'metrics', 'decisionGate', 'nonClaims']) {
     if (!Array.isArray(profile[field]) || profile[field].length === 0) throw new Error(`${profile.id}.${field} must be a non-empty array.`);
   }
@@ -57,21 +59,26 @@ const forbiddenClaims = [
   /(?:implements?|provides?|offers?|delivers?|is)\s+(?:a\s+)?complete\s+UTS\s*#?39/iu,
 ];
 const corpus = `${JSON.stringify(plan)}\n${docs}`;
-const lowerCorpus = corpus.toLowerCase();
 for (const pattern of forbiddenClaims) if (pattern.test(corpus)) throw new Error(`Enterprise evaluation language violates non-claim policy: ${pattern}`);
 
 for (const phrase of ['reversible technical evaluation', 'false positives', 'reporting-only', 'does not execute the audited project code']) {
   if (!docs.toLowerCase().includes(phrase.toLowerCase())) throw new Error(`Enterprise evaluation documentation is missing required adoption boundary: ${phrase}`);
 }
 
-for (const phrase of ['UTS #39', 'WCAG', 'linguistic quality']) {
-  if (!lowerCorpus.includes(phrase.toLowerCase())) throw new Error(`Enterprise evaluation corpus must preserve explicit boundary coverage for: ${phrase}`);
+function hasStructuredNonClaim(profileId, subjectPattern) {
+  const profile = profilesById.get(profileId);
+  if (!profile) return false;
+  return profile.nonClaims.some((claim) => subjectPattern.test(claim) && /\b(?:not|does\s+not|do\s+not|without|narrower)\b/iu.test(claim));
 }
-if (!/(?:does\s+not|do\s+not|not\s+a|without\s+claiming|deliberately\s+narrower)[^\n.]{0,120}UTS\s*#?39/iu.test(corpus)) {
-  throw new Error('Enterprise evaluation corpus must explicitly limit UTS #39 claims.');
+
+if (!hasStructuredNonClaim('source-audit-ci', /\bWCAG\b/iu)) {
+  throw new Error('source-audit-ci must preserve an explicit structured WCAG non-claim.');
 }
-if (!/(?:not\s+a|does\s+not|do\s+not|without\s+claiming)[^\n.]{0,120}WCAG/iu.test(corpus)) {
-  throw new Error('Enterprise evaluation corpus must explicitly limit WCAG certification claims.');
+if (!hasStructuredNonClaim('unicode-bidi-risk', /UTS\s*#?39/iu)) {
+  throw new Error('unicode-bidi-risk must preserve an explicit structured UTS #39 non-claim.');
+}
+if (!corpus.toLowerCase().includes('linguistic quality')) {
+  throw new Error('Enterprise evaluation corpus must preserve the linguistic-quality boundary.');
 }
 
 console.log(`Enterprise evaluation contract passed for ${plan.profiles.length} pilot profiles and ${metricIds.size} decision metrics.`);
