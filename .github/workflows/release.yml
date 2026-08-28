@@ -3,71 +3,102 @@ name: Publish npm
 on:
   release:
     types: [published]
+  push:
+    branches: [main]
+    paths:
+      - .github/workflows/release.yml
 
 permissions:
   contents: read
 
 jobs:
   publish:
+    if: github.repository == 'khaledaltheeb/rawafid-arabic-rtl-a11y-toolkit'
     runs-on: ubuntu-latest
-    timeout-minutes: 20
+    timeout-minutes: 30
     environment: npm
     permissions:
-      contents: read
+      contents: write
       id-token: write
       attestations: write
     steps:
-      - name: Checkout published release tag
+      - name: Checkout release target
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
-          ref: ${{ github.event.release.tag_name }}
+          ref: ${{ github.event.release.tag_name || github.sha }}
+          fetch-depth: 0
           persist-credentials: false
+
       - name: Setup Node
         uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
         with:
           node-version: 24
           registry-url: https://registry.npmjs.org
           package-manager-cache: false
-      - name: Resolve and checkout published release tag
+
+      - name: Resolve release target
         id: release
         shell: bash
         env:
+          EVENT_NAME: ${{ github.event_name }}
           EVENT_RELEASE_TAG: ${{ github.event.release.tag_name }}
         run: |
           set -euo pipefail
-          release_tag="$EVENT_RELEASE_TAG"
-          test -n "$release_tag" || { echo 'Refusing publish: empty release tag.' >&2; exit 1; }
-          git fetch --force --depth=1 origin "refs/tags/${release_tag}:refs/tags/${release_tag}"
-          git checkout --detach "$release_tag"
+          if [ "$EVENT_NAME" = 'release' ]; then
+            release_tag="$EVENT_RELEASE_TAG"
+            test -n "$release_tag" || { echo 'Refusing publish: empty release tag.' >&2; exit 1; }
+            git fetch --force --depth=1 origin "refs/tags/${release_tag}:refs/tags/${release_tag}"
+            git checkout --detach "$release_tag"
+          elif [ "$EVENT_NAME" = 'push' ]; then
+            test "$GITHUB_REF" = 'refs/heads/main' || { echo 'OIDC bootstrap is restricted to main.' >&2; exit 1; }
+            package_version="$(node -p "require('./package.json').version")"
+            test "$package_version" = '0.3.0' || { echo "OIDC bootstrap is locked to v0.3.0; found $package_version." >&2; exit 1; }
+            release_tag="v${package_version}"
+          else
+            echo "Unsupported release event: $EVENT_NAME" >&2
+            exit 1
+          fi
           echo "tag=$release_tag" >> "$GITHUB_OUTPUT"
+          echo "release_sha=$(git rev-parse HEAD)" >> "$GITHUB_OUTPUT"
+
       - name: Verify release tag and runtime
         shell: bash
         env:
           RELEASE_TAG: ${{ steps.release.outputs.tag }}
         run: |
+          set -euo pipefail
           package_version="$(node -p "require('./package.json').version")"
           expected_tag="v${package_version}"
           test "$RELEASE_TAG" = "$expected_tag" || {
             echo "Refusing release: GitHub tag '$RELEASE_TAG' does not match package version '$package_version' (expected '$expected_tag')." >&2
             exit 1
           }
+          test "$(node -p "require('./package.json').name")" = '@rawafid/arabic-rtl-a11y-toolkit' || { echo 'Unexpected package identity.' >&2; exit 1; }
           node -e "const [M,m]=process.versions.node.split('.').map(Number); if (M < 22 || (M === 22 && m < 14)) throw new Error('Trusted Publishing requires Node >=22.14.0');"
           npm_version="$(npm --version)"
           node -e "const [M,m]=process.argv[1].split('.').map(Number); if (M < 11 || (M === 11 && m < 5)) throw new Error('Trusted Publishing requires npm >=11.5.1');" "$npm_version"
+
       - name: Require committed lockfile
         shell: bash
         run: |
+          set -euo pipefail
           test -f package-lock.json || { echo 'Refusing release: commit package-lock.json first.' >&2; exit 1; }
+          node -e "const p=require('./package.json'); const l=require('./package-lock.json'); if (p.version !== l.version || p.version !== l.packages[''].version) throw new Error('package.json/package-lock.json version mismatch');"
+
       - name: Install deterministically
         run: npm ci --no-audit --no-fund
+
       - name: Verify release candidate
         run: npm run check
+
       - name: Inspect package contents
         run: npm pack --dry-run
+
       - name: Build exact release tarball
         id: pack
         shell: bash
         run: |
+          set -euo pipefail
           npm run build
           npm pack --json --ignore-scripts > npm-pack.json
           tarball="$(node -e "const fs=require('fs'); const rows=JSON.parse(fs.readFileSync('npm-pack.json','utf8')); if (!Array.isArray(rows) || rows.length !== 1 || typeof rows[0].filename !== 'string') throw new Error('Expected exactly one npm pack artifact'); process.stdout.write(rows[0].filename);")"
@@ -76,10 +107,13 @@ jobs:
           echo "tarball=$tarball" >> "$GITHUB_OUTPUT"
           echo "integrity=$integrity" >> "$GITHUB_OUTPUT"
           echo "Built $tarball with $integrity"
+
       - name: Generate SPDX SBOM
         run: npm sbom --sbom-format=spdx --sbom-type=library > sbom.spdx.json
+
       - name: Build reproducible public review surface
         run: npm run site:build
+
       - name: Upload release evidence
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
         with:
@@ -89,12 +123,15 @@ jobs:
             npm-pack.json
             sbom.spdx.json
             review-site/
+            docs/RELEASE-NOTES-v0.3.0.md
           if-no-files-found: error
           retention-days: 90
+
       - name: Detect existing registry version
         id: registry
         shell: bash
         run: |
+          set -euo pipefail
           package_name="$(node -p "require('./package.json').name")"
           package_version="$(node -p "require('./package.json').version")"
           echo "package_name=$package_name" >> "$GITHUB_OUTPUT"
@@ -106,9 +143,11 @@ jobs:
             echo "exists=false" >> "$GITHUB_OUTPUT"
             echo "Registry does not contain $package_name@$package_version; OIDC publish is required."
           fi
+
       - name: Publish exact tarball using npm Trusted Publishing
         if: steps.registry.outputs.exists != 'true'
         run: npm publish "${{ steps.pack.outputs.tarball }}" --access public --provenance
+
       - name: Verify npm registry artifact identity
         shell: bash
         env:
@@ -116,6 +155,7 @@ jobs:
           PACKAGE_VERSION: ${{ steps.registry.outputs.package_version }}
           LOCAL_INTEGRITY: ${{ steps.pack.outputs.integrity }}
         run: |
+          set -euo pipefail
           matched=false
           registry_integrity=""
           for attempt in 1 2 3 4 5 6 7 8 9 10; do
@@ -133,22 +173,42 @@ jobs:
             exit 1
           fi
           echo "Verified npm registry tarball identity: $LOCAL_INTEGRITY"
+
       - name: Attest release build provenance
         uses: actions/attest@508db95dd578ae2727ebd6217d5ba78e4fbda05d # v4.2.1
         with:
           subject-path: ${{ steps.pack.outputs.tarball }}
           create-storage-record: false
+
       - name: Attest release SBOM
         uses: actions/attest@508db95dd578ae2727ebd6217d5ba78e4fbda05d # v4.2.1
         with:
           subject-path: ${{ steps.pack.outputs.tarball }}
           sbom-path: sbom.spdx.json
           create-storage-record: false
+
       - name: Attest public review surface provenance
         uses: actions/attest@508db95dd578ae2727ebd6217d5ba78e4fbda05d # v4.2.1
         with:
           subject-path: review-site/**
           create-storage-record: false
+
+      - name: Create v0.3.0 GitHub Release after OIDC bootstrap
+        if: github.event_name == 'push'
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+          RELEASE_TAG: ${{ steps.release.outputs.tag }}
+          RELEASE_SHA: ${{ steps.release.outputs.release_sha }}
+        run: |
+          set -euo pipefail
+          if gh release view "$RELEASE_TAG" >/dev/null 2>&1; then
+            echo "$RELEASE_TAG already exists; keeping the existing release."
+          else
+            gh release create "$RELEASE_TAG" --target "$RELEASE_SHA" --title "$RELEASE_TAG" --notes-file docs/RELEASE-NOTES-v0.3.0.md
+          fi
+          gh release upload "$RELEASE_TAG" "${{ steps.pack.outputs.tarball }}" sbom.spdx.json docs/RELEASE-NOTES-v0.3.0.md --clobber
+
       - name: Confirm idempotent release
         if: steps.registry.outputs.exists == 'true'
         run: echo "Release validation completed; ${{ steps.registry.outputs.package_name }}@${{ steps.registry.outputs.package_version }} was already present on npm and matched the locally rebuilt release artifact."
