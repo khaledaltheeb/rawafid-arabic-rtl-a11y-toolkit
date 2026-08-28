@@ -51,16 +51,20 @@ const commands = plan.profiles.flatMap((profile) => profile.commands);
 for (const command of requiredCommands) if (!commands.includes(command)) throw new Error(`Enterprise evaluation plan is missing executable evidence command: ${command}`);
 
 const forbiddenClaims = [
-  /certified(?:\s+as|\s+for)?\s+WCAG/iu,
+  /(?:is|are|provides?|offers?|delivers?)\s+(?:a\s+)?WCAG[- ]certified/iu,
   /W3C[- ]certified/iu,
-  /guarantees?\s+compliance/iu,
-  /complete\s+UTS\s*#?39/iu,
+  /guarantees?\s+(?:full\s+)?compliance/iu,
+  /(?:implements?|provides?|offers?|delivers?|is)\s+(?:a\s+)?complete\s+UTS\s*#?39/iu,
 ];
 const corpus = `${JSON.stringify(plan)}\n${docs}`;
 for (const pattern of forbiddenClaims) if (pattern.test(corpus)) throw new Error(`Enterprise evaluation language violates non-claim policy: ${pattern}`);
 
 for (const phrase of ['reversible technical evaluation', 'false positives', 'reporting-only', 'does not execute the audited project code']) {
   if (!docs.toLowerCase().includes(phrase.toLowerCase())) throw new Error(`Enterprise evaluation documentation is missing required adoption boundary: ${phrase}`);
+}
+
+for (const phrase of ['does not claim complete UTS #39', 'not a WCAG', 'linguistic quality']) {
+  if (!corpus.toLowerCase().includes(phrase.toLowerCase())) throw new Error(`Enterprise evaluation corpus must preserve explicit non-claim language: ${phrase}`);
 }
 
 console.log(`Enterprise evaluation contract passed for ${plan.profiles.length} pilot profiles and ${metricIds.size} decision metrics.`);
