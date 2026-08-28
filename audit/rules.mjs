@@ -16,6 +16,8 @@ export const RULES = {
   'RAWAFID-CSS-003': ['CSS direction used for base direction', 'W3C Internationalization / HTML'],
   'RAWAFID-CSS-004': ['Risky unicode-bidi behavior', 'CSS Writing Modes / Unicode UAX #9'],
   'RAWAFID-CSS-005': ['Physical float or clear value', 'CSS Logical Properties'],
+  'RAWAFID-CSS-006': ['Asymmetric physical CSS shorthand', 'CSS Logical Properties / W3C Internationalization'],
+  'RAWAFID-CSS-007': ['Visual order may diverge from source order', 'WCAG 2.2 1.3.2 / 2.4.3 / CSS Flexbox'],
   'RAWAFID-UTILITY-001': ['Direction-physical utility class', 'CSS Logical Properties'],
 };
 
@@ -62,6 +64,26 @@ function localeDirection(lang) {
   } catch { return undefined; }
 }
 function maskComments(source){return source.replace(/\/\*[\s\S]*?\*\//gu,m=>m.replace(/[^\n]/gu,' '));}
+
+function splitCssValue(value) {
+  const tokens=[]; let token=''; let depth=0; let quote='';
+  for(let index=0; index<value.length; index+=1){
+    const char=value[index];
+    if(quote){
+      token+=char;
+      if(char==='\\' && index+1<value.length){token+=value[++index];continue;}
+      if(char===quote) quote='';
+      continue;
+    }
+    if(char==='"' || char==="'"){quote=char;token+=char;continue;}
+    if(char==='(' || char==='['){depth+=1;token+=char;continue;}
+    if(char===')' || char===']'){depth=Math.max(0,depth-1);token+=char;continue;}
+    if(/\s/u.test(char) && depth===0){if(token){tokens.push(token);token='';}continue;}
+    token+=char;
+  }
+  if(token) tokens.push(token);
+  return tokens;
+}
 
 function auditBidi(source,file,out){
   const stack=[]; let offset=0;
@@ -131,10 +153,24 @@ function auditCss(source,file,out){
   for(const m of masked.matchAll(/(^|[;{]\s*)(float|clear)\s*:\s*(left|right)\b/gimu)){
     const prop=(m[2]??'').toLowerCase(), value=(m[3]??'').toLowerCase(); add(out,source,file,m.index??0,'RAWAFID-CSS-005','warning',`${prop}:${value} is direction-physical.`,`Use ${prop}:${value==='left'?'inline-start':'inline-end'} when the side follows writing direction.`);
   }
+  for(const m of masked.matchAll(/(^|[;{]\s*)(margin|padding|border-(?:width|style|color))\s*:\s*([^;}{]+)/gimu)){
+    const prop=(m[2]??'').toLowerCase(); const value=(m[3]??'').trim(); const tokens=splitCssValue(value);
+    if(tokens.length===4 && tokens[1]!==tokens[3]) add(out,source,file,m.index??0,'RAWAFID-CSS-006','warning',`${prop} uses different physical right/left values in a four-value shorthand.`,'Express the horizontal sides with CSS logical inline-start/inline-end longhands so the intended relationship to writing direction is explicit.');
+  }
+  for(const m of masked.matchAll(/(^|[;{]\s*)flex-direction\s*:\s*(row-reverse|column-reverse)\b/gimu)) add(out,source,file,m.index??0,'RAWAFID-CSS-007','note',`flex-direction:${m[2]} reverses visual order without changing source order.`,'Verify reading and focus order remain meaningful; do not use visual reversal to compensate for an incorrect DOM order.');
+  for(const m of masked.matchAll(/(^|[;{]\s*)order\s*:\s*(-?\d+)\b/gimu)) if(Number.parseInt(m[2]??'0',10)!==0) add(out,source,file,m.index??0,'RAWAFID-CSS-007','note',`order:${m[2]} changes visual order relative to source order.`,'Verify reading and keyboard focus order remain coherent with the visual presentation.');
 }
 
 function styleBlocks(source){
   const out=[]; for(const m of source.matchAll(/<style\b[^>]*>([\s\S]*?)<\/style>/giu)){const content=m[1]??'';out.push({content,offset:(m.index??0)+(m[0]??'').indexOf(content)});} return out;
+}
+function staticStyleAttributes(source){
+  const out=[];
+  for(const m of source.matchAll(/\bstyle\s*=\s*(["'])([\s\S]*?)\1/giu)){
+    const content=m[2]??''; const whole=m[0]??''; const local=whole.indexOf(content);
+    if(local>=0) out.push({content,offset:(m.index??0)+local});
+  }
+  return out;
 }
 function rebase(diag,source,block,offset){
   let i=0,line=1; while(line<diag.line&&i<block.length){const n=block.indexOf('\n',i);if(n<0){i=block.length;break;}i=n+1;line++;} i+=Math.max(0,diag.column-1); const at=offset+i; return {...diag,...loc(source,at),evidence:evidence(source,at)};
@@ -144,6 +180,10 @@ export function auditSource(source,file,extension,{strict=false}={}){
   const out=[]; auditBidi(source,file,out);
   if(MARKUP.has(extension)) auditMarkup(source,file,out,{fullDocument:HTML_DOCUMENT.has(extension),strict});
   if(CSS.has(extension)) auditCss(source,file,out);
-  if(MARKUP.has(extension)) for(const block of styleBlocks(source)){const local=[];auditCss(block.content,file,local);out.push(...local.map(d=>rebase(d,source,block.content,block.offset)));}
+  if(MARKUP.has(extension)) {
+    for(const block of [...styleBlocks(source),...staticStyleAttributes(source)]){
+      const local=[]; auditCss(block.content,file,local); out.push(...local.map(d=>rebase(d,source,block.content,block.offset)));
+    }
+  }
   return out;
 }
