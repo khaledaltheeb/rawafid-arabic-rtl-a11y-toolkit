@@ -1,5 +1,6 @@
 #!/usr/bin/env node
-import { readFile, readdir, stat, writeFile } from 'node:fs/promises';
+import { createHash } from 'node:crypto';
+import { lstat, readFile, readdir, writeFile } from 'node:fs/promises';
 import { extname, join, relative, resolve } from 'node:path';
 import process from 'node:process';
 import { auditSource, RULES } from '../audit/rules.mjs';
@@ -9,6 +10,7 @@ const INFO = 'https://healthrenewal.org/open-source/arabic-rtl-a11y-toolkit';
 const VERSION = JSON.parse(await readFile(new URL('../package.json', import.meta.url), 'utf8')).version;
 const SUPPORTED = new Set(['.css', '.htm', '.html', '.js', '.jsx', '.json', '.less', '.md', '.mjs', '.cjs', '.sass', '.scss', '.svelte', '.ts', '.tsx', '.txt', '.vue']);
 const IGNORED = new Set(['.git', '.next', '.nuxt', '.output', '.turbo', '.vercel', 'build', 'coverage', 'dist', 'node_modules', 'out', 'target', 'vendor']);
+const HTML_DOCUMENT_SIGNAL = /<!doctype\s+html|<html\b|<head\b|<body\b/iu;
 const MAX_BYTES = 2_000_000;
 const DEFAULT_MAX_FILES = 10_000;
 const RANK = { note: 0, warning: 1, error: 2 };
@@ -64,7 +66,8 @@ async function files(targets, options) {
   async function visit(path) {
     if (output.length >= options.maxFiles) throw new Error(`File limit exceeded (${options.maxFiles}). Narrow paths or increase --max-files.`);
     if (excluded(path, root, options.excludes)) return;
-    const info = await stat(path);
+    const info = await lstat(path);
+    if (info.isSymbolicLink()) return;
     if (info.isDirectory()) {
       const entries = await readdir(path, { withFileTypes: true });
       entries.sort((a, b) => a.name.localeCompare(b.name));
@@ -83,8 +86,17 @@ function artifact(path) {
   return rel && !rel.startsWith('..') ? rel : path.replaceAll('\\', '/');
 }
 
+function auditExtension(source, extension) {
+  if ((extension === '.html' || extension === '.htm') && !HTML_DOCUMENT_SIGNAL.test(source)) return '.jsx';
+  return extension;
+}
+
+function fingerprint(diagnostic) {
+  return createHash('sha256').update(`${diagnostic.ruleId}\u0000${diagnostic.evidence ?? ''}`).digest('hex');
+}
+
 function key(diagnostic) {
-  return `${diagnostic.file}\u0000${diagnostic.ruleId}\u0000${diagnostic.evidence ?? ''}`;
+  return `${diagnostic.file}\u0000${diagnostic.ruleId}\u0000${fingerprint(diagnostic)}`;
 }
 
 async function loadBaseline(path) {
@@ -92,14 +104,48 @@ async function loadBaseline(path) {
   if (document?.schemaVersion !== 1 || document?.tool !== TOOL || !Array.isArray(document.findings)) {
     throw new Error('Baseline must be a Rawafid schemaVersion 1 baseline.');
   }
-  return new Set(document.findings.map((item) => `${item.file}\u0000${item.ruleId}\u0000${item.evidence ?? ''}`));
+  const counts = new Map();
+  for (const item of document.findings) {
+    if (typeof item?.file !== 'string' || typeof item?.ruleId !== 'string' || typeof item?.fingerprint !== 'string') {
+      throw new Error('Baseline finding is missing file, ruleId, or fingerprint.');
+    }
+    const count = Number.isInteger(item.count) && item.count > 0 ? item.count : 1;
+    counts.set(`${item.file}\u0000${item.ruleId}\u0000${item.fingerprint}`, count);
+  }
+  return counts;
 }
 
 async function saveBaseline(path, diagnostics) {
-  const findings = [...new Map(diagnostics.map((diagnostic) => [key(diagnostic), {
-    file: diagnostic.file, ruleId: diagnostic.ruleId, evidence: diagnostic.evidence ?? '',
-  }])).values()].sort((a, b) => a.file.localeCompare(b.file) || a.ruleId.localeCompare(b.ruleId) || a.evidence.localeCompare(b.evidence));
-  await writeFile(resolve(path), `${JSON.stringify({ schemaVersion: 1, tool: TOOL, version: VERSION, findings }, null, 2)}\n`, 'utf8');
+  const grouped = new Map();
+  for (const diagnostic of diagnostics) {
+    const diagnosticKey = key(diagnostic);
+    const current = grouped.get(diagnosticKey);
+    if (current) current.count += 1;
+    else grouped.set(diagnosticKey, {
+      file: diagnostic.file,
+      ruleId: diagnostic.ruleId,
+      fingerprint: fingerprint(diagnostic),
+      count: 1,
+    });
+  }
+  const findings = [...grouped.values()].sort((a, b) => a.file.localeCompare(b.file) || a.ruleId.localeCompare(b.ruleId) || a.fingerprint.localeCompare(b.fingerprint));
+  await writeFile(resolve(path), `${JSON.stringify({ schemaVersion: 1, tool: TOOL, version: VERSION, hashAlgorithm: 'sha256', findings }, null, 2)}\n`, 'utf8');
+}
+
+function applyBaseline(diagnostics, baseline) {
+  if (!baseline) return { active: diagnostics, suppressed: 0 };
+  const remaining = new Map(baseline);
+  const active = [];
+  let suppressed = 0;
+  for (const diagnostic of diagnostics) {
+    const diagnosticKey = key(diagnostic);
+    const count = remaining.get(diagnosticKey) ?? 0;
+    if (count > 0) {
+      remaining.set(diagnosticKey, count - 1);
+      suppressed += 1;
+    } else active.push(diagnostic);
+  }
+  return { active, suppressed };
 }
 
 function summary(diagnostics, filesScanned, suppressed = 0) {
@@ -169,13 +215,15 @@ async function main() {
     const all = [];
     for (const path of list) {
       const source = await readFile(path, 'utf8');
-      all.push(...auditSource(source, artifact(path), extname(path).toLowerCase(), { strict: options.strict }));
+      const extension = extname(path).toLowerCase();
+      all.push(...auditSource(source, artifact(path), auditExtension(source, extension), { strict: options.strict }));
     }
     all.sort((a, b) => a.file.localeCompare(b.file) || a.line - b.line || a.column - b.column || a.ruleId.localeCompare(b.ruleId));
     if (options.writeBaseline) await saveBaseline(options.writeBaseline, all);
     const baseline = options.baseline ? await loadBaseline(options.baseline) : undefined;
-    const active = baseline ? all.filter((diagnostic) => !baseline.has(key(diagnostic))) : all;
-    const result = summary(active, list.length, all.length - active.length);
+    const applied = applyBaseline(all, baseline);
+    const active = applied.active;
+    const result = summary(active, list.length, applied.suppressed);
     const output = options.format === 'sarif'
       ? sarif(active)
       : options.format === 'json'
