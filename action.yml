@@ -1,0 +1,64 @@
+name: Rawafid Arabic/RTL Audit
+description: Audit Arabic/RTL, bidi, lang/dir, logical CSS, and source-order risks with reviewable policy and optional SARIF output.
+author: Khaled Altheeb
+
+inputs:
+  working-directory:
+    description: Repository-relative directory to scan from.
+    required: false
+    default: .
+  config:
+    description: Optional path to a Rawafid RTL audit JSON policy, relative to the working directory.
+    required: false
+  paths:
+    description: Optional newline-separated paths. When omitted, policy paths are used, then the working directory.
+    required: false
+  strict:
+    description: Set to true to enable advisory strict-mode checks in addition to the default rules.
+    required: false
+  fail-on:
+    description: Optional error, warning, or none. When omitted, the policy value or CLI default is used.
+    required: false
+  baseline:
+    description: Optional reviewed baseline path, relative to the working directory.
+    required: false
+  exclude:
+    description: Optional newline-separated path fragments to exclude in addition to policy exclusions.
+    required: false
+  max-files:
+    description: Optional positive file traversal limit.
+    required: false
+  sarif:
+    description: Generate a SARIF 2.1.0 report after the enforcement scan.
+    required: false
+    default: 'true'
+  sarif-path:
+    description: SARIF output path, relative to the working directory unless absolute.
+    required: false
+    default: rawafid-rtl.sarif
+
+outputs:
+  result:
+    description: pass or fail according to the effective Rawafid failure threshold.
+  files-scanned:
+    description: Number of supported source files scanned.
+  findings:
+    description: Number of active findings after baseline suppression.
+  errors:
+    description: Number of active error-level findings.
+  warnings:
+    description: Number of active warning-level findings.
+  notes:
+    description: Number of active note-level findings.
+  suppressed:
+    description: Number of findings suppressed by the reviewed baseline.
+  sarif-path:
+    description: Absolute SARIF path when SARIF generation is enabled; empty otherwise.
+
+runs:
+  using: node24
+  main: action/index.mjs
+
+branding:
+  icon: check-square
+  color: green
