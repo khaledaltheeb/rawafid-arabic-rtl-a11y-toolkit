@@ -41,6 +41,9 @@ try {
   if (installed.version !== sourcePackage.version) {
     throw new Error(`Installed package version mismatch: ${installed.version} !== ${sourcePackage.version}`);
   }
+  if (installed.bin?.['rawafid-rtl-audit'] !== './bin/rawafid-rtl-audit.mjs') {
+    throw new Error('Installed package is missing the rawafid-rtl-audit binary contract.');
+  }
 
   await writeFile(join(consumerDir, 'smoke.mjs'), `
 import {
@@ -64,6 +67,19 @@ if (!a11yCss.endsWith('/styles/a11y.css')) throw new Error('a11y CSS export subp
     encoding: 'utf8',
     stdio: ['ignore', 'pipe', 'pipe'],
   });
+
+  const consumerFixture = join(consumerDir, 'rtl-clean.html');
+  await writeFile(consumerFixture, '<!doctype html><html lang="ar" dir="rtl"><body><input type="text" dir="auto"><style>.x{margin-inline-start:1rem;text-align:start}</style></body></html>\n', 'utf8');
+  const installedCli = join(consumerDir, 'node_modules', '.bin', process.platform === 'win32' ? 'rawafid-rtl-audit.cmd' : 'rawafid-rtl-audit');
+  const cliOutput = execFileSync(
+    installedCli,
+    [consumerFixture, '--strict', '--format', 'json', '--fail-on', 'warning'],
+    { cwd: consumerDir, encoding: 'utf8', stdio: ['ignore', 'pipe', 'pipe'] },
+  );
+  const cliReport = JSON.parse(cliOutput);
+  if (cliReport.summary?.findings !== 0 || cliReport.tool !== 'rawafid-rtl-audit') {
+    throw new Error('Installed rawafid-rtl-audit binary did not produce the expected clean consumer report.');
+  }
 
   await writeFile(join(consumerDir, 'consumer.ts'), `
 import {
@@ -100,7 +116,7 @@ void [system, report, capabilities, match, selection];
     { cwd: consumerDir, encoding: 'utf8', stdio: ['ignore', 'pipe', 'pipe'] },
   );
 
-  console.log('Packed consumer verification passed: tarball install, package-name runtime import, CSS export resolution, and strict TypeScript consumption.');
+  console.log('Packed consumer verification passed: tarball install, runtime import, RTL audit binary, CSS export resolution, and strict TypeScript consumption.');
 } finally {
   await rm(tempRoot, { recursive: true, force: true });
 }
