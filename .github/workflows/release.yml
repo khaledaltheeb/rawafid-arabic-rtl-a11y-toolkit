@@ -3,10 +3,6 @@ name: Publish npm
 on:
   release:
     types: [published]
-  push:
-    branches: [main]
-    paths:
-      - .github/workflows/release.yml
 
 permissions:
   contents: read
@@ -19,8 +15,6 @@ jobs:
     permissions:
       contents: read
     outputs:
-      tag: ${{ steps.release.outputs.tag }}
-      release-sha: ${{ steps.release.outputs.release_sha }}
       package-name: ${{ steps.registry.outputs.package_name }}
       package-version: ${{ steps.registry.outputs.package_version }}
       exists: ${{ steps.registry.outputs.exists }}
@@ -30,7 +24,7 @@ jobs:
       - name: Checkout release target
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
-          ref: ${{ github.event.release.tag_name || github.sha }}
+          ref: ${{ github.event.release.tag_name }}
           fetch-depth: 0
           persist-credentials: false
 
@@ -41,44 +35,21 @@ jobs:
           registry-url: https://registry.npmjs.org
           package-manager-cache: false
 
-      - name: Resolve release target
-        id: release
-        shell: bash
-        env:
-          EVENT_NAME: ${{ github.event_name }}
-          EVENT_RELEASE_TAG: ${{ github.event.release.tag_name }}
-        run: |
-          set -euo pipefail
-          if [ "$EVENT_NAME" = 'release' ]; then
-            release_tag="$EVENT_RELEASE_TAG"
-            test -n "$release_tag" || { echo 'Refusing publish: empty release tag.' >&2; exit 1; }
-            git fetch --force --depth=1 origin "refs/tags/${release_tag}:refs/tags/${release_tag}"
-            git checkout --detach "$release_tag"
-          elif [ "$EVENT_NAME" = 'push' ]; then
-            test "$GITHUB_REF" = 'refs/heads/main' || { echo 'First-publication bootstrap is restricted to main.' >&2; exit 1; }
-            package_version="$(node -p "require('./package.json').version")"
-            test "$package_version" = '0.3.0' || { echo "First-publication bootstrap is locked to v0.3.0; found $package_version." >&2; exit 1; }
-            release_tag="v${package_version}"
-          else
-            echo "Unsupported release event: $EVENT_NAME" >&2
-            exit 1
-          fi
-          echo "tag=$release_tag" >> "$GITHUB_OUTPUT"
-          echo "release_sha=$(git rev-parse HEAD)" >> "$GITHUB_OUTPUT"
-
       - name: Verify release identity and runtime
         shell: bash
         env:
-          RELEASE_TAG: ${{ steps.release.outputs.tag }}
+          RELEASE_TAG: ${{ github.event.release.tag_name }}
         run: |
           set -euo pipefail
+          test -n "$RELEASE_TAG" || { echo 'Refusing publish: empty release tag.' >&2; exit 1; }
+          package_name="$(node -p "require('./package.json').name")"
           package_version="$(node -p "require('./package.json').version")"
           expected_tag="v${package_version}"
+          test "$package_name" = '@rawafid/arabic-rtl-a11y-toolkit' || { echo "Unexpected package identity: $package_name" >&2; exit 1; }
           test "$RELEASE_TAG" = "$expected_tag" || {
             echo "Refusing release: GitHub tag '$RELEASE_TAG' does not match package version '$package_version' (expected '$expected_tag')." >&2
             exit 1
           }
-          test "$(node -p "require('./package.json').name")" = '@rawafid/arabic-rtl-a11y-toolkit' || { echo 'Unexpected package identity.' >&2; exit 1; }
           node -e "const [M,m]=process.versions.node.split('.').map(Number); if (M < 22 || (M === 22 && m < 14)) throw new Error('Trusted Publishing requires Node >=22.14.0');"
           npm_version="$(npm --version)"
           node -e "const [M,m]=process.argv[1].split('.').map(Number); if (M < 11 || (M === 11 && m < 5)) throw new Error('Trusted Publishing requires npm >=11.5.1');" "$npm_version"
@@ -111,7 +82,7 @@ jobs:
           integrity="sha512-$(openssl dgst -sha512 -binary "$tarball" | openssl base64 -A)"
           echo "tarball=$tarball" >> "$GITHUB_OUTPUT"
           echo "integrity=$integrity" >> "$GITHUB_OUTPUT"
-          echo "Built exact release tarball with locally computed SHA-512 integrity."
+          echo 'Built exact release tarball with locally computed SHA-512 integrity.'
 
       - name: Generate SPDX SBOM
         run: npm sbom --sbom-format=spdx --sbom-type=library > sbom.spdx.json
@@ -150,7 +121,6 @@ jobs:
           retention-days: 90
 
   publish-oidc:
-    if: github.event_name == 'release'
     needs: prepare
     runs-on: ubuntu-latest
     timeout-minutes: 15
@@ -176,7 +146,7 @@ jobs:
         if: needs.prepare.outputs.exists != 'true'
         run: npm publish "./evidence/${{ needs.prepare.outputs.tarball }}" --access public --provenance
 
-      - name: Verify npm registry artifact identity after OIDC publish
+      - name: Verify npm registry artifact identity
         shell: bash
         env:
           PACKAGE_NAME: ${{ needs.prepare.outputs.package-name }}
@@ -200,10 +170,9 @@ jobs:
             echo "registry: $registry_integrity" >&2
             exit 1
           }
-          echo "Verified npm registry tarball identity after OIDC publication."
+          echo 'Verified npm registry tarball identity.'
 
-  attest-routine-release:
-    if: github.event_name == 'release'
+  attest-release:
     needs: [prepare, publish-oidc]
     runs-on: ubuntu-latest
     timeout-minutes: 10
@@ -236,132 +205,3 @@ jobs:
         with:
           subject-path: evidence/review-site/**
           create-storage-record: false
-
-  bootstrap-initial-package:
-    if: github.event_name == 'push'
-    needs: prepare
-    runs-on: ubuntu-latest
-    timeout-minutes: 15
-    environment: npm
-    permissions:
-      contents: read
-    steps:
-      - name: Setup Node for one-time token bootstrap
-        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
-        with:
-          node-version: 24
-          registry-url: https://registry.npmjs.org
-          package-manager-cache: false
-
-      - name: Download exact bootstrap evidence
-        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8
-        with:
-          name: release-evidence
-          path: evidence
-
-      - name: Validate one-time npm bootstrap identity
-        if: needs.prepare.outputs.exists != 'true'
-        shell: bash
-        env:
-          NODE_AUTH_TOKEN: ${{ secrets.rawafid1 }}
-        run: |
-          set -euo pipefail
-          test -n "${NODE_AUTH_TOKEN:-}" || { echo 'Missing npm Environment secret rawafid1.' >&2; exit 1; }
-          identity="$(npm whoami --registry=https://registry.npmjs.org/)"
-          test -n "$identity" || { echo 'npm token did not resolve an authenticated identity.' >&2; exit 1; }
-          if [ "$identity" = 'rawafid' ]; then
-            echo 'Authenticated npm identity owns the @rawafid user scope.'
-          else
-            if membership="$(npm org ls rawafid "$identity" --json --registry=https://registry.npmjs.org/ 2>/dev/null)"; then
-              node -e "const value=JSON.parse(process.argv[1]); if (value == null || value === false || value === '' || (typeof value === 'object' && Object.keys(value).length === 0)) process.exit(1);" "$membership" || {
-                echo 'Authenticated npm identity is not a confirmed member of the rawafid organization.' >&2
-                exit 1
-              }
-              echo 'Authenticated npm identity is a confirmed member of the rawafid organization.'
-            else
-              echo 'The token cannot read organization membership; proceeding only with the exact locked @rawafid package and allowing the registry to enforce scope write authorization.'
-            fi
-          fi
-
-      - name: Publish exact tarball for initial package creation
-        if: needs.prepare.outputs.exists != 'true'
-        env:
-          NODE_AUTH_TOKEN: ${{ secrets.rawafid1 }}
-        run: npm publish "./evidence/${{ needs.prepare.outputs.tarball }}" --access public --provenance=false
-
-      - name: Verify npm registry artifact identity after bootstrap
-        shell: bash
-        env:
-          PACKAGE_NAME: ${{ needs.prepare.outputs.package-name }}
-          PACKAGE_VERSION: ${{ needs.prepare.outputs.package-version }}
-          LOCAL_INTEGRITY: ${{ needs.prepare.outputs.integrity }}
-        run: |
-          set -euo pipefail
-          matched=false
-          registry_integrity=""
-          for attempt in 1 2 3 4 5 6 7 8 9 10; do
-            registry_integrity="$(npm view "$PACKAGE_NAME@$PACKAGE_VERSION" dist.integrity --registry=https://registry.npmjs.org/ --userconfig=/dev/null 2>/dev/null || true)"
-            if [ "$registry_integrity" = "$LOCAL_INTEGRITY" ]; then
-              matched=true
-              break
-            fi
-            sleep 3
-          done
-          test "$matched" = 'true' || {
-            echo "Registry artifact integrity mismatch for $PACKAGE_NAME@$PACKAGE_VERSION" >&2
-            echo "local:    $LOCAL_INTEGRITY" >&2
-            echo "registry: $registry_integrity" >&2
-            exit 1
-          }
-          echo 'Verified npm registry tarball identity after first-package bootstrap.'
-
-  attest-bootstrap-package:
-    if: github.event_name == 'push'
-    needs: [prepare, bootstrap-initial-package]
-    runs-on: ubuntu-latest
-    timeout-minutes: 10
-    permissions:
-      contents: write
-      id-token: write
-      attestations: write
-    steps:
-      - name: Download exact bootstrap evidence for attestations
-        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8
-        with:
-          name: release-evidence
-          path: evidence
-
-      - name: Attest bootstrap release build provenance
-        uses: actions/attest@508db95dd578ae2727ebd6217d5ba78e4fbda05d # v4.2.1
-        with:
-          subject-path: evidence/${{ needs.prepare.outputs.tarball }}
-          create-storage-record: false
-
-      - name: Attest bootstrap release SBOM
-        uses: actions/attest@508db95dd578ae2727ebd6217d5ba78e4fbda05d # v4.2.1
-        with:
-          subject-path: evidence/${{ needs.prepare.outputs.tarball }}
-          sbom-path: evidence/sbom.spdx.json
-          create-storage-record: false
-
-      - name: Attest bootstrap public review surface provenance
-        uses: actions/attest@508db95dd578ae2727ebd6217d5ba78e4fbda05d # v4.2.1
-        with:
-          subject-path: evidence/review-site/**
-          create-storage-record: false
-
-      - name: Create v0.3.0 GitHub Release after verified bootstrap
-        shell: bash
-        env:
-          GH_TOKEN: ${{ github.token }}
-          GH_REPO: ${{ github.repository }}
-          RELEASE_TAG: ${{ needs.prepare.outputs.tag }}
-          RELEASE_SHA: ${{ needs.prepare.outputs.release-sha }}
-        run: |
-          set -euo pipefail
-          if gh release view "$RELEASE_TAG" >/dev/null 2>&1; then
-            echo "$RELEASE_TAG already exists; keeping the existing release."
-          else
-            gh release create "$RELEASE_TAG" --target "$RELEASE_SHA" --title "$RELEASE_TAG" --notes-file evidence/docs/RELEASE-NOTES-v0.3.0.md
-          fi
-          gh release upload "$RELEASE_TAG" "evidence/${{ needs.prepare.outputs.tarball }}" evidence/sbom.spdx.json evidence/docs/RELEASE-NOTES-v0.3.0.md --clobber
