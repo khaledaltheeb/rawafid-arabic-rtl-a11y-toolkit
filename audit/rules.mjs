@@ -131,8 +131,10 @@ function auditMarkup(source,file,out,{fullDocument,strict}){
     }
     const classes=/\bclass(?:Name)?\s*=\s*["']([^"']+)["']/giu;
     for(const m of source.matchAll(classes)) for(const token of (m[1]??'').split(/\s+/u)){
-      const plain=token.split(':').at(-1)??token; if(/^rtl:|^ltr:/u.test(token)) continue;
-      const physical=/^(?:m[lr]|p[lr]|left|right|text-(?:left|right)|float-(?:left|right)|rounded-[lr](?:-|$)|border-[lr](?:-|$))/u.test(plain);
+      const parts=token.split(':');
+      const plain=parts.at(-1)??token;
+      if(parts.slice(0,-1).some((part)=>part==='rtl'||part==='ltr')) continue;
+      const physical=/^(?:(?:m[lr]|p[lr])(?:-|$)|(?:left|right)(?:-|$)|text-(?:left|right)$|float-(?:left|right)$|rounded-(?:[trb]?[lr]|[lr])(?:-|$)|border-[lr](?:-|$))/u.test(plain);
       if(physical) add(out,source,file,m.index??0,'RAWAFID-UTILITY-001','note',`Direction-physical utility class "${token}" is static.`,'Prefer the framework logical start/end equivalent when the layout should mirror automatically.');
     }
   }
