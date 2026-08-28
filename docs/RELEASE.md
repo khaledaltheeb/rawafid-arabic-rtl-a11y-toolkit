@@ -2,76 +2,85 @@
 
 ## Goals
 
-Releases must be reproducible enough to audit, originate from reviewed public source, avoid long-lived publication credentials, and carry provenance whenever the registry supports it.
+Releases must originate from reviewed public source, be reproducible enough to audit, minimize credential exposure, preserve exact artifact identity, and carry provenance whenever the registry supports it.
 
 ## Current readiness state
 
-The independent public GitHub repository and committed `package-lock.json` are already in place. The repository has completed live CI validation across Node 22, 24, and 26; Playwright browser coverage; CodeQL; package-shape validation; and Dependency Review workflow execution.
+The independent public GitHub repository and committed `package-lock.json` are in place. The repository has live CI across Node 22, 24, and 26; Playwright browser coverage; CodeQL; Dependency Review; package-shape and packed-consumer validation; reproducible-build checks; SPDX SBOM generation; and a release workflow designed for npm Trusted Publishing/OIDC.
 
-The remaining first-publication prerequisites are repository/account settings that cannot be represented safely as source code alone: GitHub security/ruleset settings, ownership of the intended npm namespace, npm account 2FA, and—after the package exists—npm Trusted Publishing.
+The remaining owner-controlled hardening items include GitHub branch/ruleset protection, some repository security settings, and npm Trusted Publisher configuration after the package exists. These remain visible gaps and are not to be represented as completed until they are actually enabled.
 
-## Important bootstrap constraint
+## First-publication bootstrap constraint
 
-npm Trusted Publishing is configured **per existing package**. npm's current trust-management requirements state that the package must already exist in the registry before a trusted-publisher relationship can be configured. Therefore a brand-new package cannot rely on its future OIDC relationship for the very first registry creation.
+A brand-new npm package may need a traditional registry credential before the package can be associated with a Trusted Publisher. For that one-time creation only, this repository permits a temporary token-assisted bootstrap workflow under the following constraints:
 
-The first publication is a controlled bootstrap event:
-
-1. Confirm the intended npm scope/name is owned and writable by the maintainer.
-2. Enable account-level 2FA.
-3. Publish the first public version interactively from a trusted maintainer machine using the normal npm authentication/2FA path; do not place publication credentials in this repository or GitHub Actions.
-4. Immediately configure the package's Trusted Publisher for this repository and `release.yml` (and the `npm` GitHub environment if used).
-5. Verify one subsequent release through OIDC before restricting traditional token publishing.
-6. After OIDC is verified, select npm's strongest appropriate publishing-access controls and revoke/remove any publication credential that is no longer required.
+1. The credential is an npm granular access token stored only as a GitHub Actions secret; it is never committed or printed.
+2. The workflow is limited to the canonical repository and a single exact bootstrap version.
+3. It triggers only from the version-changing push to `main`, never from `pull_request` or untrusted code.
+4. Deterministic install and the complete `npm run check` quality gate execute before the credentialed publish step.
+5. The exact tarball is built once, its SHA-512 integrity is computed locally, and an SPDX SBOM is retained.
+6. Publication uses the exact tarball with `--access public --provenance` from a GitHub-hosted runner with `id-token: write`.
+7. Registry `dist.integrity` must match the locally computed tarball integrity before a GitHub Release is created.
+8. The temporary bootstrap workflow is removed after successful package creation.
+9. npm Trusted Publishing is configured for `.github/workflows/release.yml` immediately after bootstrap, and the bootstrap token is revoked when no longer required.
 
 See `docs/FIRST-PUBLICATION.md` for the operational checklist.
 
-## Preconditions
+## Preconditions for a bootstrap release
 
 Before the first npm publication:
 
-1. Confirm `main` is protected by an appropriate GitHub ruleset and requires the intended CI/security checks.
-2. Enable GitHub Dependency Graph and the desired Dependabot/security features.
-3. Enable GitHub private vulnerability reporting.
-4. Confirm npm account-level 2FA is enabled.
-5. Confirm the npm package name/scope is available **and controlled by the maintainer**. An organization-scoped package such as `@rawafid/...` requires membership/write access to the corresponding npm organization scope.
-6. Verify that the release version in `package.json`, `CHANGELOG.md`, Git tag, and GitHub Release all match.
-7. Re-run the complete quality and browser matrices on the release candidate.
-8. Review `npm pack --dry-run` output and ensure no excluded Rawafid content, secrets, local artifacts, or private material are packaged.
-9. Perform the one-time interactive bootstrap publish described above.
-10. Configure npm Trusted Publishing immediately after the package exists.
+1. Confirm the npm package name/scope is available and controlled by the maintainer. An organization-scoped package such as `@rawafid/...` requires write access to the corresponding npm organization/scope.
+2. Confirm npm account and publishing 2FA policy is satisfied and the granular bootstrap token has only the permissions required for the intended package/scope.
+3. Verify that the release version in `package.json` and the planned Git tag/GitHub Release match.
+4. Run the complete CI/security matrix on the release PR and merge only after CI, CodeQL, Dependency Review, package gates, and browser evidence are green.
+5. Review `npm pack --dry-run` behavior and ensure no excluded Rawafid content, secrets, local artifacts, or private material can enter the package.
+6. Keep the known GitHub branch/ruleset protection gap explicitly documented until it is fixed. While that owner-level setting remains unavailable to automation, the bootstrap release must use a reviewed PR and green checks as compensating controls; this does not satisfy the missing protection requirement itself.
+7. Publish only through the locked one-time bootstrap workflow described above.
+8. Configure npm Trusted Publishing after the package exists and remove the bootstrap workflow/credential path.
 
-The automated release workflow fails closed if `package-lock.json` is absent.
+The automated release workflows fail closed if `package-lock.json` is absent or release identity does not match the expected package version.
 
 ## Authentication after bootstrap
 
-Routine publication uses npm Trusted Publishing via OIDC. Do not store `NPM_TOKEN`, classic automation tokens, or long-lived npm publication secrets in this repository. The workflow requests `id-token: write` only for the publish job.
+Routine publication uses npm Trusted Publishing via OIDC. The permanent `.github/workflows/release.yml` must not require a long-lived npm publication token. It requests `id-token: write` only for the publish job and retains the exact-tarball, registry-integrity, SBOM, and provenance gates.
 
-Trusted Publishing currently requires Node >=22.14.0 and npm >=11.5.1 for publishing. npm's `npm trust` management command has a newer CLI requirement and also requires 2FA and an already-existing package; use the npm website or a sufficiently current npm CLI when configuring trust.
+A bootstrap granular access token is transitional infrastructure, not a routine release dependency. After Trusted Publishing is proven, revoke/remove the token if no other legitimate use requires it.
 
 Reference: https://docs.npmjs.com/trusted-publishers/
 
 ## Provenance
 
-Public packages published from the public GitHub repository through Trusted Publishing receive npm provenance automatically. The workflow also invokes `npm publish --provenance` explicitly for clarity and defense in depth.
+Public packages published from the public GitHub repository through Trusted Publishing receive npm provenance. The release workflow invokes `npm publish --provenance` explicitly for clarity and defense in depth.
 
-## Routine release sequence
+The one-time token-authenticated bootstrap also runs from GitHub Actions with `id-token: write` and explicitly requests provenance. Authentication and provenance are verified separately from artifact identity: the workflow still compares registry `dist.integrity` to the exact local tarball.
 
-1. Prepare the release version and changelog in a reviewed PR.
+## Routine release sequence after bootstrap
+
+1. Prepare the release version and changelog/release notes in a reviewed PR.
 2. Run required CI/security checks and browser tests.
-3. Merge to protected `main` only when required checks pass.
+3. Merge to `main` only when required checks pass.
 4. Confirm the release commit is the intended `main` head.
 5. Create the matching Git tag and GitHub Release.
 6. GitHub invokes `release.yml` from the reviewed repository state.
 7. The workflow installs from the committed lockfile with `npm ci`.
-8. It runs the package quality gate and inspects package contents.
-9. It generates and retains an SPDX SBOM for the release candidate.
-10. npm publishes through OIDC with provenance.
-11. Verify npm metadata, integrity, provenance, exported entry points, and installation from a clean consumer project.
-12. Record any release-specific migration or compatibility notes in `CHANGELOG.md`.
+8. It runs the complete package quality gate and inspects package contents.
+9. It builds one exact tarball, generates an SPDX SBOM, and retains release evidence.
+10. npm publishes through OIDC/Trusted Publishing with provenance.
+11. The workflow verifies npm registry integrity against the exact local tarball.
+12. Verify exported entry points and installation from a clean consumer project.
 
-## First release guardrail
+## Bootstrap cleanup requirement
 
-The first publication must not be converted into a CI token bootstrap. Do **not** add a bypass-2FA token to GitHub merely to create the package. The one-time registry creation should remain an explicit maintainer action protected by 2FA; automation begins only after the package exists and OIDC trust can be configured.
+The first publication is not complete merely because npm accepted the package. Completion requires all of the following:
+
+- registry artifact identity verified;
+- matching GitHub Release/tag bound to the release commit;
+- permanent release workflow completes its idempotent validation path;
+- temporary bootstrap workflow removed;
+- documentation updated to record that bootstrap is complete;
+- npm Trusted Publisher mapping created for `release.yml`;
+- bootstrap credential revoked once routine OIDC publication has been proven or when it is otherwise no longer required.
 
 ## Versioning
 
@@ -79,8 +88,8 @@ The project follows SemVer. Until 1.0, breaking changes require explicit release
 
 ## Rollback
 
-Do not silently replace an already published version. If a release is defective, deprecate it on npm where appropriate and publish a corrected new version. Security incidents follow `SECURITY.md` and may require coordinated disclosure.
+Do not silently replace an already published version. npm versions are immutable. If a release is defective, deprecate it where appropriate and publish a corrected new version. Security incidents follow `SECURITY.md` and may require coordinated disclosure.
 
 ## Supply-chain evidence
 
-Every automated npm release generates an SPDX SBOM from the reviewed lockfile and uploads it as a workflow artifact. npm provenance is enabled for the public package/repository OIDC path.
+Every automated release candidate is built from reviewed public source. Release evidence includes deterministic installation, the complete repository quality gate, package-content inspection, an exact tarball, SHA-512 identity verification, SPDX SBOM, and retained GitHub Actions artifacts. Routine releases add OIDC Trusted Publishing and the repository's release attestations.
