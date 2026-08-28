@@ -44,6 +44,10 @@ try {
   if (installed.bin?.['rawafid-rtl-audit'] !== './bin/rawafid-rtl-audit.mjs') {
     throw new Error('Installed package is missing the rawafid-rtl-audit binary contract.');
   }
+  const policySchema = JSON.parse(await readFile(join(installedPackageRoot, 'schemas', 'rtl-audit-config.schema.json'), 'utf8'));
+  if (policySchema?.properties?.schemaVersion?.const !== 1 || !policySchema?.properties?.rules) {
+    throw new Error('Installed package is missing the versioned RTL audit policy schema contract.');
+  }
 
   await writeFile(join(consumerDir, 'smoke.mjs'), `
 import {
@@ -81,6 +85,24 @@ if (!a11yCss.endsWith('/styles/a11y.css')) throw new Error('a11y CSS export subp
     throw new Error('Installed rawafid-rtl-audit binary did not produce the expected clean consumer report.');
   }
 
+  const policyPath = join(consumerDir, 'rtl-policy.json');
+  await writeFile(policyPath, `${JSON.stringify({
+    schemaVersion: 1,
+    paths: ['rtl-clean.html'],
+    strict: true,
+    failOn: 'warning',
+    rules: { 'RAWAFID-CSS-007': 'warning' },
+  }, null, 2)}\n`, 'utf8');
+  const policyOutput = execFileSync(
+    installedCli,
+    ['--config', policyPath, '--format', 'json'],
+    { cwd: consumerDir, encoding: 'utf8', stdio: ['ignore', 'pipe', 'pipe'] },
+  );
+  const policyReport = JSON.parse(policyOutput);
+  if (policyReport.summary?.findings !== 0 || policyReport.policy?.strict !== true || !policyReport.policy?.config) {
+    throw new Error('Installed rawafid-rtl-audit policy workflow did not preserve the effective policy contract.');
+  }
+
   await writeFile(join(consumerDir, 'consumer.ts'), `
 import {
   detectDigitSystems,
@@ -116,7 +138,7 @@ void [system, report, capabilities, match, selection];
     { cwd: consumerDir, encoding: 'utf8', stdio: ['ignore', 'pipe', 'pipe'] },
   );
 
-  console.log('Packed consumer verification passed: tarball install, runtime import, RTL audit binary, CSS export resolution, and strict TypeScript consumption.');
+  console.log('Packed consumer verification passed: tarball install, runtime import, RTL audit binary and policy schema, policy execution, CSS export resolution, and strict TypeScript consumption.');
 } finally {
   await rm(tempRoot, { recursive: true, force: true });
 }
