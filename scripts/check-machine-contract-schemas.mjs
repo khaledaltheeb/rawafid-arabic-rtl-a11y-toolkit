@@ -12,6 +12,7 @@ const schemaFiles = [
   'schemas/research-assets.schema.json',
   'schemas/review-site-artifact.schema.json',
   'schemas/rtl-audit-config.schema.json',
+  'schemas/enterprise-evaluation.schema.json',
 ];
 
 const ids = new Set();
@@ -31,6 +32,7 @@ const bindings = [
   ['qa/localization-contract.json', 'schemas/localization-contract.schema.json', ['schemaVersion', 'contract', 'checks']],
   ['partner-results/localization-qa.json', 'schemas/localization-evidence.schema.json', ['schemaVersion', 'contract', 'summary', 'findings']],
   ['research/assets.json', 'schemas/research-assets.schema.json', ['schemaVersion', 'project', 'assets']],
+  ['enterprise/evaluation-plan.json', 'schemas/enterprise-evaluation.schema.json', ['schemaVersion', 'project', 'principles', 'profiles']],
 ];
 
 for (const [instancePath, schemaPath, expectedFields] of bindings) {
