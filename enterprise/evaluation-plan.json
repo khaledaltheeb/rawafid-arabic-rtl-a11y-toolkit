@@ -189,7 +189,7 @@
         "Escalate to a dedicated Unicode security policy/data implementation when confusable restriction levels or identifier security profiles are required.",
         "Do not market the current diagnostics as a complete UTS #39 or Trojan Source analyzer."
       ],
-      "nonClaims": ["Rawafid display-risk diagnostics are deliberately narrower than complete Unicode confusable, identifier-profile, or source-code security analysis."]
+      "nonClaims": ["Rawafid display-risk diagnostics do not claim complete UTS #39 conformance, complete confusable detection, identifier restriction profiles, or full Trojan Source analysis."]
     }
   ]
 }
