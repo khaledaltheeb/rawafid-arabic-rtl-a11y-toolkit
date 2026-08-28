@@ -64,7 +64,7 @@ if (/secrets\.|NODE_AUTH_TOKEN|id-token:\s*write/u.test(prepareJob)) {
 requireText(oidcJob, 'release.yml publish-oidc', "if: github.event_name == 'release'", 'release-only OIDC publication');
 requireText(oidcJob, 'release.yml publish-oidc', 'environment: npm', 'protected npm environment');
 requireText(oidcJob, 'release.yml publish-oidc', 'id-token: write', 'Trusted Publishing OIDC permission');
-requireText(oidcJob, 'release.yml publish-oidc', 'npm publish "evidence/${{ needs.prepare.outputs.tarball }}" --access public --provenance', 'exact-tarball OIDC publish');
+requireText(oidcJob, 'release.yml publish-oidc', 'npm publish "./evidence/${{ needs.prepare.outputs.tarball }}" --access public --provenance', 'explicit local-tarball OIDC publish');
 requireText(oidcJob, 'release.yml publish-oidc', 'Verify npm registry artifact identity after OIDC publish', 'post-publish integrity verification');
 if (/secrets\.rawafid1|NODE_AUTH_TOKEN/u.test(oidcJob)) {
   errors.push('release.yml publish-oidc: routine Trusted Publishing must never use the bootstrap token.');
@@ -76,13 +76,16 @@ requireText(bootstrapJob, 'release.yml bootstrap-initial-package', 'permissions:
 requireText(bootstrapJob, 'release.yml bootstrap-initial-package', 'NODE_AUTH_TOKEN: ${{ secrets.rawafid1 }}', 'one-time environment secret binding');
 requireText(bootstrapJob, 'release.yml bootstrap-initial-package', 'npm whoami --registry=https://registry.npmjs.org/', 'authenticated token identity check');
 requireText(bootstrapJob, 'release.yml bootstrap-initial-package', 'npm org ls rawafid "$identity" --json', 'best-effort rawafid organization membership check');
-requireText(bootstrapJob, 'release.yml bootstrap-initial-package', 'npm publish "evidence/${{ needs.prepare.outputs.tarball }}" --access public --provenance=false', 'exact initial tarball token publish without OIDC');
+requireText(bootstrapJob, 'release.yml bootstrap-initial-package', 'npm publish "./evidence/${{ needs.prepare.outputs.tarball }}" --access public --provenance=false', 'explicit local initial-tarball token publish without OIDC');
 requireText(bootstrapJob, 'release.yml bootstrap-initial-package', 'Verify npm registry artifact identity after bootstrap', 'post-bootstrap registry identity gate');
 if (/id-token:\s*write|attestations:\s*write/u.test(bootstrapJob)) {
   errors.push('release.yml bootstrap-initial-package: token publication job must not receive OIDC or attestation write permission, so npm cannot prefer Trusted Publishing over the bootstrap token.');
 }
 const secretUses = bootstrapJob.match(/secrets\.rawafid1/gmu) ?? [];
 if (secretUses.length !== 2) errors.push(`release.yml bootstrap-initial-package: expected exactly two bootstrap-secret references, found ${secretUses.length}.`);
+if (/npm publish\s+"evidence\//u.test(releaseSource)) {
+  errors.push('release.yml: downloaded tarballs must be published with an explicit ./ local path; a bare evidence/... spec can be interpreted by npm as a GitHub repository shorthand.');
+}
 
 requireText(routineAttestJob, 'release.yml attest-routine-release', 'id-token: write', 'routine attestation OIDC permission');
 requireText(routineAttestJob, 'release.yml attest-routine-release', 'attestations: write', 'routine attestation permission');
@@ -147,5 +150,5 @@ if (errors.length > 0) {
   console.error(errors.join('\n'));
   process.exitCode = 1;
 } else {
-  console.log('Release policy contract passed: release evidence is prepared without credentials; routine releases use tokenless OIDC; first package creation is an exact-version, push-only token bootstrap without OIDC, followed by registry integrity verification, separate GitHub attestations, and release binding.');
+  console.log('Release policy contract passed: release evidence is prepared without credentials; routine releases use tokenless OIDC; first package creation is an exact-version, push-only token bootstrap without OIDC, followed by registry integrity verification, separate GitHub attestations, release binding, and explicit local tarball package specs.');
 }
