@@ -1,6 +1,6 @@
 import { appendFile, mkdir } from 'node:fs/promises';
 import { spawnSync } from 'node:child_process';
-import { isAbsolute, relative, resolve, sep } from 'node:path';
+import { dirname, isAbsolute, relative, resolve, sep } from 'node:path';
 import process from 'node:process';
 
 const actionPath = process.env.GITHUB_ACTION_PATH ? resolve(process.env.GITHUB_ACTION_PATH) : resolve(import.meta.dirname, '..');
@@ -24,25 +24,35 @@ function lines(value) {
   return value.split(/\r?\n/u).map((item) => item.trim()).filter(Boolean);
 }
 
-function ensureInsideWorkspace(path) {
+function ensureInsideWorkspace(path, label) {
   const rel = relative(workspace, path);
   if (rel === '') return;
   if (rel === '..' || rel.startsWith(`..${sep}`) || isAbsolute(rel)) {
-    throw new Error('working-directory must resolve inside GITHUB_WORKSPACE.');
+    throw new Error(`${label} must resolve inside GITHUB_WORKSPACE.`);
   }
+}
+
+function validatedRelativePath(workDir, value, label) {
+  if (!value) return '';
+  const absolute = resolve(workDir, value);
+  ensureInsideWorkspace(absolute, label);
+  return value;
 }
 
 function appendOption(args, flag, value) {
   if (value) args.push(flag, value);
 }
 
-function baseArguments() {
+function baseArguments(workDir) {
   const args = [];
-  appendOption(args, '--config', input('config'));
-  for (const path of lines(input('paths'))) args.push(path);
+  appendOption(args, '--config', validatedRelativePath(workDir, input('config'), 'config'));
+  for (const path of lines(input('paths'))) {
+    ensureInsideWorkspace(resolve(workDir, path), 'paths');
+    args.push(path);
+  }
   if (booleanInput('strict')) args.push('--strict');
   appendOption(args, '--fail-on', input('fail-on'));
-  appendOption(args, '--baseline', input('baseline'));
+  appendOption(args, '--baseline', validatedRelativePath(workDir, input('baseline'), 'baseline'));
   for (const fragment of lines(input('exclude'))) args.push('--exclude', fragment);
   appendOption(args, '--max-files', input('max-files'));
   return args;
@@ -86,7 +96,7 @@ async function writeSummary(report, enforcementStatus, sarifPath) {
   const summary = report.summary ?? {};
   const counts = summary.counts ?? {};
   const status = enforcementStatus === 0 ? 'PASS' : 'FAIL';
-  const lines = [
+  const summaryLines = [
     '## Rawafid Arabic/RTL Audit',
     '',
     `**Result:** ${status}`,
@@ -102,17 +112,17 @@ async function writeSummary(report, enforcementStatus, sarifPath) {
     '',
     `Effective failure threshold: \`${report.policy?.failOn ?? 'error'}\``,
   ];
-  if (sarifPath) lines.push('', `SARIF: \`${sarifPath}\``);
-  lines.push('');
-  await appendFile(target, `${lines.join('\n')}\n`, 'utf8');
+  if (sarifPath) summaryLines.push('', `SARIF: \`${sarifPath}\``);
+  summaryLines.push('');
+  await appendFile(target, `${summaryLines.join('\n')}\n`, 'utf8');
 }
 
 async function main() {
   const workInput = input('working-directory') || '.';
   const workDir = resolve(workspace, workInput);
-  ensureInsideWorkspace(workDir);
+  ensureInsideWorkspace(workDir, 'working-directory');
 
-  const args = baseArguments();
+  const args = baseArguments(workDir);
   const enforcement = runCli(workDir, [...args, '--format', 'json']);
   const report = requireReport(enforcement);
   const summary = report.summary ?? {};
@@ -122,7 +132,8 @@ async function main() {
   if (booleanInput('sarif', true)) {
     const requested = input('sarif-path') || 'rawafid-rtl.sarif';
     sarifPath = isAbsolute(requested) ? resolve(requested) : resolve(workDir, requested);
-    await mkdir(resolve(sarifPath, '..'), { recursive: true }).catch(() => {});
+    ensureInsideWorkspace(sarifPath, 'sarif-path');
+    await mkdir(dirname(sarifPath), { recursive: true });
     const sarif = runCli(workDir, [...args, '--format', 'sarif', '--out', sarifPath, '--fail-on', 'none']);
     if (sarif.status !== 0) {
       throw new Error((sarif.stderr || 'Rawafid SARIF generation failed.').trim());
