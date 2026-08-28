@@ -28,14 +28,16 @@ The credential is stored only as a GitHub Actions secret and is consumed only by
 
 The temporary bootstrap workflow is locked to the canonical repository, `main`, the exact package identity, and the exact bootstrap version. Before publication it must:
 
-1. synchronize root `package-lock.json` release metadata with `package.json`;
+1. synchronize root `package-lock.json` release metadata with `package.json` in the workflow workspace;
 2. run deterministic `npm ci`;
 3. run the complete `npm run check` gate;
 4. inspect the npm package contents;
 5. build exactly one release tarball;
 6. compute the local SHA-512 tarball integrity;
 7. generate an SPDX SBOM;
-8. retain bootstrap evidence as a GitHub Actions artifact.
+8. build the reproducible public review surface;
+9. retain bootstrap evidence as a GitHub Actions artifact;
+10. only after all of those gates pass, commit the synchronized lockfile release metadata to `main`.
 
 The publish step must not execute if any earlier gate fails.
 
@@ -51,9 +53,17 @@ Authentication is supplied through `NODE_AUTH_TOKEN` from the GitHub secret. Git
 
 After publication, the workflow queries npm for `dist.integrity` and requires it to equal the locally computed tarball integrity. A mismatch fails closed.
 
-## 5. GitHub Release binding
+## 5. Bootstrap attestations and GitHub Release binding
 
-Only after registry identity has been verified does the bootstrap create the matching GitHub Release/tag for the exact release commit. The normal `release.yml` workflow is then triggered by the published GitHub Release and performs its own release validation/evidence path. Because npm versions are immutable, that workflow detects the already-published registry version and verifies it rather than attempting to overwrite it.
+After registry identity is verified, the same bootstrap run creates GitHub attestations for:
+
+- the exact npm tarball;
+- the SPDX SBOM bound to that tarball;
+- the generated public review surface.
+
+Only then does it create the matching `v0.3.0` GitHub Release/tag for the exact release commit and attach the tarball, SBOM, and release notes.
+
+The bootstrap does **not** rely on the resulting `release` event to start another workflow. GitHub intentionally suppresses most workflow events generated using the repository `GITHUB_TOKEN`, so all first-release evidence is completed inside the bootstrap run itself.
 
 ## 6. Configure Trusted Publishing immediately after bootstrap
 
