@@ -174,7 +174,7 @@ jobs:
 
       - name: Publish exact tarball using npm Trusted Publishing
         if: needs.prepare.outputs.exists != 'true'
-        run: npm publish "evidence/${{ needs.prepare.outputs.tarball }}" --access public --provenance
+        run: npm publish "./evidence/${{ needs.prepare.outputs.tarball }}" --access public --provenance
 
       - name: Verify npm registry artifact identity after OIDC publish
         shell: bash
@@ -287,7 +287,7 @@ jobs:
         if: needs.prepare.outputs.exists != 'true'
         env:
           NODE_AUTH_TOKEN: ${{ secrets.rawafid1 }}
-        run: npm publish "evidence/${{ needs.prepare.outputs.tarball }}" --access public --provenance=false
+        run: npm publish "./evidence/${{ needs.prepare.outputs.tarball }}" --access public --provenance=false
 
       - name: Verify npm registry artifact identity after bootstrap
         shell: bash
