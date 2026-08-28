@@ -13,6 +13,7 @@ concurrency:
 permissions:
   contents: write
   id-token: write
+  attestations: write
 
 jobs:
   bootstrap:
@@ -44,8 +45,7 @@ jobs:
           test "$version" = '0.3.0' || { echo "Bootstrap is locked to v0.3.0; found $version." >&2; exit 1; }
           test "$(node -p "require('./package.json').name")" = '@rawafid/arabic-rtl-a11y-toolkit' || { echo 'Unexpected package identity.' >&2; exit 1; }
 
-      - name: Synchronize package-lock release metadata
-        id: lock
+      - name: Synchronize package-lock release metadata in workspace
         shell: bash
         run: |
           set -euo pipefail
@@ -72,16 +72,8 @@ jobs:
             throw new Error('package-lock root version does not match package.json after synchronization.');
           }
           NODE
-          if ! git diff --quiet -- package-lock.json; then
-            git config user.name 'github-actions[bot]'
-            git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
-            git add package-lock.json
-            git commit -m 'chore(release): sync package-lock to 0.3.0 [skip ci]'
-            git push origin HEAD:main
-          fi
-          echo "release_sha=$(git rev-parse HEAD)" >> "$GITHUB_OUTPUT"
 
-      - name: Require committed lockfile
+      - name: Require synchronized lockfile
         shell: bash
         run: |
           set -euo pipefail
@@ -109,10 +101,13 @@ jobs:
           integrity="sha512-$(openssl dgst -sha512 -binary "$tarball" | openssl base64 -A)"
           echo "tarball=$tarball" >> "$GITHUB_OUTPUT"
           echo "integrity=$integrity" >> "$GITHUB_OUTPUT"
-          echo "Built exact release tarball with locally computed integrity."
+          echo 'Built exact release tarball with locally computed integrity.'
 
       - name: Generate SPDX SBOM
         run: npm sbom --sbom-format=spdx --sbom-type=library > sbom.spdx.json
+
+      - name: Build reproducible public review surface
+        run: npm run site:build
 
       - name: Upload bootstrap evidence
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
@@ -122,8 +117,24 @@ jobs:
             ${{ steps.pack.outputs.tarball }}
             npm-pack.json
             sbom.spdx.json
+            review-site/
+            docs/RELEASE-NOTES-v0.3.0.md
           if-no-files-found: error
           retention-days: 90
+
+      - name: Commit synchronized release metadata after full gate
+        id: release
+        shell: bash
+        run: |
+          set -euo pipefail
+          if ! git diff --quiet -- package-lock.json; then
+            git config user.name 'github-actions[bot]'
+            git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+            git add package-lock.json
+            git commit -m 'chore(release): sync package-lock to 0.3.0 [skip ci]'
+            git push origin HEAD:main
+          fi
+          echo "release_sha=$(git rev-parse HEAD)" >> "$GITHUB_OUTPUT"
 
       - name: Detect existing npm version
         id: registry
@@ -136,8 +147,10 @@ jobs:
           echo "package_version=$package_version" >> "$GITHUB_OUTPUT"
           if npm view "$package_name@$package_version" version --json >/dev/null 2>&1; then
             echo "exists=true" >> "$GITHUB_OUTPUT"
+            echo 'Registry version already exists; publication will be skipped and identity will still be verified.'
           else
             echo "exists=false" >> "$GITHUB_OUTPUT"
+            echo 'Registry version does not exist; one-time authenticated bootstrap publication is required.'
           fi
 
       - name: Require one-time npm bootstrap credential
@@ -181,20 +194,39 @@ jobs:
           fi
           echo 'npm registry artifact identity verified.'
 
+      - name: Attest bootstrap release build provenance
+        uses: actions/attest@508db95dd578ae2727ebd6217d5ba78e4fbda05d # v4.2.1
+        with:
+          subject-path: ${{ steps.pack.outputs.tarball }}
+          create-storage-record: false
+
+      - name: Attest bootstrap release SBOM
+        uses: actions/attest@508db95dd578ae2727ebd6217d5ba78e4fbda05d # v4.2.1
+        with:
+          subject-path: ${{ steps.pack.outputs.tarball }}
+          sbom-path: sbom.spdx.json
+          create-storage-record: false
+
+      - name: Attest public review surface provenance
+        uses: actions/attest@508db95dd578ae2727ebd6217d5ba78e4fbda05d # v4.2.1
+        with:
+          subject-path: review-site/**
+          create-storage-record: false
+
       - name: Create v0.3.0 GitHub Release
         shell: bash
         env:
           GH_TOKEN: ${{ github.token }}
-          RELEASE_SHA: ${{ steps.lock.outputs.release_sha }}
+          RELEASE_SHA: ${{ steps.release.outputs.release_sha }}
         run: |
           set -euo pipefail
           tag='v0.3.0'
           if gh release view "$tag" >/dev/null 2>&1; then
             echo "$tag already exists; keeping the existing release."
           else
-            gh release create "$tag" --target "$RELEASE_SHA" --title "$tag" --generate-notes
+            gh release create "$tag" --target "$RELEASE_SHA" --title "$tag" --notes-file docs/RELEASE-NOTES-v0.3.0.md
           fi
-          gh release upload "$tag" "${{ steps.pack.outputs.tarball }}" sbom.spdx.json --clobber
+          gh release upload "$tag" "${{ steps.pack.outputs.tarball }}" sbom.spdx.json docs/RELEASE-NOTES-v0.3.0.md --clobber
 
       - name: Bootstrap summary
         shell: bash
@@ -202,8 +234,9 @@ jobs:
           {
             echo '## npm bootstrap v0.3.0'
             echo
-            echo '- Exact package tarball built and verified.'
-            echo '- Registry integrity compared to the local tarball.'
-            echo '- GitHub Release created or verified.'
+            echo '- Full repository release gate completed before any main-branch metadata commit or npm publication.'
+            echo '- Exact package tarball built and registry identity verified.'
+            echo '- SPDX SBOM and GitHub attestations generated.'
+            echo '- GitHub Release created or verified and release assets attached.'
             echo '- Routine releases remain delegated to release.yml and OIDC/Trusted Publishing.'
           } >> "$GITHUB_STEP_SUMMARY"
