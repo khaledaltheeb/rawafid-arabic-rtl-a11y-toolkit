@@ -63,13 +63,11 @@ jobs:
         run: |
           set -euo pipefail
           source_path="docs/RELEASE-NOTES-${RELEASE_TAG}.md"
-          asset_name="RELEASE-NOTES-${RELEASE_TAG}.md"
           test -f "$source_path" || {
             echo "Refusing release: required versioned release notes are missing: $source_path" >&2
             exit 1
           }
-          cp "$source_path" "$asset_name"
-          echo "release_notes=$asset_name" >> "$GITHUB_OUTPUT"
+          echo "release_notes=$source_path" >> "$GITHUB_OUTPUT"
 
       - name: Require committed lockfile
         shell: bash
