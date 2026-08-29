@@ -132,9 +132,16 @@ for (const phrase of [
   requireText(releaseAssetsJob, 'release.yml publish-release-assets', phrase, 'fail-closed GitHub Release asset identity control');
 }
 
-requireText(preflightSource, 'release-preflight.yml', 'workflow_dispatch:', 'manual-only trigger');
+requireText(preflightSource, 'release-preflight.yml', 'workflow_dispatch:', 'manual validation trigger');
 requireText(preflightSource, 'release-preflight.yml', 'permissions:\n  contents: read', 'read-only workflow permission');
 requireText(preflightSource, 'release-preflight.yml', 'persist-credentials: false', 'non-persistent checkout credentials');
+requireText(preflightSource, 'release-preflight.yml', 'package_version="$(node -p "require(\'./package.json\').version")"', 'package-version-derived preflight identity');
+requireText(preflightSource, 'release-preflight.yml', 'release_tag="v${package_version}"', 'version-derived preflight release tag');
+requireText(preflightSource, 'release-preflight.yml', 'source_path="docs/RELEASE-NOTES-${release_tag}.md"', 'version-derived preflight release notes source');
+requireText(preflightSource, 'release-preflight.yml', 'release_notes=$asset_name', 'release-notes preflight output');
+requireText(preflightSource, 'release-preflight.yml', 'releaseTag: process.env.RELEASE_TAG', 'release tag bound into preflight manifest');
+requireText(preflightSource, 'release-preflight.yml', 'releaseNotes: process.env.RELEASE_NOTES', 'release notes bound into preflight manifest');
+requireText(preflightSource, 'release-preflight.yml', '${{ steps.release_notes.outputs.release_notes }}', 'versioned release notes retained in preflight evidence');
 requireText(preflightSource, 'release-preflight.yml', 'npm run check', 'full release-candidate gate');
 requireText(preflightSource, 'release-preflight.yml', 'npm pack --json --ignore-scripts > npm-pack.json', 'exact candidate tarball build');
 requireText(preflightSource, 'release-preflight.yml', 'npm sbom --sbom-format=spdx --sbom-type=library > sbom.spdx.json', 'SPDX SBOM');
@@ -143,6 +150,9 @@ requireText(preflightSource, 'release-preflight.yml', 'resolved_commit="$(git re
 requireText(preflightSource, 'release-preflight.yml', 'publicationAttempted: false', 'explicit publication non-claim');
 requireText(preflightSource, 'release-preflight.yml', 'attestationAttempted: false', 'explicit attestation non-claim');
 requireText(preflightSource, 'release-preflight.yml', 'name: release-preflight-evidence', 'retained preflight evidence artifact');
+if (/docs\/RELEASE-NOTES-v0\.3\.0\.md/u.test(preflightSource)) {
+  errors.push('release-preflight.yml: release notes must be derived from package version, not hard-coded to v0.3.0.');
+}
 if (/\bnpm publish\b/u.test(preflightSource)) errors.push('release-preflight.yml: npm publish is forbidden in nonpublishing preflight.');
 if (/id-token:\s*write/u.test(preflightSource)) errors.push('release-preflight.yml: OIDC write permission is forbidden in nonpublishing preflight.');
 if (/attestations:\s*write/u.test(preflightSource) || /actions\/attest@/u.test(preflightSource)) {
@@ -153,5 +163,5 @@ if (errors.length > 0) {
   console.error(errors.join('\n'));
   process.exitCode = 1;
 } else {
-  console.log('Release policy contract passed: publication is release-event-only and tokenless through npm Trusted Publishing/OIDC; release evidence is version-derived and prepared without credentials; the exact npm tarball is verified against the public registry; GitHub attestations are created only after registry identity is proven; and GitHub Release assets are uploaded only when missing and must match their local SHA-256 digests exactly.');
+  console.log('Release policy contract passed: publication is release-event-only and tokenless through npm Trusted Publishing/OIDC; both preflight and publication require version-derived release notes; release evidence is prepared without credentials; the exact npm tarball is verified against the public registry; GitHub attestations are created only after registry identity is proven; and GitHub Release assets are uploaded only when missing and must match their local SHA-256 digests exactly.');
 }
