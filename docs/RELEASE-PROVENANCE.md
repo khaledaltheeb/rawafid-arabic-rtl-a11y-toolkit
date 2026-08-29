@@ -1,24 +1,37 @@
 # Release provenance and registry identity
 
-Rawafid's release workflow is designed to make package and review artifacts independently verifiable rather than relying only on a successful `npm publish` log.
+Rawafid's release workflow is designed to make package, SBOM, release-note, and review artifacts independently verifiable rather than relying only on a successful `npm publish` log.
 
 ## Release evidence chain
 
-For each GitHub Release-triggered publication, the workflow:
+For each GitHub Release-triggered publication after the one-time bootstrap, the workflow:
 
 1. checks that the GitHub release tag exactly matches `package.json`;
-2. installs from the committed lockfile and runs the full quality gate;
-3. builds one npm tarball and records its SHA-512 integrity value;
-4. generates an SPDX JSON SBOM;
-5. rebuilds the deterministic, subpath-safe Public Review Lab from the same release tag, including its SHA-256 `artifact-manifest.json` contract;
-6. publishes the exact npm tarball through npm Trusted Publishing with npm provenance when the version is new;
-7. reads `dist.integrity` back from npm and rejects the release if it differs from the locally built tarball;
-8. creates a GitHub artifact build-provenance attestation for the verified npm tarball;
-9. creates a second attestation binding the same npm tarball to the generated SBOM;
-10. creates build-provenance attestations for the files of the release-specific Public Review Lab;
-11. retains the npm tarball, `npm-pack.json`, SPDX SBOM, and complete `review-site/` tree as the `release-evidence` workflow artifact.
+2. requires a version-matched `docs/RELEASE-NOTES-<tag>.md` file and stages it as the release-note asset for that exact tag;
+3. installs from the committed lockfile and runs the full quality gate;
+4. builds one npm tarball and records its SHA-512 integrity value;
+5. generates an SPDX JSON SBOM;
+6. rebuilds the deterministic, subpath-safe Public Review Lab from the same release tag, including its SHA-256 `artifact-manifest.json` contract;
+7. publishes the exact npm tarball through npm Trusted Publishing with npm provenance when the version is new;
+8. reads `dist.integrity` back from npm and rejects the release if it differs from the locally built tarball;
+9. creates a GitHub artifact build-provenance attestation for the verified npm tarball;
+10. creates a second attestation binding the same npm tarball to the generated SBOM;
+11. creates build-provenance attestations for the files of the release-specific Public Review Lab;
+12. retains the npm tarball, `npm-pack.json`, SPDX SBOM, versioned release notes, and complete `review-site/` tree as the `release-evidence` workflow artifact;
+13. verifies or uploads the exact npm tarball, SPDX SBOM, and versioned release notes as GitHub Release assets;
+14. computes each local GitHub Release asset's SHA-256 digest and requires it to equal GitHub's reported asset `digest` before the workflow succeeds.
 
-If the package version already exists in npm, the workflow does not republish it. It rebuilds the release tarball from the release tag and requires that its SHA-512 integrity value match the existing registry artifact before producing attestations. The review surface is also rebuilt from that same tag, so its manifest and file digests remain release-specific evidence rather than a moving deployment claim.
+The GitHub Release asset step is deliberately idempotent and fail-closed. If an asset with the expected name already exists, the workflow does **not** overwrite it. It accepts that asset only when GitHub reports exactly one asset with that name and its `sha256:` digest equals the local verified file. Duplicate names, missing digests, or mismatched bytes fail the release workflow. New assets are uploaded without `--clobber` and are read back from GitHub until the reported digest matches the local SHA-256 value.
+
+If the package version already exists in npm, the workflow does not republish it. It rebuilds the release tarball from the release tag and requires that its SHA-512 integrity value match the existing registry artifact before producing attestations or release assets. The review surface is also rebuilt from that same tag, so its manifest and file digests remain release-specific evidence rather than a moving deployment claim.
+
+## `v0.3.0` bootstrap boundary
+
+The first public registry creation, `v0.3.0`, predates the permanent Trusted Publisher proof. It was created through the isolated one-time npm Granular Access Token bootstrap with npm provenance explicitly disabled. Its registry `dist.integrity` was subsequently verified against the locally computed SHA-512, and separate GitHub attestations plus GitHub Release assets were created only after that identity check succeeded.
+
+Do **not** describe `v0.3.0` as an npm Trusted Publishing provenance release. Its GitHub attestations, exact release assets, SBOM, and registry-integrity verification are valid separate evidence.
+
+The package-level npm Trusted Publisher relationship is an external npm account setting. The OIDC-only repository workflow documents the intended permanent path, but that account-bound relationship remains unproven until it is verified in npm or demonstrated by a successful legitimate later release.
 
 ## Consumer verification
 
@@ -35,6 +48,8 @@ The npm registry identity can be inspected independently:
 npm view @rawafid/arabic-rtl-a11y-toolkit@<version> dist.integrity
 ```
 
+GitHub Release asset integrity can also be inspected through the GitHub API. For every tarball, SBOM, and versioned release-note asset, compare GitHub's `sha256:` asset digest with the downloaded file's SHA-256 digest.
+
 For the Public Review Lab, verify the downloaded release evidence against `review-site/artifact-manifest.json`, then verify an attested review file against this repository. For example:
 
 ```sh
@@ -46,7 +61,7 @@ The review-site manifest is deterministic and contains the SHA-256 and byte leng
 
 ## Security boundary
 
-The workflow configuration is repository evidence of the intended release process. A successful public attestation is release-specific external evidence and must not be claimed until a release workflow has actually completed and the attestation can be retrieved and cryptographically verified.
+The workflow configuration is repository evidence of the intended release process. A successful npm provenance statement, public GitHub attestation, registry identity check, or GitHub Release asset digest is release-specific external evidence and must not be claimed until the corresponding operation has actually completed and can be independently verified.
 
 The review-site provenance attestation proves which release workflow built the attested files; it does not prove that any publicly hosted copy is byte-identical. A hosted deployment must be compared independently with the release manifest if deployment identity matters.
 

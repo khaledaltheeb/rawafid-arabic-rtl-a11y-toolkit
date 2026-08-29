@@ -39,7 +39,23 @@ jobs:
       - name: Require committed lockfile
         shell: bash
         run: |
+          set -euo pipefail
           test -f package-lock.json || { echo 'Preflight failed: package-lock.json is required.' >&2; exit 1; }
+          node -e "const p=require('./package.json'); const l=require('./package-lock.json'); if (p.version !== l.version || p.version !== l.packages[''].version) throw new Error('package.json/package-lock.json version mismatch');"
+      - name: Resolve versioned release notes
+        id: release_notes
+        shell: bash
+        run: |
+          set -euo pipefail
+          package_version="$(node -p "require('./package.json').version")"
+          release_tag="v${package_version}"
+          source_path="docs/RELEASE-NOTES-${release_tag}.md"
+          test -f "$source_path" || {
+            echo "Preflight failed: required versioned release notes are missing: $source_path" >&2
+            exit 1
+          }
+          echo "release_tag=$release_tag" >> "$GITHUB_OUTPUT"
+          echo "release_notes=$source_path" >> "$GITHUB_OUTPUT"
       - name: Install deterministically
         run: npm ci --no-audit --no-fund
       - name: Verify release candidate
@@ -50,6 +66,7 @@ jobs:
         id: pack
         shell: bash
         run: |
+          set -euo pipefail
           npm run build
           npm pack --json --ignore-scripts > npm-pack.json
           tarball="$(node -e "const fs=require('fs'); const rows=JSON.parse(fs.readFileSync('npm-pack.json','utf8')); if (!Array.isArray(rows) || rows.length !== 1 || typeof rows[0].filename !== 'string') throw new Error('Expected exactly one npm pack artifact'); process.stdout.write(rows[0].filename);")"
@@ -66,9 +83,12 @@ jobs:
         shell: bash
         env:
           PREFLIGHT_REF: ${{ inputs.ref || github.sha }}
+          RELEASE_TAG: ${{ steps.release_notes.outputs.release_tag }}
+          RELEASE_NOTES: ${{ steps.release_notes.outputs.release_notes }}
           TARBALL: ${{ steps.pack.outputs.tarball }}
           TARBALL_INTEGRITY: ${{ steps.pack.outputs.integrity }}
         run: |
+          set -euo pipefail
           resolved_commit="$(git rev-parse HEAD)"
           export RESOLVED_COMMIT="$resolved_commit"
           node <<'NODE'
@@ -80,6 +100,8 @@ jobs:
             package: { name: pkg.name, version: pkg.version },
             requestedRef: process.env.PREFLIGHT_REF,
             resolvedCommit: process.env.RESOLVED_COMMIT,
+            releaseTag: process.env.RELEASE_TAG,
+            releaseNotes: process.env.RELEASE_NOTES,
             tarball: process.env.TARBALL,
             tarballIntegrity: process.env.TARBALL_INTEGRITY,
             sbom: 'sbom.spdx.json',
@@ -97,6 +119,7 @@ jobs:
             ${{ steps.pack.outputs.tarball }}
             npm-pack.json
             sbom.spdx.json
+            ${{ steps.release_notes.outputs.release_notes }}
             release-preflight.json
             review-site/
           if-no-files-found: error
