@@ -37,7 +37,7 @@ requireText(releaseSource, 'release.yml', 'run: npm run site:build', 'reproducib
 requireText(releaseSource, 'release.yml', 'name: release-evidence', 'retained release evidence artifact');
 requireText(releaseSource, 'release.yml', 'actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8', 'SHA-pinned artifact download action');
 requireText(releaseSource, 'release.yml', 'source_path="docs/RELEASE-NOTES-${RELEASE_TAG}.md"', 'version-derived release notes source');
-requireText(releaseSource, 'release.yml', 'asset_name="RELEASE-NOTES-${RELEASE_TAG}.md"', 'version-derived release notes asset');
+requireText(releaseSource, 'release.yml', 'echo "release_notes=$source_path" >> "$GITHUB_OUTPUT"', 'in-place version-derived release notes output');
 
 if (/\n\s*push:\s*\n/u.test(releaseSource)) errors.push('release.yml: permanent publication must not have a push trigger.');
 if (/secrets\.|NODE_AUTH_TOKEN|rawafid1|bootstrap-initial-package|attest-bootstrap-package/u.test(releaseSource)) {
@@ -138,7 +138,7 @@ requireText(preflightSource, 'release-preflight.yml', 'persist-credentials: fals
 requireText(preflightSource, 'release-preflight.yml', 'package_version="$(node -p "require(\'./package.json\').version")"', 'package-version-derived preflight identity');
 requireText(preflightSource, 'release-preflight.yml', 'release_tag="v${package_version}"', 'version-derived preflight release tag');
 requireText(preflightSource, 'release-preflight.yml', 'source_path="docs/RELEASE-NOTES-${release_tag}.md"', 'version-derived preflight release notes source');
-requireText(preflightSource, 'release-preflight.yml', 'release_notes=$asset_name', 'release-notes preflight output');
+requireText(preflightSource, 'release-preflight.yml', 'echo "release_notes=$source_path" >> "$GITHUB_OUTPUT"', 'in-place release-notes preflight output');
 requireText(preflightSource, 'release-preflight.yml', 'releaseTag: process.env.RELEASE_TAG', 'release tag bound into preflight manifest');
 requireText(preflightSource, 'release-preflight.yml', 'releaseNotes: process.env.RELEASE_NOTES', 'release notes bound into preflight manifest');
 requireText(preflightSource, 'release-preflight.yml', '${{ steps.release_notes.outputs.release_notes }}', 'versioned release notes retained in preflight evidence');
@@ -163,5 +163,5 @@ if (errors.length > 0) {
   console.error(errors.join('\n'));
   process.exitCode = 1;
 } else {
-  console.log('Release policy contract passed: publication is release-event-only and tokenless through npm Trusted Publishing/OIDC; both preflight and publication require version-derived release notes; release evidence is prepared without credentials; the exact npm tarball is verified against the public registry; GitHub attestations are created only after registry identity is proven; and GitHub Release assets are uploaded only when missing and must match their local SHA-256 digests exactly.');
+  console.log('Release policy contract passed: publication is release-event-only and tokenless through npm Trusted Publishing/OIDC; both preflight and publication require in-place version-derived release notes; release evidence is prepared without credentials; the exact npm tarball is verified against the public registry; GitHub attestations are created only after registry identity is proven; and GitHub Release assets are uploaded only when missing and must match their local SHA-256 digests exactly.');
 }
