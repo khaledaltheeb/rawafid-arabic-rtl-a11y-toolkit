@@ -20,6 +20,7 @@ jobs:
       exists: ${{ steps.registry.outputs.exists }}
       tarball: ${{ steps.pack.outputs.tarball }}
       integrity: ${{ steps.pack.outputs.integrity }}
+      release-notes: ${{ steps.release_notes.outputs.release_notes }}
     steps:
       - name: Checkout release target
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
@@ -53,6 +54,22 @@ jobs:
           node -e "const [M,m]=process.versions.node.split('.').map(Number); if (M < 22 || (M === 22 && m < 14)) throw new Error('Trusted Publishing requires Node >=22.14.0');"
           npm_version="$(npm --version)"
           node -e "const [M,m]=process.argv[1].split('.').map(Number); if (M < 11 || (M === 11 && m < 5)) throw new Error('Trusted Publishing requires npm >=11.5.1');" "$npm_version"
+
+      - name: Resolve versioned release notes
+        id: release_notes
+        shell: bash
+        env:
+          RELEASE_TAG: ${{ github.event.release.tag_name }}
+        run: |
+          set -euo pipefail
+          source_path="docs/RELEASE-NOTES-${RELEASE_TAG}.md"
+          asset_name="RELEASE-NOTES-${RELEASE_TAG}.md"
+          test -f "$source_path" || {
+            echo "Refusing release: required versioned release notes are missing: $source_path" >&2
+            exit 1
+          }
+          cp "$source_path" "$asset_name"
+          echo "release_notes=$asset_name" >> "$GITHUB_OUTPUT"
 
       - name: Require committed lockfile
         shell: bash
@@ -115,8 +132,8 @@ jobs:
             ${{ steps.pack.outputs.tarball }}
             npm-pack.json
             sbom.spdx.json
+            ${{ steps.release_notes.outputs.release_notes }}
             review-site/
-            docs/RELEASE-NOTES-v0.3.0.md
           if-no-files-found: error
           retention-days: 90
 
@@ -205,3 +222,106 @@ jobs:
         with:
           subject-path: evidence/review-site/**
           create-storage-record: false
+
+  publish-release-assets:
+    needs: [prepare, publish-oidc, attest-release]
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      contents: write
+    steps:
+      - name: Download verified release evidence for GitHub Release assets
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8
+        with:
+          name: release-evidence
+          path: evidence
+
+      - name: Verify or attach exact GitHub Release assets
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+          RELEASE_TAG: ${{ github.event.release.tag_name }}
+          TARBALL: ${{ needs.prepare.outputs.tarball }}
+          RELEASE_NOTES: ${{ needs.prepare.outputs.release-notes }}
+        run: |
+          set -euo pipefail
+          test -n "$RELEASE_TAG" || { echo 'Refusing asset publication: empty release tag.' >&2; exit 1; }
+
+          release_json="$(mktemp)"
+          refresh_release() {
+            gh api "repos/${GITHUB_REPOSITORY}/releases/tags/${RELEASE_TAG}" > "$release_json"
+          }
+          asset_count() {
+            jq -r --arg name "$1" '[.assets[] | select(.name == $name)] | length' "$release_json"
+          }
+          asset_digest() {
+            jq -r --arg name "$1" '[.assets[] | select(.name == $name)][0].digest // empty' "$release_json"
+          }
+
+          for file in \
+            "evidence/${TARBALL}" \
+            "evidence/sbom.spdx.json" \
+            "evidence/${RELEASE_NOTES}"
+          do
+            test -f "$file" || { echo "Required release asset is missing locally: $file" >&2; exit 1; }
+            name="$(basename "$file")"
+            local_digest="sha256:$(sha256sum "$file" | awk '{print $1}')"
+
+            refresh_release
+            count="$(asset_count "$name")"
+            test "$count" -le 1 || {
+              echo "Refusing release: duplicate GitHub Release assets named '$name'." >&2
+              exit 1
+            }
+
+            if [ "$count" -eq 1 ]; then
+              remote_digest="$(asset_digest "$name")"
+              test -n "$remote_digest" || {
+                echo "Refusing release: existing GitHub Release asset '$name' has no verifiable digest." >&2
+                exit 1
+              }
+              test "$remote_digest" = "$local_digest" || {
+                echo "GitHub Release asset digest mismatch for '$name'." >&2
+                echo "local:  $local_digest" >&2
+                echo "remote: $remote_digest" >&2
+                exit 1
+              }
+              echo "Verified existing GitHub Release asset: $name"
+              continue
+            fi
+
+            gh release upload "$RELEASE_TAG" "$file" --repo "$GITHUB_REPOSITORY"
+
+            matched=false
+            remote_digest=""
+            for attempt in 1 2 3 4 5 6 7 8 9 10; do
+              refresh_release
+              count="$(asset_count "$name")"
+              if [ "$count" -gt 1 ]; then
+                echo "Refusing release: duplicate GitHub Release assets appeared for '$name'." >&2
+                exit 1
+              fi
+              if [ "$count" -eq 1 ]; then
+                remote_digest="$(asset_digest "$name")"
+                if [ -n "$remote_digest" ] && [ "$remote_digest" != "$local_digest" ]; then
+                  echo "GitHub Release asset digest mismatch after upload for '$name'." >&2
+                  echo "local:  $local_digest" >&2
+                  echo "remote: $remote_digest" >&2
+                  exit 1
+                fi
+                if [ "$remote_digest" = "$local_digest" ]; then
+                  matched=true
+                  break
+                fi
+              fi
+              sleep 2
+            done
+
+            test "$matched" = 'true' || {
+              echo "Could not verify GitHub Release asset digest for '$name'." >&2
+              echo "local:  $local_digest" >&2
+              echo "remote: $remote_digest" >&2
+              exit 1
+            }
+            echo "Uploaded and verified GitHub Release asset: $name"
+          done
