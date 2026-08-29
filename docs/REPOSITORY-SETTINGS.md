@@ -1,16 +1,36 @@
 # Required repository settings
 
-These controls cannot be encoded completely in Git and must be configured in the GitHub/npm account interfaces.
+These controls cannot be encoded completely in Git and must be configured in the GitHub/npm account interfaces. Repository files may document the intended policy, but they are not evidence that an account-bound setting is enabled.
 
-## Repository
+## Observed service state — 2026-08-29
+
+The following state was read directly from the GitHub service after the public `v0.3.0` release and README cleanup:
 
 - Visibility: **Public**.
 - Default branch: `main`.
-- Enable Issues.
+- `main` branch protection/ruleset enforcement: **not enabled** (`protected: false`).
+- Required status-check enforcement on `main`: **off**.
+- Issues: enabled.
+- Discussions: disabled.
+- Wiki: enabled.
+- Projects: enabled.
+- Automatically delete head branches after merge: disabled.
+- Repository homepage: not configured.
+- Repository topics: none configured.
+
+The branch-protection state is the material governance gap. Green CI and reviewed pull requests are useful compensating controls, but they do not satisfy a requirement to prevent direct changes to the primary branch.
+
+## Repository target state
+
+- Keep visibility **Public**.
+- Keep the default branch as `main`.
+- Keep Issues enabled.
 - Enable Discussions for maintainer/community questions that are not bug reports.
 - Disable Wiki unless a separate wiki is deliberately maintained; canonical technical documentation belongs in versioned repository files.
 - Disable Projects until there is an active project board with an owner and operating cadence.
 - Automatically delete head branches after pull requests are merged.
+- Set the repository homepage to the public Rawafid toolkit adoption/evidence page once that production page is live.
+- Add the documented repository topics.
 - Enable private vulnerability reporting.
 - Enable Dependabot alerts and security updates.
 - Enable secret scanning and push protection where available.
@@ -18,7 +38,7 @@ These controls cannot be encoded completely in Git and must be configured in the
 
 ## Ruleset for `main`
 
-Recommended minimum:
+Required minimum target:
 
 - Require pull requests before merge.
 - Require at least one approving review; raise to two when additional maintainers exist.
@@ -42,15 +62,19 @@ Signed commits/tags are recommended when the maintainer's signing workflow is es
 
 ## npm environment
 
-Create a GitHub environment named `npm` for the publication job. Optionally require a reviewer for production releases. No npm publication token secret is required for routine releases after Trusted Publishing is configured.
+The publication workflow uses the GitHub environment named `npm`. A long-lived npm publication token is not part of the permanent release workflow.
 
-## First npm publication
+The one-time GitHub Environment secret `rawafid1` was used only for the completed first-package bootstrap. The permanent workflow no longer references it. Remove the Environment secret and revoke the underlying npm token once there is no other legitimate use for that credential.
 
-A brand-new npm package must exist before npm Trusted Publishing can be configured. Follow `docs/FIRST-PUBLICATION.md`: perform the one-time interactive 2FA-protected bootstrap publication from a trusted maintainer machine, then configure Trusted Publishing immediately.
+## First npm publication — completed
 
-Do not add a long-lived or bypass-2FA npm publication token to GitHub as a workaround for the bootstrap requirement.
+The first public package creation is complete. `@rawafid/arabic-rtl-a11y-toolkit@0.3.0` was created through an isolated one-time npm Granular Access Token bootstrap with npm provenance disabled, then independently verified against registry `dist.integrity`. Separate GitHub attestations and GitHub Release `v0.3.0` were created only after that registry identity check succeeded.
+
+See [`FIRST-PUBLICATION.md`](./FIRST-PUBLICATION.md) for the immutable audit record. Do not describe `v0.3.0` as an npm Trusted Publishing provenance release.
 
 ## npm Trusted Publisher after bootstrap
+
+The permanent repository workflow is OIDC-only and is designed to publish through npm Trusted Publishing. The package-level npm account setting is external to this repository and cannot be inferred from `release.yml` alone.
 
 Authorize exactly:
 
@@ -62,10 +86,10 @@ Authorize exactly:
 
 npm's Trusted Publisher form expects the workflow **filename**, not `.github/workflows/release.yml`.
 
-After an OIDC publication succeeds, restrict traditional publication access to the strongest policy compatible with the chosen release process and remove credentials that are no longer needed.
+Treat the Trusted Publisher relationship as unproven until it is verified in npm account settings or demonstrated by a successful legitimate OIDC publication of a later release. After that proof, keep traditional publication access at the strongest policy compatible with the release process and remove credentials that are no longer needed.
 
 ## Topics
 
 Suggested GitHub topics:
 
-`arabic`, `rtl`, `bidi`, `i18n`, `localization`, `accessibility`, `a11y`, `unicode`, `typescript`, `logical-properties`, `playwright`, `wcag`
+`arabic`, `rtl`, `bidi`, `i18n`, `localization`, `accessibility`, `a11y`, `unicode`, `typescript`, `logical-properties`, `playwright`, `wcag`, `sarif`, `github-actions`
