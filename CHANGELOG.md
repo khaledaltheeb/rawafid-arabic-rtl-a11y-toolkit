@@ -4,7 +4,13 @@ All notable changes to this project are documented here. The project follows Sem
 
 ## [Unreleased]
 
-No committed release changes after `v0.3.0` yet.
+### Changed
+
+- Aligned the README installation, npm distribution, and provenance language with the verified public `v0.3.0` release.
+- Synchronized owner-controlled GitHub/npm settings documentation with the service state actually observed after `v0.3.0`.
+- Generalized the permanent OIDC release workflow so release notes are derived from the release tag instead of being hard-coded to `v0.3.0`.
+- Added fail-closed GitHub Release asset publication: the exact npm tarball, SPDX SBOM, and versioned release notes are uploaded only when missing and must match GitHub-reported SHA-256 asset digests exactly.
+- Extended the release-policy contract and provenance documentation to enforce the version-neutral release-assets chain without weakening the one-time `v0.3.0` bootstrap provenance boundary.
 
 ## [0.3.0] - 2026-08-28
 
