@@ -1,6 +1,7 @@
 # Rawafid Arabic/RTL Accessibility & Localization Toolkit
 
 [![License: Apache-2.0](https://img.shields.io/badge/License-Apache--2.0-blue.svg)](LICENSE)
+[![npm version](https://img.shields.io/npm/v/%40rawafid%2Farabic-rtl-a11y-toolkit.svg)](https://www.npmjs.com/package/@rawafid/arabic-rtl-a11y-toolkit)
 [![CI](https://github.com/khaledaltheeb/rawafid-arabic-rtl-a11y-toolkit/actions/workflows/ci.yml/badge.svg)](https://github.com/khaledaltheeb/rawafid-arabic-rtl-a11y-toolkit/actions/workflows/ci.yml)
 [![OpenSSF Scorecard](https://api.scorecard.dev/projects/github.com/khaledaltheeb/rawafid-arabic-rtl-a11y-toolkit/badge)](https://scorecard.dev/viewer/?uri=github.com/khaledaltheeb/rawafid-arabic-rtl-a11y-toolkit)
 [![OSS hosting by Cloudsmith](https://img.shields.io/badge/OSS%20hosting%20by-cloudsmith-blue?logo=cloudsmith&style=flat-square)](https://cloudsmith.com)
@@ -118,7 +119,7 @@ CI retains the partner results, standards/partner manifests, localization QA evi
 - CodeQL, Dependency Review, and OpenSSF Scorecard workflows.
 - GitHub Actions pinned to full commit SHAs.
 - `publint` and Are The Types Wrong package validation.
-- npm Trusted Publishing/OIDC release design with npm provenance and SPDX SBOM generation after bootstrap publication requirements are satisfied.
+- Permanent release workflow is OIDC-only and designed for npm Trusted Publishing; `v0.3.0` is explicitly documented as the one-time token-bootstrap exception and does not claim npm Trusted Publishing provenance.
 - Exact npm tarball publication policy: the locally verified `.tgz` is the publish subject, registry `dist.integrity` must match its SHA-512 value, and successful releases are configured to generate GitHub/Sigstore build and SBOM attestations.
 - A static release-policy contract prevents removal of the exact-tarball, integrity-verification, or attestation controls without failing the core quality gate.
 - Open-source scope guard and secret-like material checks.
@@ -126,13 +127,15 @@ CI retains the partner results, standards/partner manifests, localization QA evi
 
 ## Installation
 
-After the first npm publication:
+The current public release is [`@rawafid/arabic-rtl-a11y-toolkit@0.3.0`](https://www.npmjs.com/package/@rawafid/arabic-rtl-a11y-toolkit).
 
 ```bash
 npm install @rawafid/arabic-rtl-a11y-toolkit
 ```
 
-Before publication, clone the repository and build it locally.
+Release evidence is published with [GitHub Release `v0.3.0`](https://github.com/khaledaltheeb/rawafid-arabic-rtl-a11y-toolkit/releases/tag/v0.3.0), including the exact package tarball, SPDX SBOM, and release notes. The registry `dist.integrity` was verified against the locally built SHA-512 value, and post-publication GitHub attestations were generated after that verification.
+
+`v0.3.0` itself was created through the one-time token bootstrap with npm provenance disabled, so this project does **not** represent that release as an npm Trusted Publishing provenance release. The permanent repository release workflow is OIDC-only and expects the package-level npm Trusted Publisher relationship to be configured in npm for future routine publications.
 
 ## Quick start
 
@@ -253,7 +256,7 @@ The package has zero runtime dependencies. Development dependencies are exact-ve
 | Automated accessibility | axe-core |
 | Security analysis | CodeQL + Dependency Review |
 | OSS posture | OpenSSF Scorecard + Security Insights + OSPS evidence map |
-| Release identity | exact `.tgz` + npm SHA-512 identity + Trusted Publishing/npm provenance + GitHub build/SBOM attestation policy; public attestation evidence is release-specific |
+| Release identity | exact `.tgz` + npm SHA-512 identity + OIDC-only release policy + release-specific npm provenance when emitted + GitHub build/SBOM attestation; `v0.3.0` bootstrap exception documented |
 
 See [docs/QUALITY-GATES.md](./docs/QUALITY-GATES.md), [docs/TEST-MATRIX.md](./docs/TEST-MATRIX.md), and [docs/VERIFICATION-STATUS.md](./docs/VERIFICATION-STATUS.md).
 
