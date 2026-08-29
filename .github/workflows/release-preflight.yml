@@ -50,14 +50,12 @@ jobs:
           package_version="$(node -p "require('./package.json').version")"
           release_tag="v${package_version}"
           source_path="docs/RELEASE-NOTES-${release_tag}.md"
-          asset_name="RELEASE-NOTES-${release_tag}.md"
           test -f "$source_path" || {
             echo "Preflight failed: required versioned release notes are missing: $source_path" >&2
             exit 1
           }
-          cp "$source_path" "$asset_name"
           echo "release_tag=$release_tag" >> "$GITHUB_OUTPUT"
-          echo "release_notes=$asset_name" >> "$GITHUB_OUTPUT"
+          echo "release_notes=$source_path" >> "$GITHUB_OUTPUT"
       - name: Install deterministically
         run: npm ci --no-audit --no-fund
       - name: Verify release candidate
