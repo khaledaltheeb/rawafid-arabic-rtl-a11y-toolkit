@@ -74,19 +74,28 @@ Remaining:
 
 ## 0.6 - Ecosystem and institutional maturity
 
-- Public package publication with provenance after npm scope/bootstrap requirements are satisfied.
-- Reproducible release artifacts and SBOM history.
-- Issue/PR templates exercised by real external contributions.
-- Provider-backed OSS infrastructure only where eligibility is verified.
-- Maintain an evidence-backed OSS application dossier whose provider criteria are re-checked before submissions.
-- Public compatibility evidence spanning supported Node and browser generations.
+Completed:
+
+- First public npm package publication: `@rawafid/arabic-rtl-a11y-toolkit@0.3.0`.
+- GitHub Release `v0.3.0` with exact package tarball, release notes, SPDX SBOM, registry-integrity verification, and post-publication GitHub attestations.
+- Reproducible package/release checks and machine-readable partner evidence.
+- Evidence-backed OSS/provider application dossier.
+- Contributor entry points, Code of Conduct, explicit founder-led governance, and a stakeholder-dialogue process.
+
+Remaining:
+
+- Demonstrate a legitimate routine npm release through the permanent Trusted Publishing/OIDC path; do not mislabel the v0.3.0 bootstrap publication as npm provenance.
+- Enable and verify protected-main/ruleset enforcement and required checks at the GitHub repository-settings layer.
+- Exercise issue/PR templates, reviewer progression, and governance with real external contributions rather than simulated participants.
+- Provider-backed OSS infrastructure only where eligibility and acceptance are independently verified.
+- Public compatibility evidence spanning future supported Node and browser generations.
 - Documented deprecation/migration process exercised before 1.0.
 
 ## 1.0 - Stable API
 
 - Public API frozen under SemVer after sustained 0.x field use.
 - Sustained browser/runtime compatibility evidence.
-- Public release/provenance history.
+- Public release/provenance history including at least one verified normal OIDC/Trusted Publishing release.
 - Security and dependency processes operating successfully over time.
 - Maintainer/reviewer process operating successfully with external contributions.
 - No unresolved ambiguity between the Rawafid platform identity, official website, source repository, and npm package.
