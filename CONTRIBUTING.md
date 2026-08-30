@@ -42,6 +42,14 @@ The project uses public GitHub issues and pull requests for normal changes.
 
 Security-sensitive reports are an exception: do not open a public issue or pull request containing exploit details before following [SECURITY.md](./SECURITY.md).
 
+## Community behavior and governance
+
+Participation in project spaces is governed by [CODE_OF_CONDUCT.md](./CODE_OF_CONDUCT.md). Conduct reports should use the private route documented there rather than a public issue.
+
+The project is currently founder-led. Role progression, material decision boundaries, conflicts of interest, and the transition toward distributed review are documented in [GOVERNANCE.md](./GOVERNANCE.md). High-impact decisions use the focused stakeholder process in [docs/STAKEHOLDER-DIALOGUE.md](./docs/STAKEHOLDER-DIALOGUE.md); ordinary bug fixes do not require a governance exercise.
+
+Contributing feedback or participating in a stakeholder discussion does not imply endorsement, partnership, accreditation, sponsorship, or formal affiliation with Rawafid.
+
 ## Engineering expectations
 
 - Prefer standards/platform primitives over custom protocol inventions.
@@ -86,3 +94,5 @@ Breaking changes require a changelog entry and migration guidance.
 ## Licensing
 
 By submitting a contribution, you agree that your contribution is licensed under Apache-2.0 according to the contribution terms in Section 5 of that license. Do not submit code you do not have the right to contribute.
+
+The repository's `CODE_OF_CONDUCT.md` is a separately attributed CC BY-SA 4.0 derivative as stated in that file; this does not change the Apache-2.0 license for submitted software contributions.

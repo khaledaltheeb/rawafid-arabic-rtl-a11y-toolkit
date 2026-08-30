@@ -37,10 +37,10 @@ Maturity describes this repository only. It does not transfer automatically to a
 | Node/package compatibility | Operationally hardened | Node 22/24/26 CI, tsdown, publint, ATTW |
 | Supply-chain workflow pinning | Operationally hardened | Full-SHA verification + Dependabot maintenance |
 | CodeQL / Dependency Review | Operationally hardened | Repeated GitHub PR validation |
-| npm first publication | External-evidence pending | Requires verified `@rawafid` scope access and account 2FA |
-| npm OIDC provenance publication | External-evidence pending | Requires existing package + Trusted Publisher binding + successful release |
+| npm public package / first publication | Operationally hardened | `@rawafid/arabic-rtl-a11y-toolkit@0.3.0` is publicly released; exact package tarball, release notes, SPDX SBOM, and registry-integrity verification are recorded for v0.3.0 |
+| npm OIDC provenance publication | External-evidence pending | v0.3.0 was a one-time bootstrap publication; future normal release still requires verified package-level Trusted Publisher binding and a successful OIDC/provenance publication |
 | BrowserStack/Transifex/etc. program integration | External-evidence pending | Provider acceptance must be verified independently |
-| GitHub protected-main ruleset | External-evidence pending | Repository-settings state must be directly verified |
+| GitHub protected-main ruleset | External-evidence pending | Repository-settings state must be directly verified; `main` is not currently protected |
 
 ## Promotion requirements
 
