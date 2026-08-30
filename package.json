@@ -5,7 +5,7 @@
   "type": "module",
   "license": "Apache-2.0",
   "author": {
-    "name": "Khaled altheeb",
+    "name": "Khaled Altheeb",
     "email": "khaledaltheeb@gmail.com",
     "url": "https://healthrenewal.org/open-source/arabic-rtl-a11y-toolkit"
   },
@@ -55,8 +55,9 @@
     "partner:check": "node scripts/check-partner-suite.mjs",
     "contracts:check": "node scripts/check-machine-contract-schemas.mjs",
     "research:check": "node scripts/check-research-metadata.mjs",
+    "governance:check": "node scripts/check-governance-contract.mjs",
     "security:sca": "npm audit --audit-level=moderate",
-    "check:core": "npm run scope:check && npm run supply-chain:check && npm run security:sca && npm run catalogs:check && npm run localization:evidence && npm run localization:sarif-check && npm run rtl-audit:check && npm run github-action:check && npm run enterprise:check && npm run partner-offers:check && npm run docs:check && npm run conformance:check && npm run partner:check && npm run contracts:check && npm run research:check && npm run partner:runner-check && npm run lint && npm run typecheck && npm run test",
+    "check:core": "npm run scope:check && npm run supply-chain:check && npm run security:sca && npm run catalogs:check && npm run localization:evidence && npm run localization:sarif-check && npm run rtl-audit:check && npm run github-action:check && npm run enterprise:check && npm run partner-offers:check && npm run docs:check && npm run conformance:check && npm run partner:check && npm run contracts:check && npm run research:check && npm run governance:check && npm run partner:runner-check && npm run lint && npm run typecheck && npm run test",
     "package:lint": "npm run build && publint",
     "package:types": "npm run build && attw --pack . --profile esm-only --entrypoints .",
     "package:contract": "npm run build && node scripts/check-package-contract.mjs",
