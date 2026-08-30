@@ -1,14 +1,16 @@
 {
   "@context": "https://w3id.org/codemeta/3.1",
   "@type": "SoftwareSourceCode",
-  "name": "Health Renewal Arabic/RTL Accessibility & Localization Toolkit",
-  "alternateName": "Rawafid Arabic/RTL Accessibility & Localization Toolkit",
+  "name": "Rawafid Arabic/RTL Accessibility & Localization Toolkit",
+  "alternateName": "أداة روافد المفتوحة للعربية وRTL والوصولية والتوطين",
   "description": "Framework-agnostic TypeScript toolkit and interoperability evidence suite for Arabic/RTL web interfaces, localization, accessibility, Unicode-safe text, direction-aware UI behavior, source auditing, policy-driven CI, and real-browser verification.",
   "codeRepository": "https://github.com/khaledaltheeb/rawafid-arabic-rtl-a11y-toolkit",
   "issueTracker": "https://github.com/khaledaltheeb/rawafid-arabic-rtl-a11y-toolkit/issues",
   "url": "https://healthrenewal.org/open-source/arabic-rtl-a11y-toolkit",
+  "downloadUrl": "https://www.npmjs.com/package/@rawafid/arabic-rtl-a11y-toolkit",
   "license": "https://spdx.org/licenses/Apache-2.0",
   "version": "0.3.0",
+  "datePublished": "2026-08-28",
   "programmingLanguage": ["TypeScript", "JavaScript", "CSS", "HTML"],
   "runtimePlatform": "Node.js >=22; modern web browsers",
   "applicationCategory": ["Internationalization", "Accessibility", "DeveloperTool", "ResearchSoftware"],
@@ -31,13 +33,15 @@
   "isAccessibleForFree": true,
   "author": [{
     "@type": "Person",
-    "name": "Khaled Altheeb",
+    "name": "Khaled altheeb",
+    "alternateName": "خالد الذيب",
     "email": "mailto:khaledaltheeb@gmail.com",
     "url": "https://github.com/khaledaltheeb"
   }],
   "maintainer": [{
     "@type": "Person",
-    "name": "Khaled Altheeb",
+    "name": "Khaled altheeb",
+    "alternateName": "خالد الذيب",
     "email": "mailto:contact@healthrenewal.org",
     "telephone": "+962795945817",
     "url": "https://healthrenewal.org/open-source/arabic-rtl-a11y-toolkit"
