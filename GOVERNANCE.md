@@ -112,6 +112,8 @@ For material decisions, the project uses a **proposal → evidence → stakehold
 
 Consensus is preferred but is not a requirement to make progress. The project should document disagreement honestly rather than presenting a contested decision as unanimous.
 
+For governance-readiness dialogue, the project asks participants which open-source governance models they have seen work, which decisions they want to participate in, and what the project should avoid as governance becomes more formal. The invitation pool should be checked for relevant gender and geographic breadth without inferring identities, collecting unnecessary sensitive data, or treating demographic coverage as a substitute for expertise. Gaps and their likely effect on the decision must be recorded.
+
 ## Stakeholder dialogue
 
 The project does not treat governance as a checklist. Its stakeholder-dialogue process is defined in [docs/STAKEHOLDER-DIALOGUE.md](./docs/STAKEHOLDER-DIALOGUE.md).
