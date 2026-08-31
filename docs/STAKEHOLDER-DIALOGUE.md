@@ -37,8 +37,41 @@ A stakeholder conversation should be short enough to answer but specific enough 
 6. **What would make contribution or review difficult for someone outside the founder's existing context?**
 7. **Where could a one-person dependency create a safety, continuity, or legitimacy problem?**
 8. **What should trigger reconsideration after the decision is implemented?**
+9. **Which open-source communities have you seen governed effectively, and what made their governance work in practice?**
+10. **Which project decisions would you want to participate in, and which decisions should remain delegated to maintainers or domain reviewers?**
+11. **What should this project avoid as it formalizes governance?** Consider barriers to entry, performative consultation, concentrated authority, premature committees, inaccessible participation, and processes that are heavier than the risk they address.
 
 A discussion may use fewer questions when the scope is narrow.
+
+Questions 9–11 are required in the initial governance-readiness cycle. They distinguish governance models people have actually seen work, the decision rights participants value, and failure modes that formalization could introduce. Later cycles may omit them only when the decision is narrowly technical and the cycle record explains why they are not relevant.
+
+## Participation and representation standard
+
+The project seeks relevant expertise and lived experience, not statistical representativeness. Even so, convenience sampling can reproduce the founder's existing network and hide who is absent. Every cycle must therefore define its intended coverage before invitations are sent.
+
+For each invited or participating perspective, record only the minimum non-sensitive attributes needed to evaluate the sample:
+
+| Coverage dimension | What to record | Initial-cycle target |
+| --- | --- | --- |
+| Stakeholder role | Contributor, Arabic/RTL or i18n practitioner, accessibility/AT perspective, downstream implementer, governance/community practitioner, or another decision-relevant role | Seek all listed initial perspectives; disclose gaps |
+| Gender balance | Self-described category, `not disclosed`, or `not collected`; never infer from a name, photo, voice, or organization | Do not allow one gender to constitute the entire invited pool when qualified alternatives can reasonably be reached |
+| Geographic balance | Participant-selected country/region relevant to their work; exact address is never needed | Seek participation across more than one MENA geography and, where useful, one perspective outside MENA |
+| Participation channel | Public issue, email, accessible document, audio, or other accommodation | Offer an asynchronous path and at least one private alternative |
+| Relationship to project | New participant, contributor, downstream user, institutional contact, or existing collaborator | Avoid relying only on people already connected to the founder |
+
+Gender and geography are selection safeguards, not quotas and not substitutes for relevant expertise. No person should be asked to disclose a protected characteristic as a condition of participation. When a target is not met, the cycle remains valid only if the public summary records the gap, outreach attempted, likely effect on the findings, and whether another round is required before the decision.
+
+### Selection record
+
+Before outreach, create a cycle record from [the cycle template](./STAKEHOLDER-DIALOGUE-CYCLE-TEMPLATE.md) and complete:
+
+1. decision scope and affected groups;
+2. intended role, gender, geographic, channel, and relationship coverage;
+3. recruitment routes that reach beyond the founder's immediate network;
+4. exclusions required by conflict, privacy, safety, or lack of relevance;
+5. the minimum evidence needed before a decision can proceed.
+
+The project must never invent demographic data, publish an identity without consent, or imply that a small purposive sample represents all Arabic speakers, all MENA countries, all disabled people, or the open-source community as a whole.
 
 ## Dialogue workflow
 
@@ -74,6 +107,17 @@ Input may be asynchronous. Participation must not depend on joining a live meeti
 
 Where practical, prompts should be available in clear English and Arabic, and should avoid unnecessary jargon.
 
+Before collecting input, tell each participant:
+
+- the decision being informed and how their input may be used;
+- that participation is voluntary and advisory under the current governance model;
+- whether their name, role, organization, or quotations may be published;
+- that they may choose attribution, role-only attribution, or anonymity;
+- how to correct or withdraw an attributable quotation before publication;
+- that declining has no effect on contribution or review opportunities.
+
+Collect no sensitive personal data that is unnecessary for the decision. Do not place private email, demographic details, accessibility needs, or confidential raw notes in the public repository. Preserve public summaries and decision evidence; retain private notes only as long as operationally necessary.
+
 ### 4. Separate evidence from preference
 
 Record whether feedback is based on:
@@ -101,6 +145,8 @@ Before a final high-impact decision, summarize:
 - the least-complex viable path forward.
 
 Do not convert silence into consent and do not count comments as votes unless a future governance policy explicitly defines a vote.
+
+Use a theme-by-perspective matrix rather than a single undifferentiated summary. This makes it possible to see whether an apparent theme came from several independent roles or only one participant. Report counts as descriptive context only; a larger count does not override stronger accessibility, security, standards, or lived-experience evidence.
 
 ### 6. Make and record the decision
 
@@ -154,6 +200,8 @@ The initial cycle should produce a compact public summary containing:
 - the next governance trigger.
 
 Sensitive or private feedback should be summarized without exposing identities or confidential details.
+
+The cycle record and public summary should use [STAKEHOLDER-DIALOGUE-CYCLE-TEMPLATE.md](./STAKEHOLDER-DIALOGUE-CYCLE-TEMPLATE.md). A cycle is complete only when the template records recruitment coverage, consent/attribution choices, responses to the governance-model/decision-rights/avoidance questions, a theme-by-perspective synthesis, accepted and declined changes, unresolved gaps, the decision owner, and the next review trigger.
 
 ## Relationship to governance
 
