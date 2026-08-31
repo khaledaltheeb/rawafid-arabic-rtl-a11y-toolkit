@@ -1,10 +1,11 @@
 import { readFile } from 'node:fs/promises';
 
 const read = (path) => readFile(path, 'utf8');
-const [governance, conduct, stakeholder, contributing, contact] = await Promise.all([
+const [governance, conduct, stakeholder, stakeholderTemplate, contributing, contact] = await Promise.all([
   read('GOVERNANCE.md'),
   read('CODE_OF_CONDUCT.md'),
   read('docs/STAKEHOLDER-DIALOGUE.md'),
+  read('docs/STAKEHOLDER-DIALOGUE-CYCLE-TEMPLATE.md'),
   read('CONTRIBUTING.md'),
   read('CONTACT.md'),
 ]);
@@ -40,6 +41,28 @@ for (const group of [
 requireText(stakeholder, 'What actually needs governing here?', 'Stakeholder dialogue must ask what actually needs governance.');
 requireText(stakeholder, 'Do not convert silence into consent', 'Stakeholder dialogue must not equate silence with consent.');
 requireText(stakeholder, 'does not imply endorsement, partnership, accreditation, sponsorship, or formal affiliation', 'Stakeholder dialogue must retain the non-endorsement boundary.');
+requireText(stakeholder, 'Which open-source communities have you seen governed effectively', 'Stakeholder dialogue must ask for effective open-source governance examples.');
+requireText(stakeholder, 'Which project decisions would you want to participate in', 'Stakeholder dialogue must ask where stakeholders want decision participation.');
+requireText(stakeholder, 'What should this project avoid as it formalizes governance?', 'Stakeholder dialogue must ask what to avoid during formalization.');
+requireText(stakeholder, 'Participation and representation standard', 'Stakeholder dialogue must define its representation standard.');
+requireText(stakeholder, 'never infer from a name, photo, voice, or organization', 'Stakeholder dialogue must prohibit inferred gender classification.');
+requireText(stakeholder, 'more than one MENA geography', 'Stakeholder dialogue must seek geographic breadth.');
+requireText(stakeholder, 'theme-by-perspective matrix', 'Stakeholder dialogue must preserve differences across stakeholder perspectives.');
+requireText(stakeholder, 'attribution, role-only attribution, or anonymity', 'Stakeholder dialogue must provide attribution and anonymity choices.');
+
+for (const section of [
+  'Decision frame',
+  'Intended participation coverage',
+  'Invitation and consent log',
+  'Discussion guide',
+  'Theme-by-perspective synthesis',
+  'Decision and accountability',
+  'Publication and retention check',
+]) {
+  requireText(stakeholderTemplate, section, `Stakeholder cycle template must retain section: ${section}.`);
+}
+requireText(stakeholderTemplate, 'No response is not consent', 'Stakeholder cycle template must not treat silence as consent.');
+requireText(stakeholderTemplate, 'Coverage gaps and their likely effect are disclosed', 'Stakeholder cycle template must disclose representation gaps.');
 
 requireText(contributing, 'Apache-2.0', 'Contribution policy must preserve Apache-2.0 contribution terms.');
 requireText(contact, 'contact@healthrenewal.org', 'Contact policy must retain the organizational contact path.');
