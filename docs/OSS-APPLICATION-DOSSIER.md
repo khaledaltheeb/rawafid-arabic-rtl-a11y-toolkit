@@ -4,7 +4,7 @@ This dossier is the reusable evidence pack for infrastructure, localization, dev
 
 It exists to make applications accurate, consistent, technically reviewable, and cheap for a partner to verify. It is not evidence that any provider has approved the project. Provider terms can change; the applicant must re-check the provider's current official criteria immediately before submission.
 
-**Criteria and repository evidence review date:** 2026-08-25
+**Criteria and repository evidence review date:** 2026-09-11
 
 ## Canonical project facts
 
@@ -14,7 +14,7 @@ It exists to make applications accurate, consistent, technically reviewable, and
 | Project name | Rawafid Arabic/RTL Accessibility & Localization Toolkit |
 | Official platform website | https://healthrenewal.org/ |
 | Public source repository | https://github.com/khaledaltheeb/rawafid-arabic-rtl-a11y-toolkit |
-| Package | `@rawafid/arabic-rtl-a11y-toolkit` after npm publication |
+| Package | `@rawafid/arabic-rtl-a11y-toolkit@0.3.0` |
 | License | Apache-2.0 |
 | Source visibility | Public |
 | Runtime dependencies | Zero |
@@ -42,7 +42,7 @@ Applications should link reviewers directly to evidence rather than requiring th
 | Does localization QA cover RTL-specific failure modes? | placeholder parity, markup-token parity, legacy bidi-control rejection, isolate-balance checks, contextual zero-width reporting |
 | Is accessibility a real engineering surface? | `src/a11y/`, axe-core browser regression tests, WCAG-oriented conformance fixtures, forced-colors/reduced-motion tests, RTL keyboard/grid/typeahead behavior |
 | Is security posture machine-readable? | `security-insights.yml`, `SECURITY.md`, `docs/OSPS-BASELINE.md`, CodeQL, Dependency Review, OpenSSF Scorecard |
-| Are security gaps disclosed rather than hidden? | `docs/OSPS-BASELINE.md` records the directly observed unprotected `main` branch state as a gap |
+| Are security and repository-policy gaps disclosed rather than hidden? | `docs/OSPS-BASELINE.md` plus a fresh GitHub branch/ruleset check immediately before any protection claim |
 | Is release identity protected? | `.github/workflows/release.yml`, `scripts/check-release-policy.mjs`, `docs/RELEASE-PROVENANCE.md` |
 | Is the tested release artifact the publication subject? | release workflow builds one `.tgz`, publishes that exact tarball, and requires npm `dist.integrity` SHA-512 equality |
 | Is signed provenance designed into releases? | npm Trusted Publishing/provenance plus GitHub/Sigstore build-provenance and SBOM attestation steps; public evidence remains release-specific |
@@ -158,19 +158,36 @@ The repository gives security and infrastructure reviewers concrete work product
 - npm OIDC/provenance design and GitHub/Sigstore build/SBOM attestation configuration;
 - a static CI guard that fails if core release-integrity controls are removed.
 
-The project intentionally does **not** claim SLSA level certification, independent security audit, or release attestation evidence before the corresponding public release has completed.
+The project intentionally does **not** claim SLSA-level certification or an independent security audit. Provenance and attestation claims remain release-specific: `v0.3.0` is a completed public release, but its documented bootstrap path must not be represented as npm Trusted Publishing provenance.
 
-### Sentry and other providers
+### Sentry Open-Source Sponsorship
 
-Do not assume a current sponsored/open-source plan exists simply because a vendor has historically supported open source. For Sentry, TestMu, Docker, or any other provider, find the provider's current official program page and eligibility terms before naming a specific benefit in an application.
+Official routes reviewed 2026-09-11:
 
-A provider can still be a useful technical integration partner even when no dedicated OSS sponsorship program is currently verified.
+- https://sentry.io/for/open-source/
+- https://sentry.io/for/good/
+
+Sentry currently publishes an open-source sponsorship application and explicitly asks open-source applicants to use a friendly license such as Apache or MIT. Its application asks for applicant information, a Sentry organization name and URL, project URL, GitHub URL, a direct license link, and a project description. Sponsorship remains discretionary and subject to Sentry's terms.
+
+Strong fit evidence:
+
+- this repository is public and Apache-2.0 licensed;
+- the package has a completed public `v0.3.0` / npm release;
+- the toolkit is developer infrastructure rather than a private Rawafid application;
+- browser, accessibility, localization, Unicode and interoperability workloads are executable and externally reviewable;
+- observability can be scoped to public toolkit/demo/integration surfaces rather than protected health/editorial data.
+
+Use `docs/SENTRY-SPONSORSHIP-READINESS.md` as the provider-specific application pack. Do not invent account-bound values such as the Sentry Organization Name or Organization URL. Do not claim sponsorship, approval, quota allocation, or a provider integration until the corresponding Sentry account state is actually observed.
+
+### Other providers
+
+For providers not covered by a current verified section, find the provider's official program page and eligibility terms immediately before naming a specific benefit or submitting an application. A provider can still be a useful technical integration partner even when no dedicated OSS sponsorship program is verified.
 
 ## Application narrative
 
 Keep the application factual, engineering-led, and evidence-first:
 
-> Rawafid Arabic/RTL Accessibility & Localization Toolkit is a public Apache-2.0, zero-runtime-dependency TypeScript project providing framework-agnostic infrastructure and reusable evidence for bidirectional web interfaces, Arabic and multilingual localization, accessibility interactions, Unicode-safe text handling, localized numeric input, and browser interoperability. Its partner workload is manifest-driven and produces standard JSON/JUnit/HTML plus a validated evidence summary across Chromium, Firefox, WebKit, and mobile Chromium. The repository also publishes machine-readable localization QA, Draft 2020-12 schemas, Arabic-aware Unicode/grapheme research corpora, CodeMeta/CITATION metadata, OpenSSF Security Insights/OSPS evidence, deterministic package checks, and an exact-tarball release policy that verifies npm SHA-512 identity before configured build/SBOM attestations. Rawafid's scientific/editorial corpus and production secrets are explicitly excluded from this public repository. The requested program resources would be used directly to expand measurable public interoperability, localization, accessibility, research, or supply-chain evidence.
+> Rawafid Arabic/RTL Accessibility & Localization Toolkit is a public Apache-2.0, zero-runtime-dependency TypeScript project providing framework-agnostic infrastructure and reusable evidence for bidirectional web interfaces, Arabic and multilingual localization, accessibility interactions, Unicode-safe text handling, localized numeric input, and browser interoperability. Its partner workload is manifest-driven and produces standard JSON/JUnit/HTML plus a validated evidence summary across Chromium, Firefox, WebKit, and mobile Chromium. The repository also publishes machine-readable localization QA, Draft 2020-12 schemas, Arabic-aware Unicode/grapheme research corpora, CodeMeta/CITATION metadata, OpenSSF Security Insights/OSPS evidence, deterministic package checks, and an exact-tarball release policy that verifies npm SHA-512 identity before configured build/SBOM attestations. Rawafid's scientific/editorial corpus and production secrets are explicitly excluded from this public repository. The requested program resources would be used directly to expand measurable public interoperability, localization, accessibility, research, supply-chain evidence, or public-toolkit reliability.
 
 Adjust the final sentence to the provider and describe the exact public workload their infrastructure would improve. Do not change factual eligibility answers to improve acceptance odds.
 
@@ -187,6 +204,7 @@ When a form permits multiple supporting links, prioritize these rather than send
 7. `docs/RELEASE-PROVENANCE.md` — release-integrity model.
 8. `codemeta.json` / `CITATION.cff` — research-software discovery/citation when relevant.
 9. A **current green CI run** for the exact commit being reviewed.
+10. Provider-specific readiness file, when present, such as `docs/SENTRY-SPONSORSHIP-READINESS.md`.
 
 The strongest application is generally one where the reviewer can reproduce the project's claimed need from these links without requesting private screenshots or undocumented metrics.
 
@@ -204,18 +222,18 @@ Before submitting any application:
 8. State how the provider's resource will improve the **public toolkit** rather than Rawafid's private/scientific systems.
 9. Do not claim users, downloads, contributors, coverage percentages, certifications, sponsorships, program acceptance, provider integrations, academic endorsement, or attestations that have not been observed.
 10. Keep credentials and account-bound configuration outside Git; add provider-specific CI only after the account/integration exists.
-11. **Do not claim that `main` is protected.** GitHub branch metadata observed on 2026-08-25 reported `main` as unprotected. Enable and re-verify an appropriate ruleset/branch-protection policy before making a protected-branch claim.
-12. After the first npm/public release, verify the actual registry package, provenance, SBOM, and GitHub attestation records before citing them as completed release evidence.
+11. Treat repository protection as an observed system state, not a prose assumption. On 2026-09-11 a direct write to `main` was rejected by repository rules and required a pull request with six expected checks, while the compact branch metadata did not expose enough detail to summarize every enforcement rule. Re-check the live rule state before making a specific branch-protection claim.
+12. For every release, verify the actual registry package, provenance, SBOM, and GitHub attestation records before citing that release's evidence. `v0.3.0` is published, but its documented bootstrap path must not be restated as an OIDC/Trusted-Publishing release.
 
 ## Evidence that remains external or conditional
 
 Repository quality cannot by itself prove account-bound states. See `docs/VERIFICATION-STATUS.md` and `docs/OSPS-BASELINE.md` for the authoritative boundaries.
 
-As of the 2026-08-25 evidence review:
+As of the 2026-09-11 evidence review:
 
-- **Observed gap:** `main` was reported by GitHub as `protected: false`; required-check enforcement, force-push prevention, and deletion protection must not be claimed until enabled and re-read from GitHub.
+- **Repository-policy observation:** direct writes to `main` are currently rejected in favor of a pull request and six expected checks. Do not infer undocumented force-push/deletion/admin enforcement details from that observation alone.
 - **External-unverified:** maintainer MFA/passkey state, private vulnerability reporting enablement, and other account/repository settings not directly exposed by the current evidence.
-- **Conditional:** first npm publication, npm ownership/2FA/bootstrap state, Trusted Publisher binding, public npm provenance, and GitHub build/SBOM attestations.
-- **Provider-controlled:** acceptance, sponsorship, credits, licenses, hosted services, academic collaborations, and other external partnership outcomes.
+- **Published release:** `@rawafid/arabic-rtl-a11y-toolkit@0.3.0` is publicly released. The repository documents `v0.3.0` as the one-time token-bootstrap exception with npm provenance disabled; future routine Trusted Publisher claims remain conditional on observed releases through that path.
+- **Provider-controlled:** acceptance, sponsorship, credits, licenses, hosted services, academic collaborations, and other external partnership outcomes remain outside repository evidence until independently observed.
 
 The dossier should be updated when any of these states changes; repository files are not a substitute for observing the corresponding external system.
