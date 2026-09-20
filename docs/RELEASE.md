@@ -66,6 +66,10 @@ Account-level 2FA should remain enabled. Any temporary credential created solely
 
 `.github/workflows/release-preflight.yml` is nonpublishing and manual. It may build release evidence, but it must not receive OIDC publication permission, run `npm publish`, or create release attestations. Its role is to validate the candidate before a maintainer publishes the matching GitHub Release.
 
+## SPDX version strategy
+
+SPDX 2.3 remains the primary release SBOM because it is the format produced by the current npm release toolchain and is now covered by strict timestamp normalization plus SPDX/NTIA validation. SPDX 3.0.1 is being evaluated as an additive Core + Software-profile artifact rather than an immediate replacement. See [SPDX-3-EVALUATION.md](./SPDX-3-EVALUATION.md) for the promotion criteria and non-goals.
+
 ## Owner-controlled hardening still open
 
 GitHub `main` branch/ruleset protection remains an observed owner-level gap. Until it is enabled, reviewed PRs and green checks are compensating controls only; they do not satisfy the missing branch-protection requirement itself. Do not represent OpenSSF branch-protection requirements as satisfied until the repository settings are actually changed.
