@@ -99,8 +99,49 @@ jobs:
           echo "integrity=$integrity" >> "$GITHUB_OUTPUT"
           echo 'Built exact release tarball with locally computed SHA-512 integrity.'
 
-      - name: Generate SPDX SBOM
-        run: npm sbom --sbom-format=spdx --sbom-type=library > sbom.spdx.json
+      - name: Generate and normalize SPDX 2.3 SBOM
+        shell: bash
+        run: |
+          set -euo pipefail
+          npm sbom --sbom-format=spdx --sbom-type=library > sbom.spdx.json
+          node scripts/normalize-spdx-sbom.mjs sbom.spdx.json
+
+      - name: Verify SPDX document with SPDX Tools Java
+        shell: bash
+        env:
+          SPDX_TOOLS_VERSION: '2.0.7'
+          SPDX_TOOLS_SHA256: '2dc63c3399c5178058b1be8a3de6f13b9f24981cd86c4292ef98f4a7e90de36d'
+        run: |
+          set -euo pipefail
+          command -v java >/dev/null || { echo 'Java runtime is required for SPDX Tools Verify.' >&2; exit 1; }
+          archive="tools-java-${SPDX_TOOLS_VERSION}.zip"
+          url="https://github.com/spdx/tools-java/releases/download/v${SPDX_TOOLS_VERSION}/${archive}"
+          curl --fail --location --retry 3 --retry-delay 2 --output "$archive" "$url"
+          echo "${SPDX_TOOLS_SHA256}  ${archive}" | sha256sum --check -
+          rm -rf .spdx-tools
+          mkdir .spdx-tools
+          unzip -q "$archive" -d .spdx-tools
+          jar_path="$(find .spdx-tools -type f -name "tools-java-${SPDX_TOOLS_VERSION}-jar-with-dependencies.jar" -print -quit)"
+          test -n "$jar_path" || { echo 'Pinned SPDX Tools Java verifier JAR not found.' >&2; exit 1; }
+          java -jar "$jar_path" Verify sbom.spdx.json | tee spdx-verify.txt
+
+      - name: Audit NTIA minimum elements
+        shell: bash
+        env:
+          NTIA_CHECKER_VERSION: '5.0.3'
+        run: |
+          set -euo pipefail
+          python3 -m venv .spdx-venv
+          .spdx-venv/bin/python -m pip install --disable-pip-version-check --no-input "ntia-conformance-checker==${NTIA_CHECKER_VERSION}"
+          set +e
+          .spdx-venv/bin/sbomcheck sbom.spdx.json --sbom-spec spdx2 --comply ntia --output json --output-file sbom-ntia-report.json
+          checker_status=$?
+          set -e
+          if [ "$checker_status" -ne 0 ] && [ "$checker_status" -ne 1 ]; then
+            echo "Unexpected NTIA checker exit status: $checker_status" >&2
+            exit "$checker_status"
+          fi
+          node scripts/check-spdx-conformance-report.mjs sbom-ntia-report.json
 
       - name: Build reproducible public review surface
         run: npm run site:build
@@ -130,6 +171,8 @@ jobs:
             ${{ steps.pack.outputs.tarball }}
             npm-pack.json
             sbom.spdx.json
+            spdx-verify.txt
+            sbom-ntia-report.json
             ${{ steps.release_notes.outputs.release_notes }}
             review-site/
           if-no-files-found: error
