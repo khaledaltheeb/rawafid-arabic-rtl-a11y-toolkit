@@ -2,6 +2,8 @@ import { readFile } from 'node:fs/promises';
 
 const releaseSource = await readFile(new URL('../.github/workflows/release.yml', import.meta.url), 'utf8');
 const preflightSource = await readFile(new URL('../.github/workflows/release-preflight.yml', import.meta.url), 'utf8');
+const spdxNormalizerSource = await readFile(new URL('./normalize-spdx-sbom.mjs', import.meta.url), 'utf8');
+const spdxReportGuardSource = await readFile(new URL('./check-spdx-conformance-report.mjs', import.meta.url), 'utf8');
 const retiredBootstrapUrl = new URL('../.github/workflows/npm-bootstrap-v0.3.0.yml', import.meta.url);
 let retiredBootstrapSource = null;
 try {
@@ -33,6 +35,46 @@ requireText(releaseSource, 'release.yml', 'permissions:\n  contents: read', 'def
 requireText(releaseSource, 'release.yml', '@rawafid/arabic-rtl-a11y-toolkit', 'canonical package identity lock');
 requireText(releaseSource, 'release.yml', 'npm pack --json --ignore-scripts > npm-pack.json', 'single explicit tarball build');
 requireText(releaseSource, 'release.yml', 'npm sbom --sbom-format=spdx --sbom-type=library > sbom.spdx.json', 'SPDX SBOM generation');
+for (const [workflowName, source] of [
+  ['release.yml', releaseSource],
+  ['release-preflight.yml', preflightSource],
+]) {
+  for (const [needle, label] of [
+    ['node scripts/normalize-spdx-sbom.mjs sbom.spdx.json', 'SPDX 2.3 timestamp normalization'],
+    ["SPDX_TOOLS_VERSION: '2.0.7'", 'pinned SPDX Tools Java version'],
+    ["SPDX_TOOLS_SHA256: '2dc63c3399c5178058b1be8a3de6f13b9f24981cd86c4292ef98f4a7e90de36d'", 'pinned SPDX Tools Java archive digest'],
+    ['sha256sum --check -', 'SPDX Tools archive integrity verification'],
+    ['Verify sbom.spdx.json | tee spdx-verify.txt', 'SPDX Tools Verify invocation'],
+    ["NTIA_CHECKER_VERSION: '5.0.3'", 'pinned NTIA Conformance Checker version'],
+    ['ntia-conformance-checker==${NTIA_CHECKER_VERSION}', 'pinned NTIA checker installation'],
+    ['--sbom-spec spdx2 --comply ntia --output json --output-file sbom-ntia-report.json', 'machine-readable NTIA report generation'],
+    ['node scripts/check-spdx-conformance-report.mjs sbom-ntia-report.json', 'Rawafid SPDX conformance report guard'],
+    ['spdx-verify.txt', 'retained SPDX Verify evidence'],
+    ['sbom-ntia-report.json', 'retained NTIA conformance evidence'],
+  ]) {
+    requireText(source, workflowName, needle, label);
+  }
+}
+
+for (const needle of [
+  "const SPDX_23_CREATED = /^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}Z$/u;",
+  "document.creationInfo.created = normalized;",
+  "replace(/\\.\\d{3}Z$/u, 'Z')",
+]) {
+  requireText(spdxNormalizerSource, 'normalize-spdx-sbom.mjs', needle, 'strict SPDX 2.3 creation timestamp control');
+}
+
+for (const needle of [
+  "emptyArray(report?.validationMessages)",
+  "emptyArray(report?.parsingError)",
+  "componentNames.allProvided",
+  "componentVersions.allProvided",
+  "componentIdentifiers.allProvided",
+  "componentSuppliers?.nonconformantComponents",
+  "no supplier identities were fabricated",
+]) {
+  requireText(spdxReportGuardSource, 'check-spdx-conformance-report.mjs', needle, 'auditable SPDX/NTIA report control');
+}
 requireText(releaseSource, 'release.yml', 'run: npm run site:build', 'reproducible review-site build');
 requireText(releaseSource, 'release.yml', 'name: release-evidence', 'retained release evidence artifact');
 requireText(releaseSource, 'release.yml', 'actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8', 'SHA-pinned artifact download action');
@@ -133,6 +175,15 @@ for (const phrase of [
 }
 
 requireText(preflightSource, 'release-preflight.yml', 'workflow_dispatch:', 'manual validation trigger');
+requireText(preflightSource, 'release-preflight.yml', 'pull_request:', 'pull-request validation trigger');
+for (const path of [
+  '.github/workflows/release.yml',
+  'scripts/normalize-spdx-sbom.mjs',
+  'scripts/check-spdx-conformance-report.mjs',
+  'scripts/check-release-policy.mjs',
+]) {
+  requireText(preflightSource, 'release-preflight.yml', `- ${path}`, `SPDX/release pull-request path trigger for ${path}`);
+}
 requireText(preflightSource, 'release-preflight.yml', 'permissions:\n  contents: read', 'read-only workflow permission');
 requireText(preflightSource, 'release-preflight.yml', 'persist-credentials: false', 'non-persistent checkout credentials');
 requireText(preflightSource, 'release-preflight.yml', 'package_version="$(node -p "require(\'./package.json\').version")"', 'package-version-derived preflight identity');
@@ -163,5 +214,5 @@ if (errors.length > 0) {
   console.error(errors.join('\n'));
   process.exitCode = 1;
 } else {
-  console.log('Release policy contract passed: publication is release-event-only and tokenless through npm Trusted Publishing/OIDC; both preflight and publication require in-place version-derived release notes; release evidence is prepared without credentials; the exact npm tarball is verified against the public registry; GitHub attestations are created only after registry identity is proven; and GitHub Release assets are uploaded only when missing and must match their local SHA-256 digests exactly.');
+  console.log('Release policy contract passed: publication is release-event-only and tokenless through npm Trusted Publishing/OIDC; both preflight and publication normalize SPDX 2.3 timestamps, verify the SBOM with pinned SPDX Tools Java, retain an NTIA conformance report without fabricating supplier identities, require in-place version-derived release notes, prepare release evidence without publication credentials, verify the exact npm tarball against the public registry, create GitHub attestations only after registry identity is proven, and upload GitHub Release assets only when missing with matching SHA-256 digests.');
 }
