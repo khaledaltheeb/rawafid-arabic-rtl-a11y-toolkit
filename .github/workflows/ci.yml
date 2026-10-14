@@ -68,14 +68,14 @@ jobs:
       - name: Validate partner evidence summary
         run: node scripts/validate-partner-evidence-summary.mjs partner-results/evidence-summary.json
       - name: Upload public review lab artifact
-        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7
         with:
           name: public-review-lab-static
           path: review-site/
           retention-days: 30
           if-no-files-found: error
       - name: Upload partner interoperability evidence
-        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7
         if: always()
         with:
           name: partner-interoperability-evidence
@@ -93,7 +93,7 @@ jobs:
           retention-days: 30
           if-no-files-found: error
       - name: Upload Playwright report on failure
-        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7
         if: failure()
         with:
           name: playwright-report
