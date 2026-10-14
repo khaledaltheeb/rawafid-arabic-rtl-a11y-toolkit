@@ -195,7 +195,7 @@ jobs:
           package-manager-cache: false
 
       - name: Download exact release evidence
-        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8
+        uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8
         with:
           name: release-evidence
           path: evidence
@@ -240,7 +240,7 @@ jobs:
       attestations: write
     steps:
       - name: Download exact release evidence for attestations
-        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8
+        uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8
         with:
           name: release-evidence
           path: evidence
@@ -272,7 +272,7 @@ jobs:
       contents: write
     steps:
       - name: Download verified release evidence for GitHub Release assets
-        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8
+        uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8
         with:
           name: release-evidence
           path: evidence
